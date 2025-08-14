@@ -1,0 +1,45 @@
+---
+title: 'Understanding Functions'
+description: 'Learn how to extend your AI agent with capabilities like transferring calls, booking appointments, and more.'
+---
+
+## Overview
+
+After implementing basic conversations, your agent can be enhanced with additional capabilities to perform actions such as:
+
+- Transferring calls
+- Booking appointments
+- Retrieving external information
+- Managing call flow (e.g., ending calls)
+- Integrating with your existing systems via API calls
+
+These capabilities can be implemented using **function calling**.
+
+---
+
+## Adding Functions to the Prompt
+
+For all functions, you’ll need to ensure they are triggered in the **prompt** once added to the agent.
+
+**Examples:**
+- `If user does not have any more questions, call function end_call to hang up`
+- `If the user asks to transfer the call to a specific department or extension, use function transfer_call`
+
+---
+
+## Extension and Transferring
+
+For **internal transfers**, you will need to:
+
+1. Create an **extension directory** within your prompt.
+2. Navigate to **Extensions** under the **Agents** tab to manage extensions.
+
+When implementing your directory into the prompt, it might look like this:
+
+
+<img
+  src="/images/fourth.png"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>

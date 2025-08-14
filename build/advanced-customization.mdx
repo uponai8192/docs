@@ -1,0 +1,105 @@
+---
+title: "AI Agent Settings"
+description: "Learn how to configure your AI agent’s settings to make it unique and optimized for your needs."
+---
+
+## Introduction
+
+Configuring the settings of your AI agent is what makes it stand out and gives it what it needs to execute prompts effectively.
+
+---
+
+## Voice Settings
+
+- Navigate to the **Voice Settings** dropdown menu.
+
+<img
+  src="/images/voice.jpeg"
+  alt="Voice settings dropdown"
+  height="300"
+  className="rounded-lg"
+/>
+
+- Here you can listen to and select a voice for your agent.
+
+<img
+  src="/images/second.png"
+  alt="Voice selection"
+  height="300"
+  className="rounded-lg"
+/>
+
+- Click the **Wheel Icon ⚙** next to the voice settings to adjust:
+  - **Speed**
+  - **Temperature**
+  - **Volume**
+
+---
+
+## Begin Message Type
+
+- This setting chooses how your agent initiates the conversation:
+
+<img
+  src="/images/third.png"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>
+
+- **AI Initiates** – The AI starts the conversation with either a fixed message or a prompt-generated welcome message.
+- **User Initiates** – The agent waits for the user to speak first.
+
+---
+
+## Dynamic Variables
+
+- Dynamic variables are special codes that allow you to add specific information to different parts of your agent for each call. They make responses more personal while keeping the main conversation consistent.
+
+**Examples of where you can use them:**
+
+- Prompt
+- Begin message
+- Transfer call function
+
+**Adding Dynamic Variables:**
+
+- Dynamic variables usually look like this:
+  - Hello `{{user_name}}`, I understand you're interested in `{{product_name}}`. How can I help you today?"
+
+
+- Great for outbound calling:
+  - If the customer is already in your system and you use `{{customer_name}}`, your agent will remember and use their name.
+  - Try implementing them in your prompt.
+
+
+##More of our settings
+
+- Functions
+  - In our top navigation bar under “Agent Functions” under “Assign Functions to Agents” there is a list of function templates to assign to your agent ie. transfer_call, book_appointment. 
+
+- Knowledge Base
+   - Knowledge Base – [Learn more here](/build/knowledge-base)
+
+- Speech Settings
+  - Can change background sound and volume to call center, coffee shop, static noise for example for a more real feel. 
+  - **Responsiveness**: how responsive the agent is. Set it lower if you want agent to respond slower, which can be useful when talking to folks like elderlys.
+  - **Interruption Sensitivity**: how fast the agent gets interrupted by user interruptions. Set it lower if you want agent to be more resilient to background speech.
+  - **Backchanneling**: Set up how often and what words the agent uses to acknowledge users suchas “uh-huh” while listening 
+  - **Reminder frequency**: how often the agent will remind the user when user is inactive.
+  - **Pronunciation**: set up pronunciation guide for specific words.
+
+- Call Settings
+
+  - Voicemail Detection
+  - End Call on Silence
+  - Mac Call Duration
+  - Pause Before Speaking
+
+- Post Call Analysis
+  - Knowledge Base – [Learn more here](/build/knowledge-base)
+
+- Webhook
+  - You can connect your webhook here for integrations
+
+

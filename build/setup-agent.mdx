@@ -1,0 +1,128 @@
+---
+title: 'Setup a Single / Multi Prompt Agent'
+description: 'Learn how to create and structure prompts for your AI agent.'
+---
+
+## Step 1: Creating a Prompt
+
+### Creating a Prompt Within Your Agent
+
+The **single prompt** approach allows you to define your agent’s behavior with one comprehensive prompt.  
+It’s straightforward and great for simple use cases.
+
+---
+
+## How to Write a Single Prompt
+
+Good prompt writing is the most important part of building your agent—it can make your agent work great or not so much.  
+This guide shows you what we've learned about writing prompts that agents can follow better and more consistently.
+
+> **Note:** This guide is updated regularly as we learn new things. If you have ideas or feedback, please share them with us.
+
+To see examples of good prompts, check out the **templates in your Dashboard** by creating a new agent and selecting a template.
+
+---
+
+## Breaking Prompts into Sections
+
+When writing prompts, it’s best to **break them into smaller sections**.  
+This makes them easier for you to edit and easier for the LLM to understand.
+
+```txt
+## Identify
+
+You are a friendly AI assistant for UponAI. ....
+
+## Style Guardrails
+Be concise: ...
+Be conversational: ...
+
+...
+
+## Response Guideline
+
+Return dates in their spoken forms: ...
+Ask up to one question at a time: ...
+
+...
+
+## Task
+
+1. Greet the user
+
+...
+
+```
+
+### Tasks
+
+When writing your prompt you’ll want to write your tasks, or what you want the agent to ask or do, in number order like you would steps. This helps the agent space stuff out and not ask everything in one long question.
+
+```txt
+## Task
+
+You are a friendly AI assistant for UponAI. ....
+1. Ask for user's name.
+2. Ask if user needs a refund, need a replacement, or just retriving information.
+   - if user needs a refund, transition to refund state.
+   - if user needs a replacement, transition to replacement state.
+3. If user is just retriving information, ask for the order number.
+
+...
+
+```
+
+If your agent doesn’t stop and proceeds to ask all steps as one large question consider editing the prompt and and spelling out exactly what you want. 
+
+```txt
+## Task
+
+1. Inform user why you are calling.
+2. Ask user's name.
+
+Wait for user response
+
+3. Ask if user needs a refund, need a replacement, or just retriving information.
+
+Wait for user response
+   - if user needs a refund, transition to refund state.
+   - if user needs a replacement, transition to replacement state.
+
+
+4. Ask for the order number.
+
+Wait for user response
+
+...
+
+```
+
+### Prompting More In-depth
+It’s recommended to include a prompt as a guideline for the LLM to follow. This ensures that the agent can consistently reply with the correct format.
+When writing prompts you may have to spell things out for the agent to get the best results. 
+	Example:
+
+
+### Appointment or Demo Booking Request Handling
+
+If a customer requests to book an appointment or demo, follow these steps:
+
+1. Ask for **full name**.  
+2. Ask for **preferred date and time**.  
+3. Invoke `check_available_appointments` and return available slots.  
+4. Ask for **company name**.  
+5. Ask for **full email address**:  
+   - If spelled out: `n-a-m-e-@-dot-com` → interpret as `name@domain.com`.  
+   - “name at” → interpret as `name@`  
+   - “dot com” → interpret as `.com`  
+6. Ask for **purpose of the appointment**.  
+7. Ask for **best phone number**:  
+   - Accepted formats: `4158923245`, `(415) 892-3245`, `415-892-3245`  
+   - Pronounce as: `"four one five - eight nine two - three two four five"`  
+   - **Important:** Keep spaces around the dash when speaking  
+8. Reconfirm **preferred date and time** if needed.  
+9. Confirm **all details** (name, purpose, date, time, email address, phone) with the caller.  
+10. Invoke `book_appointment` function.  
+
+> **Tip:** If the agent says a phrase or phone number too quickly, instruct it to **repeat slowly**.
+
