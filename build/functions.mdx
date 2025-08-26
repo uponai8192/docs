@@ -43,3 +43,32 @@ When implementing your directory into the prompt, it might look like this:
   height="300"
   className="rounded-lg"
 />
+
+## Uploading Extensions
+
+Under the **Extensions** tab, you can upload a list of extensions using a `.csv` file.  
+A sample file is provided on the page for reference.
+
+Alternatively, you can add extensions manually by entering the information individually.
+
+## Transferring Calls
+
+In your prompt, make sure to trigger this function via `transfer_call`.
+
+### **How to Transfer**
+- Invoke `transfer_call`:
+  - `action`: `"transfer"`
+  - `transfer_to`: Extension from directory
+- **Do NOT require/await any caller response after the transfer phrase.**
+
+### **When to Transfer**
+- Caller requests any person/department in the extension directory (e.g., *"I want to speak to [name]"* or similar)
+- For upgrade, billing, technical issues, or complex/unclear requests
+
+### **What to Say**
+- For directory names:  
+  *"Sure, let me transfer you now."*
+- Otherwise, choose only from:
+  - *"Transferring you to [department/person] now."*
+  - *"Connecting you with [department/person]."*
+  - *"I'll connect you with [department/person] right away."*

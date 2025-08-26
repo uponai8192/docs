@@ -1,0 +1,119 @@
+---
+title: "Deploy"
+sidebarTitle: "Deploy"
+---
+
+
+
+## Custom Telephony
+
+Connecting your provider via **SIP Trunk**, **SIP URI**, or an **Extension**.
+
+### Transport Methods Supported
+- UDP
+- TCP
+- TLS
+- TLS/SRTP
+
+The easiest method is to connect via **SIP URI**.
+
+---
+
+### What is a SIP URI?
+A SIP URI is like a phone number for internet calling. It looks something like:
+
+user@domain.com
+
+
+It lets your platform make and receive calls over the internet instead of regular phone lines.
+
+---
+
+### What you need:
+- A SIP URI
+- Login details (username and password)
+- Domain and Outbound Proxy
+- Your platform's phone system settings
+
+---
+
+### How to connect it:
+1. Navigate to **Carriers** under **VoIP Administration**.
+2. Click **Add Carrier**.
+3. Enter your information.
+
+---
+
+### Predefined Carriers
+We have predefined carriers with gateways already set up for:
+- Viirtue
+- Skyswitch
+- Twilio
+- Cordial
+- NUSO
+- Porta One
+- RITEL
+- Ring Logix
+- United Cloud
+- White Label
+
+---
+
+For all connections, you’ll enter the following information:
+
+<img
+  src="/images/ninth.png"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>
+
+#### Example of USER information:
+
+<img
+  src="/images/tenth.png"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>
+- **Register SIP Realm**: Should be your outbound proxy if you have one; otherwise, the domain.
+
+If you did **not** use a predefined carrier:
+- Enter the IP addresses under **Gateways**.
+- Set the **netmask** and **port**.
+- Make sure all IPs are set to **Inbound** and **Active**.
+- If you have an outbound proxy, add it as a gateway and set it to **Outbound** and **Active**.
+
+<img
+  src="/images/eleventh.jpeg"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>
+
+Once info is filled out, click **Add Carrier**.  
+You’ll see your new carrier pop up with its status and registration.  
+If registration says **failed**, double-check your input and try again.  
+Still not working? Contact us and we’ll help you get it connected.
+
+---
+
+## Phone Numbers (Under Deploy)
+Add a **Phone Number** or an **Extension** to your agent.
+
+<img
+  src="/images/twelveth.png"
+  alt="Begin message type options"
+  height="300"
+  className="rounded-lg"
+/>
+
+1. Under **VoIP Administration**, go to **Phone Numbers**.
+2. Click **Add Phone Number**.
+3. Select your **workspace** and **VoIP account** (commonly your business name).
+4. Select the carrier you want to use, then add the phone number or extension.
+5. Once added, the number will appear under the **Phone Numbers** tab.
+
+### Assign phone number to agent:
+- Next to the number you just added, click **Assign Agent**.
+- Choose which agent to assign the number to.
