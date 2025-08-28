@@ -50,8 +50,8 @@
     ]
   },
   "logo": {
-    "light": "/images/favicon.svg",
-    "dark": "/images/favicon.svg"
+    "light": "https://www.uponai.com/wp-content/uploads/2023/08/upon-ai-logo.webp",
+    "dark": "https://www.uponai.com/wp-content/uploads/2023/08/upon-ai-logo.webp"
   },
   "navbar": {
     "links": [
