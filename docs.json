@@ -20,7 +20,6 @@
           {
             "group": "Build",
             "pages": [
-              
               "build/setup-agent",
 
               "build/advanced-customization",
@@ -32,26 +31,19 @@
           },
           {
             "group": "Test",
-            "pages": [
-              
-              "Test/index"
-            ]
+            "pages": ["Test/index"]
           },
           {
             "group": "Deploy",
-            "pages": [
-              
-              "Deploy/index",
-              "Deploy/analyze"
-            ]
+            "pages": ["Deploy/index", "Deploy/analyze"]
           }
         ]
       }
     ]
   },
   "logo": {
-    "light": "https://www.uponai.com/wp-content/uploads/2023/08/upon-ai-logo.webp",
-    "dark": "https://www.uponai.com/wp-content/uploads/2023/08/upon-ai-logo.webp"
+    "light": "/images/favicon.webp",
+    "dark": "/images/favicon.webp"
   },
   "navbar": {
     "links": [
