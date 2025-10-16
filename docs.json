@@ -21,11 +21,8 @@
             "group": "Build",
             "pages": [
               "build/setup-agent",
-
               "build/advanced-customization",
-
               "build/functions",
-
               "build/knowledge-base"
             ]
           },
@@ -38,6 +35,16 @@
             "pages": ["Deploy/index", "Deploy/analyze"]
           }
         ]
+      },
+      {
+        "tab": "API Documentation",
+        "groups": [
+          {
+            "group": "Endpoints",
+            "pages": []
+          }
+        ],
+        "openapi": "openapi.json"
       }
     ]
   },
