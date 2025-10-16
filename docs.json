@@ -38,12 +38,6 @@
       },
       {
         "tab": "API Documentation",
-        "groups": [
-          {
-            "group": "Endpoints",
-            "pages": []
-          }
-        ],
         "openapi": "openapi.json"
       }
     ]
