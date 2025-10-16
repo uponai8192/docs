@@ -1,16 +1,14 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "UponAI API",
+    "version": "1.0.0",
+    "description": "API endpoints to manage LLMs, Agents, Conversation Flows, Knowledge Bases, Voices, Account, and Calls.\n\n**Authentication**: All requests require a bearer token: `Authorization: Bearer <your_api_token_here>`"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://admin-panel.upon-ai.com",
+      "description": "Production API"
     }
   ],
   "security": [
@@ -18,77 +16,614 @@
       "bearerAuth": []
     }
   ],
+  "tags": [
+    { "name": "LLM Models" },
+    { "name": "Agents" },
+    { "name": "Conversation Flows" },
+    { "name": "Knowledge Bases" },
+    { "name": "Voices" },
+    { "name": "Account" },
+    { "name": "Calls" }
+  ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+    "/api/llms": {
+      "post": {
+        "tags": ["LLM Models"],
+        "summary": "Create LLM",
+        "description": "Provision a new UponAI LLM configuration.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LlmCreateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "display_name": "Concierge v2",
+                "model": "gpt-4o-mini",
+                "general_prompt": "You are the voice of UponAI…",
+                "begin_message": "Hi there! Thanks for calling.",
+                "responsiveness": "fast",
+                "general_tools": [
+                  {
+                    "name": "lookup_customer",
+                    "description": "Retrieve CRM records by phone number.",
+                    "type": "function"
+                  }
+                ]
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "200": {
-            "description": "Plant response",
+          "201": {
+            "description": "Created LLM",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                "schema": { "$ref": "#/components/schemas/Llm" },
+                "example": {
+                  "llm_id": "llm_1ab234cde567fgh",
+                  "display_name": "Concierge v2",
+                  "version": 1,
+                  "model": "gpt-4o-mini",
+                  "general_prompt": "You are the voice of UponAI…",
+                  "begin_message": "Hi there! Thanks for calling.",
+                  "updated_at": "2025-02-08T17:21:34.000Z"
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      },
+      "get": {
+        "tags": ["LLM Models"],
+        "summary": "List LLMs",
+        "description": "Enumerate LLM configurations in a workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/PaginationKey" },
+          { "$ref": "#/components/parameters/PaginationKeyVersion" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of LLMs",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/LlmListItem" }
+                },
+                "example": [
+                  {
+                    "llm_id": "llm_1ab234cde567fgh",
+                    "display_name": "Concierge v2",
+                    "version": 3
+                  },
+                  {
+                    "llm_id": "llm_9xy654zba321cde",
+                    "display_name": "Outbound Collections",
+                    "version": 5
+                  }
+                ]
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/api/llms/{llmId}": {
+      "get": {
+        "tags": ["LLM Models"],
+        "summary": "Get LLM",
+        "description": "Retrieve the latest or a specific version of an LLM configuration.",
+        "parameters": [
+          {
+            "name": "llmId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "LLM object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Llm" },
+                "example": {
+                  "llm_id": "llm_1ab234cde567fgh",
+                  "display_name": "Concierge v2",
+                  "version": 3,
+                  "model": "gpt-4o-mini",
+                  "general_prompt": "…",
+                  "tools": [],
+                  "created_at": "2025-01-20T11:04:13.000Z"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["LLM Models"],
+        "summary": "Update LLM",
+        "description": "Apply partial updates to an existing LLM configuration.",
+        "parameters": [
+          {
+            "name": "llmId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LlmUpdateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "general_prompt": "Always confirm appointment details before booking.",
+                "begin_message": null,
+                "responsiveness": "balanced"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated LLM",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Llm" },
+                "example": {
+                  "llm_id": "llm_1ab234cde567fgh",
+                  "display_name": "Concierge v2",
+                  "version": 4,
+                  "begin_message": null,
+                  "responsiveness": "balanced",
+                  "updated_at": "2025-02-08T18:12:03.000Z"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["LLM Models"],
+        "summary": "Delete LLM",
+        "description": "Remove an LLM configuration and all its versions.",
+        "parameters": [
+          {
+            "name": "llmId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "204": { "description": "No Content (deleted)" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/conversation-flows": {
+      "post": {
+        "tags": ["Conversation Flows"],
+        "summary": "Create Conversation Flow",
+        "description": "Design a reusable flow graph (states, prompts, tools) for agents.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ConversationFlowCreateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "global_prompt": "Stay upbeat, confirm account details before action.",
+                "start_speaker": "agent",
+                "model_choice": {
+                  "type": "cascading",
+                  "model": "gpt-4o-mini"
+                },
+                "nodes": [
+                  {
+                    "id": "start",
+                    "type": "conversation",
+                    "instruction": {
+                      "type": "prompt",
+                      "text": "Greet the caller and ask how you can help."
+                    },
+                    "edges": [
+                      {
+                        "id": "edge_1",
+                        "transition_condition": {
+                          "type": "prompt",
+                          "prompt": "Caller wants to schedule"
+                        },
+                        "destination_node_id": "schedule"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created Flow",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
+                "example": {
+                  "conversation_flow_id": "flow_9xy654zba321cde",
+                  "version": 1,
+                  "start_speaker": "agent",
+                  "model_choice": {
+                    "type": "cascading",
+                    "model": "gpt-4o-mini"
+                  }
                 }
               }
             }
           }
         }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
+      "get": {
+        "tags": ["Conversation Flows"],
+        "summary": "List Conversation Flows",
+        "description": "Enumerate conversation flows in a workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/PaginationKey" },
+          { "$ref": "#/components/parameters/PaginationKeyVersion" }
+        ],
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Array of flows",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ConversationFlowListItem" }
+                },
+                "example": [
+                  {
+                    "conversation_flow_id": "flow_9xy654zba321cde",
+                    "version": 3,
+                    "start_speaker": "agent"
+                  },
+                  {
+                    "conversation_flow_id": "flow_5lmno4321pqrs",
+                    "version": 1,
+                    "start_speaker": "user"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversation-flows/{conversationFlowId}": {
+      "get": {
+        "tags": ["Conversation Flows"],
+        "summary": "Get Conversation Flow",
+        "description": "Retrieve a conversation flow (latest or version).",
+        "parameters": [
+          {
+            "name": "conversationFlowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation Flow object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
+                "example": {
+                  "conversation_flow_id": "flow_9xy654zba321cde",
+                  "version": 3,
+                  "global_prompt": "Stay upbeat, confirm account details before action.",
+                  "start_speaker": "agent",
+                  "nodes": [
+                    {
+                      "id": "start",
+                      "type": "conversation",
+                      "instruction": {
+                        "type": "prompt",
+                        "text": "Greet the caller and ask how you can help."
+                      },
+                      "edges": [
+                        {
+                          "id": "edge_1",
+                          "transition_condition": {
+                            "type": "prompt",
+                            "prompt": "Caller wants to schedule"
+                          },
+                          "destination_node_id": "schedule"
+                        }
+                      ]
+                    }
+                  ]
                 }
               }
             }
           },
-          "400": {
-            "description": "unexpected error",
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Conversation Flows"],
+        "summary": "Update Conversation Flow",
+        "description": "Modify an existing conversation flow.",
+        "parameters": [
+          {
+            "name": "conversationFlowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ConversationFlowUpdateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "global_prompt": "Verify member number before booking.",
+                "model_choice": {
+                  "type": "cascading",
+                  "model": "gpt-4o"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated flow",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
+                "example": {
+                  "conversation_flow_id": "flow_9xy654zba321cde",
+                  "version": 4,
+                  "global_prompt": "Verify member number before booking",
+                  "model_choice": { "type": "cascading", "model": "gpt-4o" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Conversation Flows"],
+        "summary": "Delete Conversation Flow",
+        "description": "Remove a conversation flow and its versions.",
+        "parameters": [
+          {
+            "name": "conversationFlowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "204": { "description": "No Content (deleted)" }
+        }
+      }
+    },
+    "/api/knowledge-bases": {
+      "post": {
+        "tags": ["Knowledge Bases"],
+        "summary": "Create Knowledge Base",
+        "description": "Create a new knowledge base with documents, URLs, or text snippets.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/KnowledgeBaseCreateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "name": "Hospital FAQ",
+                "description": "Key policies for support team",
+                "sources": [
+                  {
+                    "type": "text",
+                    "text": "Visiting hours are 8am - 8pm daily."
+                  },
+                  {
+                    "type": "url",
+                    "url": "https://knowledge.uponai.com/help-center"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created KB",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
+                "example": {
+                  "knowledgeBaseId": "kb_1ab234cde567fgh",
+                  "name": "Hospital FAQ",
+                  "status": "processing",
+                  "sources": [
+                    {
+                      "source_id": "src_01",
+                      "source_type": "text"
+                    }
+                  ],
+                  "workspaceId": 42
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Knowledge Bases"],
+        "summary": "List Knowledge Bases",
+        "description": "List knowledge bases in a workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of KBs",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/KnowledgeBaseListItem" }
+                },
+                "example": [
+                  {
+                    "knowledgeBaseId": "kb_1ab234cde567fgh",
+                    "name": "Hospital FAQ",
+                    "status": "ready"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/knowledge-bases/{knowledgeBaseId}": {
+      "get": {
+        "tags": ["Knowledge Bases"],
+        "summary": "Get Knowledge Base",
+        "description": "Retrieve metadata for a knowledge base.",
+        "parameters": [
+          {
+            "name": "knowledgeBaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "KB object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
+                "example": {
+                  "knowledgeBaseId": "kb_1ab234cde567fgh",
+                  "name": "Hospital FAQ",
+                  "description": "Key policies for support team",
+                  "status": "ready",
+                  "sources": [
+                    {
+                      "source_id": "src_01",
+                      "source_type": "text"
+                    }
+                  ],
+                  "workspaceId": 42
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Knowledge Bases"],
+        "summary": "Delete Knowledge Base",
+        "description": "Remove a knowledge base and all its sources.",
+        "parameters": [
+          {
+            "name": "knowledgeBaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "204": { "description": "No Content (deleted)" }
+        }
+      }
+    },
+    "/api/knowledge-bases/{knowledgeBaseId}/sources": {
+      "post": {
+        "tags": ["Knowledge Bases"],
+        "summary": "Add Knowledge Base Sources",
+        "description": "Append new documents or snippets to an existing KB.",
+        "parameters": [
+          {
+            "name": "knowledgeBaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/KnowledgeBaseAddSourcesRequest" },
+              "example": {
+                "workspaceId": 42,
+                "sources": [
+                  {
+                    "type": "text",
+                    "text": "We offer telehealth appointments."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated KB",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
+                "example": {
+                  "knowledgeBaseId": "kb_1ab234cde567fgh",
+                  "status": "processing",
+                  "sources": [
+                    {
+                      "source_id": "src_01",
+                      "source_type": "text"
+                    },
+                    {
+                      "source_id": "src_03",
+                      "source_type": "text"
+                    }
+                  ],
+                  "workspaceId": 42
                 }
               }
             }
@@ -96,121 +631,1132 @@
         }
       }
     },
-    "/plants/{id}": {
+    "/api/knowledge-bases/{knowledgeBaseId}/sources/{sourceId}": {
       "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+        "tags": ["Knowledge Bases"],
+        "summary": "Remove a KB Source",
+        "description": "Delete a specific source from the knowledge base.",
         "parameters": [
           {
-            "name": "id",
+            "name": "knowledgeBaseId",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sourceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": { "204": { "description": "No Content (deleted)" } }
+      }
+    },
+    "/api/voices": {
+      "get": {
+        "tags": ["Voices"],
+        "summary": "List Voices",
+        "description": "Get available voice models in your workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Array of voices",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Voice" }
+                },
+                "example": [
+                  {
+                    "voiceId": "voice_aura",
+                    "name": "Aura",
+                    "gender": "female",
+                    "language": "en",
+                    "accent": "us",
+                    "previewUrl": "https://voices.uponai.com/aura.mp3",
+                    "tags": ["friendly", "default"]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/{voiceId}": {
+      "get": {
+        "tags": ["Voices"],
+        "summary": "Get Voice",
+        "description": "Retrieve metadata for a specific voice.",
+        "parameters": [
+          {
+            "name": "voiceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Voice object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Voice" },
+                "example": {
+                  "voiceId": "voice_aura",
+                  "name": "Aura",
+                  "gender": "female",
+                  "language": "en",
+                  "accent": "us",
+                  "description": "Warm, upbeat agent voice",
+                  "previewUrl": "https://voices.uponai.com/aura.mp3",
+                  "tags": ["friendly", "default"],
+                  "createdAt": "2025-01-15T12:00:00.000Z",
+                  "updatedAt": "2025-02-01T09:42:00.000Z"
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/api/voices/{voiceId}/sample": {
+      "get": {
+        "tags": ["Voices"],
+        "summary": "Stream Voice Sample",
+        "description": "Return an audio (MPEG) sample for the specified voice.",
+        "parameters": [
+          {
+            "name": "voiceId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio stream (MPEG format)",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/concurrency": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get Concurrency",
+        "description": "Retrieve concurrency limits and current usage for the account.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Concurrency usage object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Concurrency" },
+                "example": {
+                  "maxConcurrent": 50,
+                  "currentUsage": 12,
+                  "purchasedConcurrency": 25,
+                  "concurrencyPurchaseLimit": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Agents"],
+        "summary": "Create Agent",
+        "description": "Create a new agent using LLM, voice, and runtime settings.",
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+              "schema": { "$ref": "#/components/schemas/AgentCreateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "agent_name": "Concierge Live",
+                "voice_id": "voice_aura",
+                "response_engine": {
+                  "type": "uponai-llm",
+                  "llm_id": "llm_1ab234cde567fgh"
+                },
+                "response_threshold": 0.6,
+                "interruption_sensitivity": "medium",
+                "ambient_sound": "coffee-shop"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Agent" },
+                "example": {
+                  "agent_id": "agent_9xy654zba321cde",
+                  "agent_name": "Concierge Live",
+                  "voice_id": "voice_aura",
+                  "response_engine": {
+                    "type": "uponai-llm",
+                    "llm_id": "llm_1ab234cde567fgh"
+                  },
+                  "version": 1,
+                  "created_at": "2025-02-08T18:54:02.000Z"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List Agents",
+        "description": "List agents in a workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/PaginationKey" },
+          { "$ref": "#/components/parameters/PaginationKeyVersion" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of agents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AgentListItem" }
+                },
+                "example": [
+                  {
+                    "agent_id": "agent_9xy654zba321cde",
+                    "agent_name": "Concierge Live",
+                    "version": 3
+                  },
+                  {
+                    "agent_id": "agent_5lmno4321pqrs",
+                    "agent_name": "Collections Bot",
+                    "version": 1
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{agentId}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get Agent",
+        "description": "Retrieve a specific agent configuration (latest or specific version).",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Agent" },
+                "example": {
+                  "agent_id": "agent_9xy654zba321cde",
+                  "agent_name": "Concierge Live",
+                  "voice_id": "voice_aura",
+                  "response_engine": {
+                    "type": "uponai-llm",
+                    "llm_id": "llm_1ab234cde567fgh"
+                  },
+                  "responsiveness": "balanced",
+                  "version": 3
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Agents"],
+        "summary": "Update Agent",
+        "description": "Modify fields of an existing agent.",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AgentUpdateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "response_engine": {
+                  "type": "uponai-llm",
+                  "llm_id": "llm_9xy654zba321cde"
+                },
+                "interruption_sensitivity": "high",
+                "max_call_duration_ms": 900000
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Agent updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Agent" },
+                "example": {
+                  "agent_id": "agent_9xy654zba321cde",
+                  "version": 4,
+                  "response_engine": {
+                    "type": "uponai-llm",
+                    "llm_id": "llm_9xy654zba321cde"
+                  },
+                  "interruption_sensitivity": "high"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Agents"],
+        "summary": "Delete Agent",
+        "description": "Remove an agent and all versions.",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "204": { "description": "No Content (deleted)" }
+        }
+      }
+    },
+    "/api/agents/{agentId}/versions": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get Agent Versions",
+        "description": "List version history for an agent.",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AgentVersion" }
+                },
+                "example": [
+                  {
+                    "agent_id": "agent_9xy654zba321cde",
+                    "version": 1,
+                    "updated_at": "2025-02-01T10:15:00.000Z"
+                  },
+                  {
+                    "agent_id": "agent_9xy654zba321cde",
+                    "version": 2,
+                    "updated_at": "2025-02-05T09:42:11.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calls/web": {
+      "post": {
+        "tags": ["Calls"],
+        "summary": "Create Web Call",
+        "description": "Start a browser-based call session powered by a UponAI agent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WebCallCreateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "agentId": "agent_9xy654zba321cde",
+                "agentVersion": 3,
+                "metadata": {
+                  "customer_id": "cust_123",
+                  "conversation_goal": "product_demo"
+                },
+                "uponai_dynamic_variables": {
+                  "customer_name": "Alex"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Web Call created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WebCall" },
+                "example": {
+                  "callId": "call_a4441234567890777c4a4a123e6",
+                  "callType": "web_call",
+                  "status": "registered",
+                  "agentId": "agent_9xy654zba321cde",
+                  "agentVersion": 3,
+                  "metadata": {
+                    "customer_id": "cust_123",
+                    "conversation_goal": "product_demo"
+                  },
+                  "optOutSensitiveDataStorage": false,
+                  "accessToken": "eyJhbGciOiJIUzI1NiJ9…",
+                  "expiresAt": "2025-02-08T19:34:22.000Z",
+                  "webCallUrl": "https://calls.uponai.com/rooms/call_a4441234567890777c4a4a123e6",
+                  "uponai_dynamic_variables": {
+                    "customer_name": "Alex"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls/initiate": {
+      "post": {
+        "tags": ["Calls"],
+        "summary": "Create Phone Call",
+        "description": "Initiate a phone call via an agent (v1 endpoint).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PhoneCallCreateRequest" },
+              "example": {
+                "agentId": "agent_9xy654zba321cde",
+                "workspaceId": 123,
+                "fromNumber": "+15551234567",
+                "toNumber": "+12137774455",
+                "customerName": "John Doe",
+                "carrierName": "jambonz",
+                "trunkName": "trunkA",
+                "overrideCid": "+15550001111",
+                "customFromNumber": "+15550001111",
+                "customStatusHookUrl": "https://your-webhook-url.com/callback",
+                "metadata": {
+                  "key": "value"
+                },
+                "uponai_dynamic_variables": {
+                  "customer_name": "Alex"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Call initiated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PhoneCallCreateResponse" },
+                "example": {
+                  "success": true,
+                  "call_sid": "string",
+                  "call": {
+                    // your call object
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls": {
+      "get": {
+        "tags": ["Calls"],
+        "summary": "List Calls",
+        "description": "List call records with filtering and pagination.",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "query",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "agentId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calls page",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CallsPage" },
+                "example": {
+                  "success": true,
+                  "calls": [
+                    {
+                      "call": {
+                        // call details
+                      }
+                    }
+                  ],
+                  "pagination": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 100
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls/{callId}": {
+      "get": {
+        "tags": ["Calls"],
+        "summary": "Get Call",
+        "description": "Retrieve a specific call record (v1).",
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Call response object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CallResponse" },
+                "example": {
+                  "success": true,
+                  "call": {
+                    // call object
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calls/{callId}": {
+      "patch": {
+        "tags": ["Calls"],
+        "summary": "Update Call",
+        "description": "Modify existing call metadata or opt out sensitive data.",
+        "parameters": [
+          {
+            "name": "callId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CallUpdateRequest" },
+              "example": {
+                "workspaceId": 42,
+                "metadata": {
+                  "customer_id": "cust_123",
+                  "notes": "Requested follow-up"
+                },
+                "optOutSensitiveDataStorage": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated call",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WebCall" },
+                "example": {
+                  "callId": "call_a4441234567890777c4a4a123e6",
+                  "status": "ongoing",
+                  "metadata": {
+                    "customer_id": "cust_123",
+                    "notes": "Requested follow-up"
+                  },
+                  "optOutSensitiveDataStorage": true
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "400 Bad Request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+      "Unauthorized": {
+        "description": "401 Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+      "NotFound": {
+        "description": "404 Not Found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "500 Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
           }
         }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "parameters": {
+      "WorkspaceIdQuery": {
+        "name": "workspaceId",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "integer" },
+        "description": "Workspace context"
+      },
+      "VersionQuery": {
+        "name": "version",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer" }
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 1000 }
+      },
+      "PaginationKey": {
+        "name": "paginationKey",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "string" }
+      },
+      "PaginationKeyVersion": {
+        "name": "paginationKeyVersion",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer" }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "type": { "type": "string" }
+        }
+      },
+      "Llm": {
+        "type": "object",
+        "properties": {
+          "llm_id": { "type": "string" },
+          "display_name": { "type": "string" },
+          "version": { "type": "integer" },
+          "model": { "type": "string" },
+          "general_prompt": { "type": "string" },
+          "begin_message": { "type": ["string","null"] },
+          "responsiveness": { "type": "string" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "LlmListItem": {
+        "type": "object",
+        "properties": {
+          "llm_id": { "type": "string" },
+          "display_name": { "type": "string" },
+          "version": { "type": "integer" }
+        }
+      },
+      "LlmCreateRequest": {
+        "type": "object",
+        "required": ["workspaceId", "display_name"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "display_name": { "type": "string" },
+          "model": { "type": "string" },
+          "general_prompt": { "type": "string" },
+          "begin_message": { "type": ["string","null"] },
+          "responsiveness": { "type": "string" },
+          "general_tools": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Tool" }
+          }
+        }
+      },
+      "LlmUpdateRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "general_prompt": { "type": ["string","null"] },
+          "begin_message": { "type": ["string","null"] },
+          "responsiveness": { "type": "string" }
+        }
+      },
+      "ModelChoice": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "model": { "type": "string" }
+        }
+      },
+      "FlowNode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "instruction": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "text": { "type": "string" }
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "transition_condition": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string" },
+                    "prompt": { "type": "string" }
+                  }
+                },
+                "destination_node_id": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "ConversationFlow": {
+        "type": "object",
+        "properties": {
+          "conversation_flow_id": { "type": "string" },
+          "version": { "type": "integer" },
+          "global_prompt": { "type": "string" },
+          "start_speaker": { "type": "string" },
+          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
+          "nodes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FlowNode" }
+          }
+        }
+      },
+      "ConversationFlowListItem": {
+        "type": "object",
+        "properties": {
+          "conversation_flow_id": { "type": "string" },
+          "version": { "type": "integer" },
+          "start_speaker": { "type": "string" }
+        }
+      },
+      "ConversationFlowCreateRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "global_prompt": { "type": "string" },
+          "start_speaker": { "type": "string" },
+          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
+          "nodes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FlowNode" }
+          }
+        }
+      },
+      "ConversationFlowUpdateRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "global_prompt": { "type": "string" },
+          "model_choice": { "$ref": "#/components/schemas/ModelChoice" }
+        }
+      },
+      "KnowledgeSource": {
+        "type": "object",
+        "properties": {
+          "source_id": { "type": "string" },
+          "source_type": { "type": "string" }
+        }
+      },
+      "KnowledgeBase": {
+        "type": "object",
+        "properties": {
+          "knowledgeBaseId": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/KnowledgeSource" }
+          },
+          "workspaceId": { "type": "integer" }
+        }
+      },
+      "KnowledgeBaseListItem": {
+        "type": "object",
+        "properties": {
+          "knowledgeBaseId": { "type": "string" },
+          "name": { "type": "string" },
+          "status": { "type": "string" }
+        }
+      },
+      "KnowledgeBaseCreateRequest": {
+        "type": "object",
+        "required": ["workspaceId", "name"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/KBTextSource" },
+                { "$ref": "#/components/schemas/KBUrlSource" },
+                { "$ref": "#/components/schemas/KBDocumentSource" }
+              ]
+            }
+          }
+        }
+      },
+      "KBTextSource": {
+        "type": "object",
+        "required": ["type", "text"],
+        "properties": {
+          "type": { "type": "string", "enum": ["text"] },
+          "text": { "type": "string" }
+        }
+      },
+      "KBUrlSource": {
+        "type": "object",
+        "required": ["type", "url"],
+        "properties": {
+          "type": { "type": "string", "enum": ["url"] },
+          "url": { "type": "string", "format": "uri" }
+        }
+      },
+      "KBDocumentSource": {
+        "type": "object",
+        "required": ["type", "filename", "contentType", "base64"],
+        "properties": {
+          "type": { "type": "string", "enum": ["document"] },
+          "filename": { "type": "string" },
+          "contentType": { "type": "string" },
+          "base64": { "type": "string" }
+        }
+      },
+      "KnowledgeBaseAddSourcesRequest": {
+        "type": "object",
+        "required": ["workspaceId", "sources"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "sources": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/KBTextSource" },
+                { "$ref": "#/components/schemas/KBUrlSource" },
+                { "$ref": "#/components/schemas/KBDocumentSource" }
+              ]
+            }
+          }
+        }
+      },
+      "Voice": {
+        "type": "object",
+        "properties": {
+          "voiceId": { "type": "string" },
+          "name": { "type": "string" },
+          "gender": { "type": "string" },
+          "language": { "type": "string" },
+          "accent": { "type": "string" },
+          "description": { "type": "string" },
+          "previewUrl": { "type": "string", "format": "uri" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Concurrency": {
+        "type": "object",
+        "properties": {
+          "maxConcurrent": { "type": "integer" },
+          "currentUsage": { "type": "integer" },
+          "purchasedConcurrency": { "type": "integer" },
+          "concurrencyPurchaseLimit": { "type": "integer" }
+        }
+      },
+      "Agent": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string" },
+          "agent_name": { "type": "string" },
+          "voice_id": { "type": "string" },
+          "response_engine": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "llm_id": { "type": "string" }
+            }
+          },
+          "responsiveness": { "type": "string" },
+          "version": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AgentListItem": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string" },
+          "agent_name": { "type": "string" },
+          "version": { "type": "integer" }
+        }
+      },
+      "AgentVersion": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string" },
+          "version": { "type": "integer" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AgentCreateRequest": {
+        "type": "object",
+        "required": ["workspaceId", "agent_name", "voice_id", "response_engine"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agent_name": { "type": "string" },
+          "voice_id": { "type": "string" },
+          "response_engine": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "llm_id": { "type": "string" }
+            }
+          },
+          "response_threshold": { "type": "number" },
+          "interruption_sensitivity": { "type": "string" },
+          "ambient_sound": { "type": "string" }
+        }
+      },
+      "AgentUpdateRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "response_engine": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "llm_id": { "type": "string" }
+            }
+          },
+          "interruption_sensitivity": { "type": "string" },
+          "max_call_duration_ms": { "type": "integer" }
+        }
+      },
+      "WebCallCreateRequest": {
+        "type": "object",
+        "required": ["workspaceId", "agentId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agentId": { "type": "string" },
+          "agentVersion": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": true },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "WebCall": {
+        "type": "object",
+        "properties": {
+          "callId": { "type": "string" },
+          "callType": { "type": "string" },
+          "status": { "type": "string" },
+          "agentId": { "type": "string" },
+          "agentVersion": { "type": "integer" },
+          "metadata": { "type": "object" },
+          "optOutSensitiveDataStorage": { "type": "boolean" },
+          "accessToken": { "type": ["string","null"] },
+          "expiresAt": { "type": ["string","null"], "format": "date-time" },
+          "webCallUrl": { "type": ["string","null"], "format": "uri" },
+          "uponai_dynamic_variables": { "type": "object" }
+        }
+      },
+      "PhoneCallCreateRequest": {
+        "type": "object",
+        "required": ["agentId","workspaceId","fromNumber","toNumber"],
+        "properties": {
+          "agentId": { "type": "string" },
+          "workspaceId": { "type": "integer" },
+          "fromNumber": { "type": "string" },
+          "toNumber": { "type": "string" },
+          "customerName": { "type": "string" },
+          "carrierName": { "type": "string" },
+          "trunkName": { "type": "string" },
+          "overrideCid": { "type": "string" },
+          "customFromNumber": { "type": "string" },
+          "customStatusHookUrl": { "type": "string", "format": "uri" },
+          "metadata": { "type": "object", "additionalProperties": true },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "PhoneCallCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "call_sid": { "type": "string" },
+          "call": { "type": "object" }
+        }
+      },
+      "CallsPage": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "calls": { "type": "array", "items": { "type": "object" } },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "limit": { "type": "integer" },
+              "total": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "CallResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "call": { "type": "object" }
+        }
+      },
+      "CallUpdateRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": true },
+          "optOutSensitiveDataStorage": { "type": "boolean" }
+        }
       }
     }
   }
