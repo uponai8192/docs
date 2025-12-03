@@ -1,14 +1,14 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "UponAI API",
-    "version": "1.0.0",
-    "description": "API endpoints to manage LLMs, Agents, Conversation Flows, Knowledge Bases, Voices, Account, and Calls.\n\n**Authentication**: All requests require a bearer token: `Authorization: Bearer <your_api_token_here>`"
+    "title": "UponAI Call API",
+    "version": "2025-02-08",
+    "description": "Programmatic control plane for configuring UponAI agents, large language model configurations, conversation flows, knowledge bases, outbound calls, and voice resources. All endpoints require a bearer token obtained from the UponAI dashboard."
   },
   "servers": [
     {
-      "url": "https://admin-panel.upon-ai.com",
-      "description": "Production API"
+      "url": "https://api.upon-ai.com",
+      "description": "Production"
     }
   ],
   "security": [
@@ -17,266 +17,456 @@
     }
   ],
   "tags": [
-    { "name": "LLM Models" },
-    { "name": "Agents" },
-    { "name": "Conversation Flows" },
-    { "name": "Knowledge Bases" },
-    { "name": "Voices" },
-    { "name": "Account" },
-    { "name": "Calls" }
+    {
+      "name": "Authentication",
+      "description": "Shared authentication requirements and request builder helpers."
+    },
+    {
+      "name": "LLM Models",
+      "description": "Manage reusable large language model configurations for agents."
+    },
+    {
+      "name": "Agents",
+      "description": "Configure agents that power calls and web sessions."
+    },
+    {
+      "name": "Conversation Flows",
+      "description": "Build and maintain reusable dialog graphs for agents."
+    },
+    {
+      "name": "Knowledge Bases",
+      "description": "Store and curate grounded knowledge sources."
+    },
+    {
+      "name": "Voices",
+      "description": "Discover the speech synthesis voices available to a workspace."
+    },
+    {
+      "name": "Account",
+      "description": "Account level utilities and limits."
+    },
+    {
+      "name": "Calls",
+      "description": "Initiate and manage UponAI powered voice and web calls."
+    }
   ],
   "paths": {
     "/api/llms": {
+      "get": {
+        "tags": [
+          "LLM Models"
+        ],
+        "summary": "List LLMs",
+        "description": "Enumerate the UponAI LLM configurations available to a workspace. Results are returned newest first.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/LimitQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "LLM configurations visible to the workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LlmSummary"
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "value": [
+                      {
+                        "llm_id": "llm_1ab234cde567fgh",
+                        "display_name": "Concierge v2",
+                        "version": 3
+                      },
+                      {
+                        "llm_id": "llm_9xy654zba321cde",
+                        "display_name": "Outbound Collections",
+                        "version": 5
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "tags": ["LLM Models"],
+        "tags": [
+          "LLM Models"
+        ],
         "summary": "Create LLM",
-        "description": "Provision a new UponAI LLM configuration.",
+        "description": "Provision a new UponAI large language model configuration.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LlmCreateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "display_name": "Concierge v2",
-                "model": "gpt-4o-mini",
-                "general_prompt": "You are the voice of UponAI…",
-                "begin_message": "Hi there! Thanks for calling.",
-                "responsiveness": "fast",
-                "general_tools": [
-                  {
-                    "name": "lookup_customer",
-                    "description": "Retrieve CRM records by phone number.",
-                    "type": "function"
+              "schema": {
+                "$ref": "#/components/schemas/CreateLlmRequest"
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "display_name": "Concierge v2",
+                    "model": "gpt-4o-mini",
+                    "general_prompt": "You are the voice of UponAI...",
+                    "begin_message": "Hi there! Thanks for calling.",
+                    "responsiveness": "fast",
+                    "general_tools": [
+                      {
+                        "name": "lookup_customer",
+                        "description": "Retrieve CRM records by phone number.",
+                        "type": "function"
+                      }
+                    ]
                   }
-                ]
+                }
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created LLM",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Llm" },
-                "example": {
-                  "llm_id": "llm_1ab234cde567fgh",
-                  "display_name": "Concierge v2",
-                  "version": 1,
-                  "model": "gpt-4o-mini",
-                  "general_prompt": "You are the voice of UponAI…",
-                  "begin_message": "Hi there! Thanks for calling.",
-                  "updated_at": "2025-02-08T17:21:34.000Z"
-                }
-              }
-            }
-          },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "500": { "$ref": "#/components/responses/ServerError" }
-        }
-      },
-      "get": {
-        "tags": ["LLM Models"],
-        "summary": "List LLMs",
-        "description": "Enumerate LLM configurations in a workspace.",
-        "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/PaginationKey" },
-          { "$ref": "#/components/parameters/PaginationKeyVersion" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array of LLMs",
+            "description": "Newly created LLM configuration.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/LlmListItem" }
+                  "$ref": "#/components/schemas/Llm"
                 },
-                "example": [
-                  {
-                    "llm_id": "llm_1ab234cde567fgh",
-                    "display_name": "Concierge v2",
-                    "version": 3
-                  },
-                  {
-                    "llm_id": "llm_9xy654zba321cde",
-                    "display_name": "Outbound Collections",
-                    "version": 5
+                "examples": {
+                  "default": {
+                    "value": {
+                      "llm_id": "llm_1ab234cde567fgh",
+                      "display_name": "Concierge v2",
+                      "version": 1,
+                      "model": "gpt-4o-mini",
+                      "general_prompt": "You are the voice of UponAI...",
+                      "begin_message": "Hi there! Thanks for calling UponAI.",
+                      "updated_at": "2025-02-08T17:21:34.000Z"
+                    }
                   }
-                ]
+                }
               }
             }
-          },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "500": { "$ref": "#/components/responses/ServerError" }
+          }
         }
       }
     },
     "/api/llms/{llmId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/LlmIdPath"
+        }
+      ],
       "get": {
-        "tags": ["LLM Models"],
+        "tags": [
+          "LLM Models"
+        ],
         "summary": "Get LLM",
         "description": "Retrieve the latest or a specific version of an LLM configuration.",
         "parameters": [
           {
-            "name": "llmId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
           },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/VersionQuery" }
+          {
+            "$ref": "#/components/parameters/VersionQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "LLM object",
+            "description": "LLM configuration details.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Llm" },
-                "example": {
-                  "llm_id": "llm_1ab234cde567fgh",
-                  "display_name": "Concierge v2",
-                  "version": 3,
-                  "model": "gpt-4o-mini",
-                  "general_prompt": "…",
-                  "tools": [],
-                  "created_at": "2025-01-20T11:04:13.000Z"
+                "schema": {
+                  "$ref": "#/components/schemas/Llm"
                 }
               }
             }
-          },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          }
         }
       },
       "patch": {
-        "tags": ["LLM Models"],
+        "tags": [
+          "LLM Models"
+        ],
         "summary": "Update LLM",
         "description": "Apply partial updates to an existing LLM configuration.",
         "parameters": [
           {
-            "name": "llmId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/VersionQuery" }
+            "$ref": "#/components/parameters/VersionQuery"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LlmUpdateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "general_prompt": "Always confirm appointment details before booking.",
-                "begin_message": null,
-                "responsiveness": "balanced"
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLlmRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated LLM",
+            "description": "Updated LLM configuration.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Llm" },
-                "example": {
-                  "llm_id": "llm_1ab234cde567fgh",
-                  "display_name": "Concierge v2",
-                  "version": 4,
-                  "begin_message": null,
-                  "responsiveness": "balanced",
-                  "updated_at": "2025-02-08T18:12:03.000Z"
+                "schema": {
+                  "$ref": "#/components/schemas/Llm"
                 }
               }
             }
-          },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          }
         }
       },
       "delete": {
-        "tags": ["LLM Models"],
+        "tags": [
+          "LLM Models"
+        ],
         "summary": "Delete LLM",
-        "description": "Remove an LLM configuration and all its versions.",
+        "description": "Permanently delete an LLM configuration and its versions.",
         "parameters": [
           {
-            "name": "llmId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
-          "204": { "description": "No Content (deleted)" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "204": {
+            "description": "LLM deleted."
+          }
         }
       }
     },
-    "/api/conversation-flows": {
+    "/api/agents": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "List agents",
+        "description": "List agents created inside a workspace.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/LimitQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent summary list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "tags": ["Conversation Flows"],
-        "summary": "Create Conversation Flow",
-        "description": "Design a reusable flow graph (states, prompts, tools) for agents.",
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Create agent",
+        "description": "Create a new UponAI agent for use in calls and web sessions.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ConversationFlowCreateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "global_prompt": "Stay upbeat, confirm account details before action.",
-                "start_speaker": "agent",
-                "model_choice": {
-                  "type": "cascading",
-                  "model": "gpt-4o-mini"
-                },
-                "nodes": [
-                  {
-                    "id": "start",
-                    "type": "conversation",
-                    "instruction": {
-                      "type": "prompt",
-                      "text": "Greet the caller and ask how you can help."
-                    },
-                    "edges": [
-                      {
-                        "id": "edge_1",
-                        "transition_condition": {
-                          "type": "prompt",
-                          "prompt": "Caller wants to schedule"
-                        },
-                        "destination_node_id": "schedule"
-                      }
-                    ]
-                  }
-                ]
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgentRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created Flow",
+            "description": "Newly created agent.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
-                "example": {
-                  "conversation_flow_id": "flow_9xy654zba321cde",
-                  "version": 1,
-                  "start_speaker": "agent",
-                  "model_choice": {
-                    "type": "cascading",
-                    "model": "gpt-4o-mini"
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{agentId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/AgentIdPath"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Get agent",
+        "description": "Retrieve the active configuration or a historical version of an agent.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/VersionQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Update agent",
+        "description": "Apply partial updates to an existing agent configuration.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/VersionQuery"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated agent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Delete agent",
+        "description": "Permanently remove an agent and all saved versions.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Agent deleted."
+          }
+        }
+      }
+    },
+    "/api/agents/{agentId}/versions": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/AgentIdPath"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "List agent versions",
+        "description": "Review the revision history for an agent.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent version history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentVersion"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversation-flows": {
+      "get": {
+        "tags": [
+          "Conversation Flows"
+        ],
+        "summary": "List conversation flows",
+        "description": "Enumerate conversation flows for the workspace.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/LimitQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation flow summaries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationFlowSummary"
                   }
                 }
               }
@@ -284,37 +474,30 @@
           }
         }
       },
-      "get": {
-        "tags": ["Conversation Flows"],
-        "summary": "List Conversation Flows",
-        "description": "Enumerate conversation flows in a workspace.",
-        "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/PaginationKey" },
-          { "$ref": "#/components/parameters/PaginationKeyVersion" }
+      "post": {
+        "tags": [
+          "Conversation Flows"
         ],
+        "summary": "Create conversation flow",
+        "description": "Compose a reusable flow graph for agents to attach to.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationFlowRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
-            "description": "Array of flows",
+          "201": {
+            "description": "Newly created conversation flow.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ConversationFlowListItem" }
-                },
-                "example": [
-                  {
-                    "conversation_flow_id": "flow_9xy654zba321cde",
-                    "version": 3,
-                    "start_speaker": "agent"
-                  },
-                  {
-                    "conversation_flow_id": "flow_5lmno4321pqrs",
-                    "version": 1,
-                    "start_speaker": "user"
-                  }
-                ]
+                  "$ref": "#/components/schemas/ConversationFlow"
+                }
               }
             }
           }
@@ -322,98 +505,66 @@
       }
     },
     "/api/conversation-flows/{conversationFlowId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/ConversationFlowIdPath"
+        }
+      ],
       "get": {
-        "tags": ["Conversation Flows"],
-        "summary": "Get Conversation Flow",
-        "description": "Retrieve a conversation flow (latest or version).",
+        "tags": [
+          "Conversation Flows"
+        ],
+        "summary": "Get conversation flow",
+        "description": "Retrieve the latest or a specific version of a conversation flow.",
         "parameters": [
           {
-            "name": "conversationFlowId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
           },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/VersionQuery" }
+          {
+            "$ref": "#/components/parameters/VersionQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Conversation Flow object",
+            "description": "Conversation flow details.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
-                "example": {
-                  "conversation_flow_id": "flow_9xy654zba321cde",
-                  "version": 3,
-                  "global_prompt": "Stay upbeat, confirm account details before action.",
-                  "start_speaker": "agent",
-                  "nodes": [
-                    {
-                      "id": "start",
-                      "type": "conversation",
-                      "instruction": {
-                        "type": "prompt",
-                        "text": "Greet the caller and ask how you can help."
-                      },
-                      "edges": [
-                        {
-                          "id": "edge_1",
-                          "transition_condition": {
-                            "type": "prompt",
-                            "prompt": "Caller wants to schedule"
-                          },
-                          "destination_node_id": "schedule"
-                        }
-                      ]
-                    }
-                  ]
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationFlow"
                 }
               }
             }
-          },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          }
         }
       },
       "patch": {
-        "tags": ["Conversation Flows"],
-        "summary": "Update Conversation Flow",
-        "description": "Modify an existing conversation flow.",
+        "tags": [
+          "Conversation Flows"
+        ],
+        "summary": "Update conversation flow",
+        "description": "Apply partial updates to a conversation flow.",
         "parameters": [
           {
-            "name": "conversationFlowId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/VersionQuery" }
+            "$ref": "#/components/parameters/VersionQuery"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ConversationFlowUpdateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "global_prompt": "Verify member number before booking.",
-                "model_choice": {
-                  "type": "cascading",
-                  "model": "gpt-4o"
-                }
+              "schema": {
+                "$ref": "#/components/schemas/UpdateConversationFlowRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated flow",
+            "description": "Updated conversation flow.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ConversationFlow" },
-                "example": {
-                  "conversation_flow_id": "flow_9xy654zba321cde",
-                  "version": 4,
-                  "global_prompt": "Verify member number before booking",
-                  "model_choice": { "type": "cascading", "model": "gpt-4o" }
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationFlow"
                 }
               }
             }
@@ -421,97 +572,75 @@
         }
       },
       "delete": {
-        "tags": ["Conversation Flows"],
-        "summary": "Delete Conversation Flow",
+        "tags": [
+          "Conversation Flows"
+        ],
+        "summary": "Delete conversation flow",
         "description": "Remove a conversation flow and its versions.",
         "parameters": [
           {
-            "name": "conversationFlowId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
-          "204": { "description": "No Content (deleted)" }
+          "204": {
+            "description": "Conversation flow deleted."
+          }
         }
       }
     },
     "/api/knowledge-bases": {
-      "post": {
-        "tags": ["Knowledge Bases"],
-        "summary": "Create Knowledge Base",
-        "description": "Create a new knowledge base with documents, URLs, or text snippets.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/KnowledgeBaseCreateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "name": "Hospital FAQ",
-                "description": "Key policies for support team",
-                "sources": [
-                  {
-                    "type": "text",
-                    "text": "Visiting hours are 8am - 8pm daily."
-                  },
-                  {
-                    "type": "url",
-                    "url": "https://knowledge.uponai.com/help-center"
-                  }
-                ]
-              }
-            }
+      "get": {
+        "tags": [
+          "Knowledge Bases"
+        ],
+        "summary": "List knowledge bases",
+        "description": "Enumerate knowledge bases available to the workspace.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Created KB",
+          "200": {
+            "description": "Knowledge base summaries.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
-                "example": {
-                  "knowledgeBaseId": "kb_1ab234cde567fgh",
-                  "name": "Hospital FAQ",
-                  "status": "processing",
-                  "sources": [
-                    {
-                      "source_id": "src_01",
-                      "source_type": "text"
-                    }
-                  ],
-                  "workspaceId": 42
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KnowledgeBaseSummary"
+                  }
                 }
               }
             }
           }
         }
       },
-      "get": {
-        "tags": ["Knowledge Bases"],
-        "summary": "List Knowledge Bases",
-        "description": "List knowledge bases in a workspace.",
-        "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+      "post": {
+        "tags": [
+          "Knowledge Bases"
         ],
+        "summary": "Create knowledge base",
+        "description": "Create a knowledge base and ingest documents, URLs, or free-form text for grounded responses.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKnowledgeBaseRequest"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
-            "description": "Array of KBs",
+          "201": {
+            "description": "Newly created knowledge base.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/KnowledgeBaseListItem" }
-                },
-                "example": [
-                  {
-                    "knowledgeBaseId": "kb_1ab234cde567fgh",
-                    "name": "Hospital FAQ",
-                    "status": "ready"
-                  }
-                ]
+                  "$ref": "#/components/schemas/KnowledgeBase"
+                }
               }
             }
           }
@@ -519,37 +648,29 @@
       }
     },
     "/api/knowledge-bases/{knowledgeBaseId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
+        }
+      ],
       "get": {
-        "tags": ["Knowledge Bases"],
-        "summary": "Get Knowledge Base",
-        "description": "Retrieve metadata for a knowledge base.",
+        "tags": [
+          "Knowledge Bases"
+        ],
+        "summary": "Get knowledge base",
+        "description": "Retrieve knowledge base metadata and ingestion status.",
         "parameters": [
           {
-            "name": "knowledgeBaseId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "KB object",
+            "description": "Knowledge base details.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
-                "example": {
-                  "knowledgeBaseId": "kb_1ab234cde567fgh",
-                  "name": "Hospital FAQ",
-                  "description": "Key policies for support team",
-                  "status": "ready",
-                  "sources": [
-                    {
-                      "source_id": "src_01",
-                      "source_type": "text"
-                    }
-                  ],
-                  "workspaceId": 42
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeBase"
                 }
               }
             }
@@ -557,73 +678,52 @@
         }
       },
       "delete": {
-        "tags": ["Knowledge Bases"],
-        "summary": "Delete Knowledge Base",
-        "description": "Remove a knowledge base and all its sources.",
+        "tags": [
+          "Knowledge Bases"
+        ],
+        "summary": "Delete knowledge base",
+        "description": "Permanently remove a knowledge base and its sources.",
         "parameters": [
           {
-            "name": "knowledgeBaseId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
-          "204": { "description": "No Content (deleted)" }
+          "204": {
+            "description": "Knowledge base deleted."
+          }
         }
       }
     },
     "/api/knowledge-bases/{knowledgeBaseId}/sources": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
+        }
+      ],
       "post": {
-        "tags": ["Knowledge Bases"],
-        "summary": "Add Knowledge Base Sources",
-        "description": "Append new documents or snippets to an existing KB.",
-        "parameters": [
-          {
-            "name": "knowledgeBaseId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+        "tags": [
+          "Knowledge Bases"
         ],
+        "summary": "Add knowledge base sources",
+        "description": "Append new source material to an existing knowledge base.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/KnowledgeBaseAddSourcesRequest" },
-              "example": {
-                "workspaceId": 42,
-                "sources": [
-                  {
-                    "type": "text",
-                    "text": "We offer telehealth appointments."
-                  }
-                ]
+              "schema": {
+                "$ref": "#/components/schemas/AddKnowledgeBaseSourcesRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated KB",
+            "description": "Knowledge base with updated source list.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/KnowledgeBase" },
-                "example": {
-                  "knowledgeBaseId": "kb_1ab234cde567fgh",
-                  "status": "processing",
-                  "sources": [
-                    {
-                      "source_id": "src_01",
-                      "source_type": "text"
-                    },
-                    {
-                      "source_id": "src_03",
-                      "source_type": "text"
-                    }
-                  ],
-                  "workspaceId": 42
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeBase"
                 }
               }
             }
@@ -632,56 +732,55 @@
       }
     },
     "/api/knowledge-bases/{knowledgeBaseId}/sources/{sourceId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
+        },
+        {
+          "$ref": "#/components/parameters/SourceIdPath"
+        }
+      ],
       "delete": {
-        "tags": ["Knowledge Bases"],
-        "summary": "Remove a KB Source",
-        "description": "Delete a specific source from the knowledge base.",
+        "tags": [
+          "Knowledge Bases"
+        ],
+        "summary": "Delete knowledge base source",
+        "description": "Remove a specific source entry from a knowledge base.",
         "parameters": [
           {
-            "name": "knowledgeBaseId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "sourceId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
-        "responses": { "204": { "description": "No Content (deleted)" } }
+        "responses": {
+          "204": {
+            "description": "Source removed."
+          }
+        }
       }
     },
     "/api/voices": {
       "get": {
-        "tags": ["Voices"],
-        "summary": "List Voices",
-        "description": "Get available voice models in your workspace.",
+        "tags": [
+          "Voices"
+        ],
+        "summary": "List voices",
+        "description": "Explore the UponAI voice catalog available to a workspace.",
         "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Array of voices",
+            "description": "Voice catalog.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Voice" }
-                },
-                "example": [
-                  {
-                    "voiceId": "voice_aura",
-                    "name": "Aura",
-                    "gender": "female",
-                    "language": "en",
-                    "accent": "us",
-                    "previewUrl": "https://voices.uponai.com/aura.mp3",
-                    "tags": ["friendly", "default"]
+                  "items": {
+                    "$ref": "#/components/schemas/Voice"
                   }
-                ]
+                }
               }
             }
           }
@@ -689,36 +788,29 @@
       }
     },
     "/api/voices/{voiceId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/VoiceIdPath"
+        }
+      ],
       "get": {
-        "tags": ["Voices"],
-        "summary": "Get Voice",
+        "tags": [
+          "Voices"
+        ],
+        "summary": "Get voice",
         "description": "Retrieve metadata for a specific voice.",
         "parameters": [
           {
-            "name": "voiceId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Voice object",
+            "description": "Voice metadata.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Voice" },
-                "example": {
-                  "voiceId": "voice_aura",
-                  "name": "Aura",
-                  "gender": "female",
-                  "language": "en",
-                  "accent": "us",
-                  "description": "Warm, upbeat agent voice",
-                  "previewUrl": "https://voices.uponai.com/aura.mp3",
-                  "tags": ["friendly", "default"],
-                  "createdAt": "2025-01-15T12:00:00.000Z",
-                  "updatedAt": "2025-02-01T09:42:00.000Z"
+                "schema": {
+                  "$ref": "#/components/schemas/Voice"
                 }
               }
             }
@@ -727,22 +819,25 @@
       }
     },
     "/api/voices/{voiceId}/sample": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/VoiceIdPath"
+        }
+      ],
       "get": {
-        "tags": ["Voices"],
-        "summary": "Stream Voice Sample",
-        "description": "Return an audio (MPEG) sample for the specified voice.",
+        "tags": [
+          "Voices"
+        ],
+        "summary": "Stream voice sample",
+        "description": "Stream an MPEG sample to preview the voice.",
         "parameters": [
           {
-            "name": "voiceId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Audio stream (MPEG format)",
+            "description": "Voice sample stream.",
             "content": {
               "audio/mpeg": {
                 "schema": {
@@ -757,254 +852,24 @@
     },
     "/api/concurrency": {
       "get": {
-        "tags": ["Account"],
-        "summary": "Get Concurrency",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get concurrency",
         "description": "Retrieve concurrency limits and current usage for the account.",
         "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
         ],
         "responses": {
           "200": {
-            "description": "Concurrency usage object",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Concurrency" },
-                "example": {
-                  "maxConcurrent": 50,
-                  "currentUsage": 12,
-                  "purchasedConcurrency": 25,
-                  "concurrencyPurchaseLimit": 100
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/agents": {
-      "post": {
-        "tags": ["Agents"],
-        "summary": "Create Agent",
-        "description": "Create a new agent using LLM, voice, and runtime settings.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/AgentCreateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "agent_name": "Concierge Live",
-                "voice_id": "voice_aura",
-                "response_engine": {
-                  "type": "uponai-llm",
-                  "llm_id": "llm_1ab234cde567fgh"
-                },
-                "response_threshold": 0.6,
-                "interruption_sensitivity": "medium",
-                "ambient_sound": "coffee-shop"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Agent created",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Agent" },
-                "example": {
-                  "agent_id": "agent_9xy654zba321cde",
-                  "agent_name": "Concierge Live",
-                  "voice_id": "voice_aura",
-                  "response_engine": {
-                    "type": "uponai-llm",
-                    "llm_id": "llm_1ab234cde567fgh"
-                  },
-                  "version": 1,
-                  "created_at": "2025-02-08T18:54:02.000Z"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": ["Agents"],
-        "summary": "List Agents",
-        "description": "List agents in a workspace.",
-        "parameters": [
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/PaginationKey" },
-          { "$ref": "#/components/parameters/PaginationKeyVersion" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array of agents",
+            "description": "Concurrency snapshot.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/AgentListItem" }
-                },
-                "example": [
-                  {
-                    "agent_id": "agent_9xy654zba321cde",
-                    "agent_name": "Concierge Live",
-                    "version": 3
-                  },
-                  {
-                    "agent_id": "agent_5lmno4321pqrs",
-                    "agent_name": "Collections Bot",
-                    "version": 1
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/agents/{agentId}": {
-      "get": {
-        "tags": ["Agents"],
-        "summary": "Get Agent",
-        "description": "Retrieve a specific agent configuration (latest or specific version).",
-        "parameters": [
-          {
-            "name": "agentId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
-          { "$ref": "#/components/parameters/VersionQuery" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Agent object",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Agent" },
-                "example": {
-                  "agent_id": "agent_9xy654zba321cde",
-                  "agent_name": "Concierge Live",
-                  "voice_id": "voice_aura",
-                  "response_engine": {
-                    "type": "uponai-llm",
-                    "llm_id": "llm_1ab234cde567fgh"
-                  },
-                  "responsiveness": "balanced",
-                  "version": 3
+                  "$ref": "#/components/schemas/Concurrency"
                 }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": ["Agents"],
-        "summary": "Update Agent",
-        "description": "Modify fields of an existing agent.",
-        "parameters": [
-          {
-            "name": "agentId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/VersionQuery" }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/AgentUpdateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "response_engine": {
-                  "type": "uponai-llm",
-                  "llm_id": "llm_9xy654zba321cde"
-                },
-                "interruption_sensitivity": "high",
-                "max_call_duration_ms": 900000
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Agent updated",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Agent" },
-                "example": {
-                  "agent_id": "agent_9xy654zba321cde",
-                  "version": 4,
-                  "response_engine": {
-                    "type": "uponai-llm",
-                    "llm_id": "llm_9xy654zba321cde"
-                  },
-                  "interruption_sensitivity": "high"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Agents"],
-        "summary": "Delete Agent",
-        "description": "Remove an agent and all versions.",
-        "parameters": [
-          {
-            "name": "agentId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
-        ],
-        "responses": {
-          "204": { "description": "No Content (deleted)" }
-        }
-      }
-    },
-    "/api/agents/{agentId}/versions": {
-      "get": {
-        "tags": ["Agents"],
-        "summary": "Get Agent Versions",
-        "description": "List version history for an agent.",
-        "parameters": [
-          {
-            "name": "agentId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Array of versions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/AgentVersion" }
-                },
-                "example": [
-                  {
-                    "agent_id": "agent_9xy654zba321cde",
-                    "version": 1,
-                    "updated_at": "2025-02-01T10:15:00.000Z"
-                  },
-                  {
-                    "agent_id": "agent_9xy654zba321cde",
-                    "version": 2,
-                    "updated_at": "2025-02-05T09:42:11.000Z"
-                  }
-                ]
               }
             }
           }
@@ -1013,52 +878,28 @@
     },
     "/api/calls/web": {
       "post": {
-        "tags": ["Calls"],
-        "summary": "Create Web Call",
-        "description": "Start a browser-based call session powered by a UponAI agent.",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Create web call",
+        "description": "Start a browser based call session powered by an UponAI agent.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/WebCallCreateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "agentId": "agent_9xy654zba321cde",
-                "agentVersion": 3,
-                "metadata": {
-                  "customer_id": "cust_123",
-                  "conversation_goal": "product_demo"
-                },
-                "uponai_dynamic_variables": {
-                  "customer_name": "Alex"
-                }
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebCallRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Web Call created",
+            "description": "Web call created.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/WebCall" },
-                "example": {
-                  "callId": "call_a4441234567890777c4a4a123e6",
-                  "callType": "web_call",
-                  "status": "registered",
-                  "agentId": "agent_9xy654zba321cde",
-                  "agentVersion": 3,
-                  "metadata": {
-                    "customer_id": "cust_123",
-                    "conversation_goal": "product_demo"
-                  },
-                  "optOutSensitiveDataStorage": false,
-                  "accessToken": "eyJhbGciOiJIUzI1NiJ9…",
-                  "expiresAt": "2025-02-08T19:34:22.000Z",
-                  "webCallUrl": "https://calls.uponai.com/rooms/call_a4441234567890777c4a4a123e6",
-                  "uponai_dynamic_variables": {
-                    "customer_name": "Alex"
-                  }
+                "schema": {
+                  "$ref": "#/components/schemas/WebCall"
                 }
               }
             }
@@ -1068,47 +909,28 @@
     },
     "/api/v1/calls/initiate": {
       "post": {
-        "tags": ["Calls"],
-        "summary": "Create Phone Call",
-        "description": "Initiate a phone call via an agent (v1 endpoint).",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Create phone call",
+        "description": "Initiate a PSTN phone call via UponAI infrastructure.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PhoneCallCreateRequest" },
-              "example": {
-                "agentId": "agent_9xy654zba321cde",
-                "workspaceId": 123,
-                "fromNumber": "+15551234567",
-                "toNumber": "+12137774455",
-                "customerName": "John Doe",
-                "carrierName": "jambonz",
-                "trunkName": "trunkA",
-                "overrideCid": "+15550001111",
-                "customFromNumber": "+15550001111",
-                "customStatusHookUrl": "https://your-webhook-url.com/callback",
-                "metadata": {
-                  "key": "value"
-                },
-                "uponai_dynamic_variables": {
-                  "customer_name": "Alex"
-                }
+              "schema": {
+                "$ref": "#/components/schemas/CreatePhoneCallRequest"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Call initiated",
+          "201": {
+            "description": "Call initiation response.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PhoneCallCreateResponse" },
-                "example": {
-                  "success": true,
-                  "call_sid": "string",
-                  "call": {
-                    // your call object
-                  }
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePhoneCallResponse"
                 }
               }
             }
@@ -1118,66 +940,41 @@
     },
     "/api/v1/calls": {
       "get": {
-        "tags": ["Calls"],
-        "summary": "List Calls",
-        "description": "List call records with filtering and pagination.",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "List calls",
+        "description": "List calls with optional workspace, agent, status, and date filters.",
         "parameters": [
           {
-            "name": "workspaceId",
-            "in": "query",
-            "schema": { "type": "integer" }
+            "$ref": "#/components/parameters/WorkspaceIdQueryOptional"
           },
           {
-            "name": "agentId",
-            "in": "query",
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/AgentIdQuery"
           },
           {
-            "name": "status",
-            "in": "query",
-            "schema": { "type": "string" }
+            "$ref": "#/components/parameters/StatusQuery"
           },
           {
-            "name": "fromDate",
-            "in": "query",
-            "schema": { "type": "string", "format": "date-time" }
+            "$ref": "#/components/parameters/FromDateQuery"
           },
           {
-            "name": "toDate",
-            "in": "query",
-            "schema": { "type": "string", "format": "date-time" }
+            "$ref": "#/components/parameters/ToDateQuery"
           },
           {
-            "name": "page",
-            "in": "query",
-            "schema": { "type": "integer", "default": 1 }
+            "$ref": "#/components/parameters/PageQuery"
           },
           {
-            "name": "limit",
-            "in": "query",
-            "schema": { "type": "integer", "default": 20 }
+            "$ref": "#/components/parameters/LimitQueryDefault20"
           }
         ],
         "responses": {
           "200": {
-            "description": "Calls page",
+            "description": "Paginated call list.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CallsPage" },
-                "example": {
-                  "success": true,
-                  "calls": [
-                    {
-                      "call": {
-                        // call details
-                      }
-                    }
-                  ],
-                  "pagination": {
-                    "page": 1,
-                    "limit": 20,
-                    "total": 100
-                  }
+                "schema": {
+                  "$ref": "#/components/schemas/CallList"
                 }
               }
             }
@@ -1186,29 +983,24 @@
       }
     },
     "/api/v1/calls/{callId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/CallIdPath"
+        }
+      ],
       "get": {
-        "tags": ["Calls"],
-        "summary": "Get Call",
-        "description": "Retrieve a specific call record (v1).",
-        "parameters": [
-          {
-            "name": "callId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+        "tags": [
+          "Calls"
         ],
+        "summary": "Get call",
+        "description": "Retrieve details for a specific call.",
         "responses": {
           "200": {
-            "description": "Call response object",
+            "description": "Call details.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CallResponse" },
-                "example": {
-                  "success": true,
-                  "call": {
-                    // call object
-                  }
+                "schema": {
+                  "$ref": "#/components/schemas/CallDetail"
                 }
               }
             }
@@ -1217,48 +1009,34 @@
       }
     },
     "/api/calls/{callId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/CallIdPath"
+        }
+      ],
       "patch": {
-        "tags": ["Calls"],
-        "summary": "Update Call",
-        "description": "Modify existing call metadata or opt out sensitive data.",
-        "parameters": [
-          {
-            "name": "callId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
+        "tags": [
+          "Calls"
         ],
+        "summary": "Update call",
+        "description": "Update stored metadata or opt out of sensitive data storage.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CallUpdateRequest" },
-              "example": {
-                "workspaceId": 42,
-                "metadata": {
-                  "customer_id": "cust_123",
-                  "notes": "Requested follow-up"
-                },
-                "optOutSensitiveDataStorage": true
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCallRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated call",
+            "description": "Updated call record.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/WebCall" },
-                "example": {
-                  "callId": "call_a4441234567890777c4a4a123e6",
-                  "status": "ongoing",
-                  "metadata": {
-                    "customer_id": "cust_123",
-                    "notes": "Requested follow-up"
-                  },
-                  "optOutSensitiveDataStorage": true
+                "schema": {
+                  "$ref": "#/components/schemas/CallRecord"
                 }
               }
             }
@@ -1271,42 +1049,7 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    },
-    "responses": {
-      "BadRequest": {
-        "description": "400 Bad Request",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
-      },
-      "Unauthorized": {
-        "description": "401 Unauthorized",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
-      },
-      "NotFound": {
-        "description": "404 Not Found",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
-      },
-      "ServerError": {
-        "description": "500 Internal Server Error",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "#/components/schemas/Error" }
-          }
-        }
+        "scheme": "bearer"
       }
     },
     "parameters": {
@@ -1314,266 +1057,792 @@
         "name": "workspaceId",
         "in": "query",
         "required": true,
-        "schema": { "type": "integer" },
-        "description": "Workspace context"
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Workspace identifier."
+      },
+      "WorkspaceIdQueryOptional": {
+        "name": "workspaceId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Optional workspace identifier filter."
+      },
+      "LimitQuery": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 1000
+        },
+        "description": "Maximum number of records to return."
+      },
+      "LimitQueryDefault20": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "description": "Page size for list endpoints."
+      },
+      "PageQuery": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "PaginationKeyQuery": {
+        "name": "paginationKey",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Identifier to continue pagination."
+      },
+      "PaginationKeyVersionQuery": {
+        "name": "paginationKeyVersion",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Version paired with the pagination key."
       },
       "VersionQuery": {
         "name": "version",
         "in": "query",
         "required": false,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": "Specific version to retrieve or update."
       },
-      "Limit": {
-        "name": "limit",
+      "AgentIdPath": {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Agent identifier."
+      },
+      "AgentIdQuery": {
+        "name": "agentId",
         "in": "query",
         "required": false,
-        "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 1000 }
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter call listings to a specific agent."
       },
-      "PaginationKey": {
-        "name": "paginationKey",
+      "CallIdPath": {
+        "name": "callId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Call identifier or SID."
+      },
+      "ConversationFlowIdPath": {
+        "name": "conversationFlowId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Conversation flow identifier."
+      },
+      "KnowledgeBaseIdPath": {
+        "name": "knowledgeBaseId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Knowledge base identifier."
+      },
+      "SourceIdPath": {
+        "name": "sourceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Knowledge base source identifier."
+      },
+      "VoiceIdPath": {
+        "name": "voiceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Voice identifier."
+      },
+      "LlmIdPath": {
+        "name": "llmId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "LLM identifier."
+      },
+      "StatusQuery": {
+        "name": "status",
         "in": "query",
         "required": false,
-        "schema": { "type": "string" }
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter calls by status."
       },
-      "PaginationKeyVersion": {
-        "name": "paginationKeyVersion",
+      "FromDateQuery": {
+        "name": "fromDate",
         "in": "query",
         "required": false,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "Inclusive start date for call listing filter."
+      },
+      "ToDateQuery": {
+        "name": "toDate",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "Inclusive end date for call listing filter."
       }
     },
     "schemas": {
-      "Error": {
+      "LlmSummary": {
         "type": "object",
         "properties": {
-          "error": { "type": "string" }
-        }
+          "llm_id": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "llm_id",
+          "display_name",
+          "version"
+        ]
+      },
+      "Llm": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LlmSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "general_prompt": {
+                "type": "string",
+                "nullable": true
+              },
+              "begin_message": {
+                "type": "string",
+                "nullable": true
+              },
+              "responsiveness": {
+                "type": "string",
+                "nullable": true
+              },
+              "general_tools": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        ]
       },
       "Tool": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "type": { "type": "string" }
-        }
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
       },
-      "Llm": {
+      "CreateLlmRequest": {
         "type": "object",
+        "required": [
+          "workspaceId",
+          "display_name"
+        ],
         "properties": {
-          "llm_id": { "type": "string" },
-          "display_name": { "type": "string" },
-          "version": { "type": "integer" },
-          "model": { "type": "string" },
-          "general_prompt": { "type": "string" },
-          "begin_message": { "type": ["string","null"] },
-          "responsiveness": { "type": "string" },
-          "updated_at": { "type": "string", "format": "date-time" }
-        }
-      },
-      "LlmListItem": {
-        "type": "object",
-        "properties": {
-          "llm_id": { "type": "string" },
-          "display_name": { "type": "string" },
-          "version": { "type": "integer" }
-        }
-      },
-      "LlmCreateRequest": {
-        "type": "object",
-        "required": ["workspaceId", "display_name"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "display_name": { "type": "string" },
-          "model": { "type": "string" },
-          "general_prompt": { "type": "string" },
-          "begin_message": { "type": ["string","null"] },
-          "responsiveness": { "type": "string" },
+          "workspaceId": {
+            "type": "integer"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "general_prompt": {
+            "type": "string"
+          },
+          "begin_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsiveness": {
+            "type": "string"
+          },
           "general_tools": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Tool" }
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            }
           }
         }
       },
-      "LlmUpdateRequest": {
+      "UpdateLlmRequest": {
         "type": "object",
-        "required": ["workspaceId"],
+        "required": [
+          "workspaceId"
+        ],
         "properties": {
-          "workspaceId": { "type": "integer" },
-          "general_prompt": { "type": ["string","null"] },
-          "begin_message": { "type": ["string","null"] },
-          "responsiveness": { "type": "string" }
+          "workspaceId": {
+            "type": "integer"
+          },
+          "general_prompt": {
+            "type": "string",
+            "nullable": true
+          },
+          "begin_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsiveness": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
         }
+      },
+      "AgentSummary": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "agent_name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent_id",
+          "version"
+        ]
+      },
+      "Agent": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AgentSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "voice_id": {
+                "type": "string"
+              },
+              "response_engine": {
+                "$ref": "#/components/schemas/ResponseEngine"
+              },
+              "response_threshold": {
+                "type": "number",
+                "nullable": true
+              },
+              "interruption_sensitivity": {
+                "type": "string",
+                "nullable": true
+              },
+              "ambient_sound": {
+                "type": "string",
+                "nullable": true
+              },
+              "responsiveness": {
+                "type": "string",
+                "nullable": true
+              },
+              "max_call_duration_ms": {
+                "type": "integer",
+                "nullable": true
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "ResponseEngine": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "llm_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "CreateAgentRequest": {
+        "type": "object",
+        "required": [
+          "workspaceId",
+          "agent_name",
+          "voice_id",
+          "response_engine"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "agent_name": {
+            "type": "string"
+          },
+          "voice_id": {
+            "type": "string"
+          },
+          "response_engine": {
+            "$ref": "#/components/schemas/ResponseEngine"
+          },
+          "response_threshold": {
+            "type": "number"
+          },
+          "interruption_sensitivity": {
+            "type": "string"
+          },
+          "ambient_sound": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateAgentRequest": {
+        "type": "object",
+        "required": [
+          "workspaceId"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "response_engine": {
+            "$ref": "#/components/schemas/ResponseEngine"
+          },
+          "interruption_sensitivity": {
+            "type": "string"
+          },
+          "max_call_duration_ms": {
+            "type": "integer"
+          },
+          "responsiveness": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentVersion": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "agent_id",
+          "version"
+        ]
+      },
+      "ConversationFlowSummary": {
+        "type": "object",
+        "properties": {
+          "conversation_flow_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "start_speaker": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "conversation_flow_id",
+          "version"
+        ]
+      },
+      "ConversationFlow": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConversationFlowSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "workspaceId": {
+                "type": "integer",
+                "nullable": true
+              },
+              "global_prompt": {
+                "type": "string",
+                "nullable": true
+              },
+              "start_speaker": {
+                "type": "string",
+                "nullable": true
+              },
+              "model_choice": {
+                "$ref": "#/components/schemas/ModelChoice"
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ConversationNode"
+                }
+              }
+            }
+          }
+        ]
       },
       "ModelChoice": {
         "type": "object",
         "properties": {
-          "type": { "type": "string" },
-          "model": { "type": "string" }
-        }
+          "type": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
       },
-      "FlowNode": {
+      "ConversationNode": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "type": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
           "instruction": {
-            "type": "object",
-            "properties": {
-              "type": { "type": "string" },
-              "text": { "type": "string" }
-            }
+            "$ref": "#/components/schemas/Instruction"
           },
           "edges": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "transition_condition": {
-                  "type": "object",
-                  "properties": {
-                    "type": { "type": "string" },
-                    "prompt": { "type": "string" }
-                  }
-                },
-                "destination_node_id": { "type": "string" }
+              "$ref": "#/components/schemas/ConversationEdge"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ]
+      },
+      "Instruction": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ConversationEdge": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "transition_condition": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "prompt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "destination_node_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "transition_condition",
+          "destination_node_id"
+        ]
+      },
+      "CreateConversationFlowRequest": {
+        "type": "object",
+        "required": [
+          "workspaceId",
+          "start_speaker",
+          "nodes"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "global_prompt": {
+            "type": "string"
+          },
+          "start_speaker": {
+            "type": "string"
+          },
+          "model_choice": {
+            "$ref": "#/components/schemas/ModelChoice"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationNode"
+            }
+          }
+        }
+      },
+      "UpdateConversationFlowRequest": {
+        "type": "object",
+        "required": [
+          "workspaceId"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "global_prompt": {
+            "type": "string"
+          },
+          "model_choice": {
+            "$ref": "#/components/schemas/ModelChoice"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationNode"
+            }
+          }
+        }
+      },
+      "KnowledgeBaseSummary": {
+        "type": "object",
+        "properties": {
+          "knowledgeBaseId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "knowledgeBaseId",
+          "name",
+          "status"
+        ]
+      },
+      "KnowledgeBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/KnowledgeBaseSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "nullable": true
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/KnowledgeBaseSource"
+                }
+              },
+              "workspaceId": {
+                "type": "integer",
+                "nullable": true
               }
             }
           }
-        }
+        ]
       },
-      "ConversationFlow": {
+      "KnowledgeBaseSource": {
         "type": "object",
         "properties": {
-          "conversation_flow_id": { "type": "string" },
-          "version": { "type": "integer" },
-          "global_prompt": { "type": "string" },
-          "start_speaker": { "type": "string" },
-          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
-          "nodes": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/FlowNode" }
-          }
-        }
-      },
-      "ConversationFlowListItem": {
-        "type": "object",
-        "properties": {
-          "conversation_flow_id": { "type": "string" },
-          "version": { "type": "integer" },
-          "start_speaker": { "type": "string" }
-        }
-      },
-      "ConversationFlowCreateRequest": {
-        "type": "object",
-        "required": ["workspaceId"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "global_prompt": { "type": "string" },
-          "start_speaker": { "type": "string" },
-          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
-          "nodes": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/FlowNode" }
-          }
-        }
-      },
-      "ConversationFlowUpdateRequest": {
-        "type": "object",
-        "required": ["workspaceId"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "global_prompt": { "type": "string" },
-          "model_choice": { "$ref": "#/components/schemas/ModelChoice" }
-        }
-      },
-      "KnowledgeSource": {
-        "type": "object",
-        "properties": {
-          "source_id": { "type": "string" },
-          "source_type": { "type": "string" }
-        }
-      },
-      "KnowledgeBase": {
-        "type": "object",
-        "properties": {
-          "knowledgeBaseId": { "type": "string" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "status": { "type": "string" },
-          "sources": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/KnowledgeSource" }
+          "source_id": {
+            "type": "string"
           },
-          "workspaceId": { "type": "integer" }
-        }
+          "source_type": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "source_id",
+          "source_type"
+        ]
       },
-      "KnowledgeBaseListItem": {
+      "CreateKnowledgeBaseRequest": {
         "type": "object",
+        "required": [
+          "workspaceId",
+          "name"
+        ],
         "properties": {
-          "knowledgeBaseId": { "type": "string" },
-          "name": { "type": "string" },
-          "status": { "type": "string" }
-        }
-      },
-      "KnowledgeBaseCreateRequest": {
-        "type": "object",
-        "required": ["workspaceId", "name"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "name": { "type": "string" },
-          "description": { "type": "string" },
+          "workspaceId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
           "sources": {
             "type": "array",
             "items": {
-              "oneOf": [
-                { "$ref": "#/components/schemas/KBTextSource" },
-                { "$ref": "#/components/schemas/KBUrlSource" },
-                { "$ref": "#/components/schemas/KBDocumentSource" }
-              ]
+              "$ref": "#/components/schemas/KnowledgeBaseSourceInput"
             }
           }
         }
       },
-      "KBTextSource": {
+      "KnowledgeBaseSourceInput": {
         "type": "object",
-        "required": ["type", "text"],
         "properties": {
-          "type": { "type": "string", "enum": ["text"] },
-          "text": { "type": "string" }
-        }
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "url",
+              "document"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "base64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
       },
-      "KBUrlSource": {
+      "AddKnowledgeBaseSourcesRequest": {
         "type": "object",
-        "required": ["type", "url"],
+        "required": [
+          "workspaceId",
+          "sources"
+        ],
         "properties": {
-          "type": { "type": "string", "enum": ["url"] },
-          "url": { "type": "string", "format": "uri" }
-        }
-      },
-      "KBDocumentSource": {
-        "type": "object",
-        "required": ["type", "filename", "contentType", "base64"],
-        "properties": {
-          "type": { "type": "string", "enum": ["document"] },
-          "filename": { "type": "string" },
-          "contentType": { "type": "string" },
-          "base64": { "type": "string" }
-        }
-      },
-      "KnowledgeBaseAddSourcesRequest": {
-        "type": "object",
-        "required": ["workspaceId", "sources"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
+          "workspaceId": {
+            "type": "integer"
+          },
           "sources": {
             "type": "array",
             "items": {
-              "oneOf": [
-                { "$ref": "#/components/schemas/KBTextSource" },
-                { "$ref": "#/components/schemas/KBUrlSource" },
-                { "$ref": "#/components/schemas/KBDocumentSource" }
-              ]
+              "$ref": "#/components/schemas/KnowledgeBaseSourceInput"
             }
           }
         }
@@ -1581,181 +1850,333 @@
       "Voice": {
         "type": "object",
         "properties": {
-          "voiceId": { "type": "string" },
-          "name": { "type": "string" },
-          "gender": { "type": "string" },
-          "language": { "type": "string" },
-          "accent": { "type": "string" },
-          "description": { "type": "string" },
-          "previewUrl": { "type": "string", "format": "uri" },
+          "voiceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "accent": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "previewUrl": {
+            "type": "string",
+            "format": "uri"
+          },
           "tags": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        }
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "voiceId",
+          "name"
+        ]
       },
       "Concurrency": {
         "type": "object",
         "properties": {
-          "maxConcurrent": { "type": "integer" },
-          "currentUsage": { "type": "integer" },
-          "purchasedConcurrency": { "type": "integer" },
-          "concurrencyPurchaseLimit": { "type": "integer" }
-        }
+          "maxConcurrent": {
+            "type": "integer"
+          },
+          "currentUsage": {
+            "type": "integer"
+          },
+          "purchasedConcurrency": {
+            "type": "integer"
+          },
+          "concurrencyPurchaseLimit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maxConcurrent",
+          "currentUsage"
+        ]
       },
-      "Agent": {
+      "CreateWebCallRequest": {
         "type": "object",
+        "required": [
+          "workspaceId",
+          "agentId"
+        ],
         "properties": {
-          "agent_id": { "type": "string" },
-          "agent_name": { "type": "string" },
-          "voice_id": { "type": "string" },
-          "response_engine": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "agentVersion": {
+            "type": "integer"
+          },
+          "metadata": {
             "type": "object",
-            "properties": {
-              "type": { "type": "string" },
-              "llm_id": { "type": "string" }
+            "additionalProperties": {
+              "type": "string"
             }
           },
-          "responsiveness": { "type": "string" },
-          "version": { "type": "integer" },
-          "created_at": { "type": "string", "format": "date-time" }
-        }
-      },
-      "AgentListItem": {
-        "type": "object",
-        "properties": {
-          "agent_id": { "type": "string" },
-          "agent_name": { "type": "string" },
-          "version": { "type": "integer" }
-        }
-      },
-      "AgentVersion": {
-        "type": "object",
-        "properties": {
-          "agent_id": { "type": "string" },
-          "version": { "type": "integer" },
-          "updated_at": { "type": "string", "format": "date-time" }
-        }
-      },
-      "AgentCreateRequest": {
-        "type": "object",
-        "required": ["workspaceId", "agent_name", "voice_id", "response_engine"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "agent_name": { "type": "string" },
-          "voice_id": { "type": "string" },
-          "response_engine": {
+          "uponai_dynamic_variables": {
             "type": "object",
-            "properties": {
-              "type": { "type": "string" },
-              "llm_id": { "type": "string" }
+            "additionalProperties": {
+              "type": "string"
             }
-          },
-          "response_threshold": { "type": "number" },
-          "interruption_sensitivity": { "type": "string" },
-          "ambient_sound": { "type": "string" }
-        }
-      },
-      "AgentUpdateRequest": {
-        "type": "object",
-        "required": ["workspaceId"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "response_engine": {
-            "type": "object",
-            "properties": {
-              "type": { "type": "string" },
-              "llm_id": { "type": "string" }
-            }
-          },
-          "interruption_sensitivity": { "type": "string" },
-          "max_call_duration_ms": { "type": "integer" }
-        }
-      },
-      "WebCallCreateRequest": {
-        "type": "object",
-        "required": ["workspaceId", "agentId"],
-        "properties": {
-          "workspaceId": { "type": "integer" },
-          "agentId": { "type": "string" },
-          "agentVersion": { "type": "integer" },
-          "metadata": { "type": "object", "additionalProperties": true },
-          "uponai_dynamic_variables": { "type": "object", "additionalProperties": true }
+          }
         }
       },
       "WebCall": {
         "type": "object",
         "properties": {
-          "callId": { "type": "string" },
-          "callType": { "type": "string" },
-          "status": { "type": "string" },
-          "agentId": { "type": "string" },
-          "agentVersion": { "type": "integer" },
-          "metadata": { "type": "object" },
-          "optOutSensitiveDataStorage": { "type": "boolean" },
-          "accessToken": { "type": ["string","null"] },
-          "expiresAt": { "type": ["string","null"], "format": "date-time" },
-          "webCallUrl": { "type": ["string","null"], "format": "uri" },
-          "uponai_dynamic_variables": { "type": "object" }
-        }
-      },
-      "PhoneCallCreateRequest": {
-        "type": "object",
-        "required": ["agentId","workspaceId","fromNumber","toNumber"],
-        "properties": {
-          "agentId": { "type": "string" },
-          "workspaceId": { "type": "integer" },
-          "fromNumber": { "type": "string" },
-          "toNumber": { "type": "string" },
-          "customerName": { "type": "string" },
-          "carrierName": { "type": "string" },
-          "trunkName": { "type": "string" },
-          "overrideCid": { "type": "string" },
-          "customFromNumber": { "type": "string" },
-          "customStatusHookUrl": { "type": "string", "format": "uri" },
-          "metadata": { "type": "object", "additionalProperties": true },
-          "uponai_dynamic_variables": { "type": "object", "additionalProperties": true }
-        }
-      },
-      "PhoneCallCreateResponse": {
-        "type": "object",
-        "properties": {
-          "success": { "type": "boolean" },
-          "call_sid": { "type": "string" },
-          "call": { "type": "object" }
-        }
-      },
-      "CallsPage": {
-        "type": "object",
-        "properties": {
-          "success": { "type": "boolean" },
-          "calls": { "type": "array", "items": { "type": "object" } },
-          "pagination": {
+          "callId": {
+            "type": "string"
+          },
+          "callType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "agentVersion": {
+            "type": "integer"
+          },
+          "metadata": {
             "type": "object",
-            "properties": {
-              "page": { "type": "integer" },
-              "limit": { "type": "integer" },
-              "total": { "type": "integer" }
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "optOutSensitiveDataStorage": {
+            "type": "boolean"
+          },
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "webCallUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "uponai_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "callId",
+          "status"
+        ]
+      },
+      "CreatePhoneCallRequest": {
+        "type": "object",
+        "required": [
+          "agentId",
+          "workspaceId",
+          "fromNumber",
+          "toNumber"
+        ],
+        "properties": {
+          "agentId": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "integer"
+          },
+          "fromNumber": {
+            "type": "string"
+          },
+          "toNumber": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "carrierName": {
+            "type": "string"
+          },
+          "trunkName": {
+            "type": "string"
+          },
+          "overrideCid": {
+            "type": "string"
+          },
+          "customFromNumber": {
+            "type": "string"
+          },
+          "customStatusHookUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "uponai_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             }
           }
         }
       },
-      "CallResponse": {
+      "CreatePhoneCallResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "call": { "type": "object" }
+          "success": {
+            "type": "boolean"
+          },
+          "call_sid": {
+            "type": "string"
+          },
+          "call": {
+            "$ref": "#/components/schemas/CallDetail"
+          }
         }
       },
-      "CallUpdateRequest": {
+      "CallDetail": {
         "type": "object",
-        "required": ["workspaceId"],
         "properties": {
-          "workspaceId": { "type": "integer" },
-          "metadata": { "type": "object", "additionalProperties": true },
-          "optOutSensitiveDataStorage": { "type": "boolean" }
+          "success": {
+            "type": "boolean"
+          },
+          "call": {
+            "$ref": "#/components/schemas/CallRecord"
+          }
+        },
+        "additionalProperties": true
+      },
+      "CallRecord": {
+        "type": "object",
+        "properties": {
+          "callId": {
+            "type": "string"
+          },
+          "callType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "agentVersion": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "optOutSensitiveDataStorage": {
+            "type": "boolean"
+          },
+          "accessToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "webCallUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "uponai_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CallList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CallRecord"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "calls"
+        ]
+      },
+      "UpdateCallRequest": {
+        "type": "object",
+        "required": [
+          "workspaceId"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "integer"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "optOutSensitiveDataStorage": {
+            "type": "boolean"
+          }
         }
       }
     }
