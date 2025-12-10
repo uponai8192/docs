@@ -15,7 +15,7 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": []
+            "pages": ["getting-started"]
           },
           {
             "group": "Build",
