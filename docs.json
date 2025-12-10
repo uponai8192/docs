@@ -18,7 +18,7 @@
             "pages": ["getting-started"]
           },
           {
-            "group": "Customer Telephony Integration",
+            "group": "Custom Telephony Integration",
             "pages": ["Deploy/index", "Deploy/analyze"]
           },
           {
