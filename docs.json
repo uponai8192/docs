@@ -18,6 +18,10 @@
             "pages": ["getting-started"]
           },
           {
+            "group": "Customer Telephony Integration",
+            "pages": ["Deploy/index", "Deploy/analyze"]
+          },
+          {
             "group": "Build",
             "pages": [
               "build/setup-agent",
@@ -29,10 +33,6 @@
           {
             "group": "Test",
             "pages": ["Test/index"]
-          },
-          {
-            "group": "Deploy",
-            "pages": ["Deploy/index", "Deploy/analyze"]
           }
         ]
       },
