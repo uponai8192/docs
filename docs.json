@@ -13,7 +13,10 @@
       {
         "tab": "Documentation",
         "groups": [
-          "getting-started",
+          {
+            "group": "Getting Started",
+            "pages": ["getting-started"]
+          },
           {
             "group": "Build",
             "pages": [
