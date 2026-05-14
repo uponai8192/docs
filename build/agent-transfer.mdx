@@ -1,0 +1,54 @@
+---
+title: 'Agent Transfer'
+description: 'Switch between specialized AI agents during a call without phone-based transfers.'
+---
+
+## Overview
+
+Agent Transfer lets you hand off a call from one AI agent to another mid-conversation — instantly, over a single phone number, with full conversation context preserved.
+
+---
+
+## Why Agent Transfer vs. Transfer Call
+
+| | Agent Transfer | Transfer Call |
+|--|----------------|---------------|
+| Speed | Near-instant | Requires new phone connection |
+| Reliability | No telephony failures | Dependent on carrier |
+| Context | Full chat history carried over | No context passed |
+| Phone numbers | One number for all agents | May require multiple numbers |
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the tool">
+    In your agent's Functions section, select **Agent Transfer** from the dropdown.
+  </Step>
+  <Step title="Configure the destination">
+    Specify the destination agent ID and version. Choose whether the current agent should announce the transfer to the caller before handing off.
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent when to trigger a transfer:
+
+    ```txt
+    If the user asks to book an appointment, use the agent_transfer tool to hand off to the scheduling agent.
+    ```
+  </Step>
+  <Step title="Test">
+    Validate using the web call interface or playground.
+  </Step>
+</Steps>
+
+---
+
+## Settings Behavior During Transfer
+
+| Setting | Behavior |
+|---------|----------|
+| Opt-in/out preferences | Persist across the full call |
+| Webhook URLs | Persist across the full call |
+| Language | Switches to match the receiving agent |
+| Voice selection | Switches to match the receiving agent |
+| Voice model | Switches to match the receiving agent |

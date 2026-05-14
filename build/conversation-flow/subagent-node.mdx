@@ -1,0 +1,113 @@
+---
+title: "Subagent Node"
+description: "Have a conversation with the user while allowing the agent to call tools and functions during the conversation."
+---
+
+Subagent node is used to have a conversation with the user while allowing the agent to call tools / functions during the conversation. Use it when the agent should decide whether and when to use a tool / function based on the conversation context.
+
+<Note>
+  If you only need dialogue without tool calling, use a Conversation Node instead.
+</Note>
+
+## How It Works
+
+When a subagent node has tools / functions attached, the LLM receives both the node instruction and the list of available tools / functions. During the conversation, the LLM determines when a tool / function should be called based on context, extracts the required parameters, and invokes it while maintaining the dialogue with the user.
+
+- Multiple tools / functions can be added to a single subagent node
+- The agent can continue talking while a tool / function executes
+- Tool / function results are available to the LLM for generating follow-up responses
+
+## Write Instruction
+
+Subagent nodes only support **Prompt** instructions. Static Sentence is not supported.
+
+Write the instruction to define the task, what information the agent should gather, and when it should use the available tools / functions.
+
+```txt
+Help the user check their order status. If the user provides an order number,
+use the available order lookup tool to retrieve the latest status.
+```
+
+## Subagent Node vs Function Node
+
+| | Function Node | Subagent Node |
+|--|---------------|---------------|
+| Execution | Deterministic — executes on node entry | LLM-driven — called when LLM decides it's appropriate |
+| Tools per node | One | Multiple |
+| Conversation | Not intended for dialogue | Full dialogue with tools available |
+| Best for | Always-execute actions (e.g. always look up order on entry) | Context-dependent actions during dialogue (e.g. look up only if user asks) |
+
+## Add Tools / Functions
+
+<Steps>
+  <Step title="Select a subagent node">
+    Click on a subagent node to open its settings panel on the right side.
+  </Step>
+  <Step title="Add a tool / function">
+    In the settings panel, find the **Tools** section and click **+ Add**. Select the tool / function type from the dropdown.
+  </Step>
+  <Step title="Configure the tool / function">
+    Configure based on its type. See the Available Tool / Function Types table below.
+  </Step>
+  <Step title="Update the node instruction">
+    Update the node prompt to guide the LLM on when to use each tool / function.
+  </Step>
+</Steps>
+
+## Available Tool / Function Types
+
+| Tool Type | Description |
+|-----------|-------------|
+| Custom Function | Make HTTP requests to your external APIs |
+| Code Tool | Run JavaScript code directly without an external server |
+| Check Calendar Availability | Query available time slots via Cal.com |
+| Book Appointment | Book calendar events via Cal.com |
+| End Call | Terminate the call |
+| Transfer Call | Transfer to a phone number |
+| Transfer Agent | Transfer to another agent |
+| Press Digit | Send DTMF tones |
+| Send SMS | Send a text message |
+| Extract Dynamic Variable | Extract variables from the conversation |
+| MCP Tool | Call tools on your MCP server |
+
+## Execution Speech Settings
+
+### Speak During Execution
+
+When enabled, the agent says a message while the tool / function is executing (e.g. "One moment, let me check that for you."). Recommended when the tool / function takes over 1 second including network latency.
+
+Configure how the message is generated:
+- **Prompt**: LLM dynamically generates what to say based on a description you provide
+- **Static Sentence**: Agent speaks the exact text you provide
+
+### Speak After Execution
+
+When enabled, the agent calls the LLM after the tool / function returns a result so it can speak about the outcome. Turn this off to run the tool silently.
+
+- **Speak During Execution** available on: Custom Function, Code Tool, End Call, Transfer Call, Transfer Agent, MCP Tool
+- **Speak After Execution** available on: Custom Function, Code Tool, MCP Tool
+
+## When Can Transition Happen
+
+- When user is done speaking
+- When **Skip Response** is enabled and agent finishes speaking
+
+Tool / function execution happens within the subagent node, so the node can stay active across multiple turns and tool / function calls before it transitions.
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Tools | Attach the tools / functions this subagent can use during the conversation. |
+| Skip Response | When enabled, only one outgoing edge is allowed. Agent transitions via that edge when done talking. |
+| Knowledge Base | Configure node-level knowledge bases to combine with the agent-level knowledge base. |
+| Global Node | See Global Node guide. |
+| Block Interruptions | When enabled, agent will not be interrupted by user when speaking. |
+| LLM | Choose a different model — used for response generation, tool selection, and argument generation. |
+| Fine-tuning Examples | Fine-tune conversation response and transition. See Finetune Examples guide. |
+
+## Best Practices
+
+- **Be explicit in your node instruction** — tell the agent when each tool / function should be used
+- **Use function nodes for guaranteed execution** — if a tool must always run at a certain point, use a function node instead
+- **Avoid adding too many tools to one subagent node** — if you have many tools, consider splitting them across multiple subagent nodes

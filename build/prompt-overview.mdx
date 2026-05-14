@@ -1,0 +1,65 @@
+---
+title: 'Single/Multi Prompt Agent Overview'
+description: 'Choose between single or multi-prompt structures to build AI agents with the right balance of simplicity and control.'
+---
+
+## Introduction
+
+UponAI offers two approaches for building conversational agents, each suited to different complexity levels and use cases.
+
+<CardGroup cols={2}>
+  <Card title="Single Prompt Agent" icon="file-lines">
+    One comprehensive prompt defines all agent behavior. Best for simple conversations, prototypes, and agents with fewer than 5 functions.
+  </Card>
+  <Card title="Multi-Prompt Agent" icon="sitemap">
+    Conversations are organized into a structured tree of states, each with its own focused prompt and behavior.
+  </Card>
+</CardGroup>
+
+---
+
+## Single Prompt Agent
+
+Use one prompt to define everything your agent does. Simple to set up and great for straightforward use cases.
+
+**Best for:**
+- Simple, linear conversations
+- Prototypes and early testing
+- Agents with fewer than 5 functions
+
+**Limitations at scale:**
+
+As complexity grows, single prompt agents can run into issues:
+- Behavioral inconsistency in edge cases
+- Unreliable function calls
+- Difficult to maintain
+- Conversation state tracking problems
+
+<Warning>
+  If your prompt exceeds 1000 words or uses more than 5 functions, consider switching to a Multi-Prompt Agent.
+</Warning>
+
+---
+
+## Multi-Prompt Agent
+
+Organizes conversations into a structured tree of states. Each state has its own focused prompt, tools, and transition logic.
+
+**Real-World Example — Lead Qualification:**
+
+| State | Purpose | Tools Available |
+|-------|---------|-----------------|
+| Lead Qualification | Gather customer info | No booking functions |
+| Appointment Scheduling | Book the meeting | Booking functions enabled, context from qualification available |
+
+**Benefits of Multi-Prompt Structure:**
+
+1. **Predictable Behavior**: Each state has a clear, focused purpose
+2. **Easier Debugging**: Issues isolated to specific states
+3. **Better Function Control**: Tools available only when appropriate
+4. **Scalable Design**: Add new states without affecting existing ones
+5. **Team Collaboration**: Different team members can work on different states
+
+<Tip>
+  Start with our templates to see multi-prompt best practices in action, then customize for your use case.
+</Tip>

@@ -1,0 +1,52 @@
+---
+title: "Configure a Multilingual Agent"
+description: "Set up your UponAI agent to support callers who speak different languages."
+---
+
+Use a multilingual agent when callers may speak in different languages and you can't determine which language ahead of time.
+
+<Tip>
+  If you can determine the caller's language at the start of a call — for example, from CRM context or the dialed number — you'll get better accuracy by keeping the agent single-language and overriding the language per call via the inbound call webhook.
+</Tip>
+
+## Granular Language Selection
+
+In the dashboard, switch the language selector to **Multiselect** and pick the exact set of languages the agent should support — for example, English (US) + Spanish (Spain).
+
+**What happens at call time:**
+
+- **Speech recognition** — the agent figures out which of the selected languages the caller is speaking and transcribes accordingly
+- **Voice pronunciation** — the agent detects the language of each response and uses the matching pronunciation. If detection fails, it falls back to the first language you selected. Not all voice providers handle all accents.
+- **Agent text** — the agent is allowed to respond in any of the selected languages and chooses based on what the caller speaks (and any instructions in your prompt)
+
+## Accuracy Trade-offs
+
+<Note>
+  Selecting multiple variants of the same base language (for example, en-US and en-GB) does not trigger the multilingual speech-recognition pipeline — no accuracy penalty applies.
+</Note>
+
+Crossing language families (for example, en-US and es-ES) routes speech recognition to the multilingual pipeline, which is less accurate per language than single-language models. Pick the smallest set of languages you actually need.
+
+From most to least accurate:
+
+| Setup | Accuracy |
+|-------|----------|
+| Single language | Best — use whenever possible |
+| Multiple variants of the same base (e.g., en-US + en-GB) | Same as single language for that base |
+| Multiple languages across families (e.g., en-US + es-ES) | Multilingual pipeline; some accuracy loss |
+| Legacy Multilingual setting | Least accurate — static list only |
+
+## Legacy Multilingual Setting
+
+Older agents may still have the generic **Multilingual** setting selected. It is preserved so existing agents keep working, but the dashboard flags it as a legacy setting.
+
+The legacy Multilingual setting covers these ten languages only: English (US), Spanish (ES), French (FR), German (DE), Hindi (IN), Russian (RU), Portuguese (PT), Japanese (JP), Italian (IT), Dutch (NL).
+
+For new agents, pick the specific languages you need — narrower sets are more accurate.
+
+## Combinations the Dashboard Won't Allow
+
+Some combinations are blocked at selection time:
+
+- **Voice doesn't support a language** — each voice only supports a subset of languages. Unsupported combinations are greyed out in the language picker with a tooltip explaining the conflict. Pick a different voice to enable that language.
+- **No speech recognition provider covers the combination** — some language combinations have no single ASR provider that covers all of them together. The dashboard greys those languages out with the reason — either drop a language or split the use case across multiple agents.

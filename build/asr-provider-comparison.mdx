@@ -1,0 +1,44 @@
+---
+title: "Speech Recognition Provider Comparison"
+description: "Understand how UponAI's speech recognition providers differ and how the platform auto-routes to the best fit for your selected languages."
+---
+
+UponAI automatically picks a speech recognition provider based on the languages your agent is configured for. You don't need to choose one manually, but understanding the trade-offs helps when deciding which languages to support.
+
+<Info>
+  These observations are based on internal testing and routing rules. Results may vary depending on specific languages, audio conditions, and call patterns.
+</Info>
+
+## Provider Overview
+
+### Deepgram
+
+- **Best for:** Lowest latency — the default for single-language agents on common languages
+- **Multilingual:** Supports code-switching across 10 languages: English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, Dutch
+- **Consideration:** Doesn't cover less-common languages (e.g., Welsh, Marathi, Kazakh)
+
+### Azure
+
+- **Best for:** The broadest single-language coverage — including languages no other provider supports (e.g., Icelandic, Nepali, Filipino)
+- **Consideration:** No multilingual mode. Used only when the agent is configured with a single language.
+
+### Soniox
+
+- **Best for:** Multilingual code-switching across a much wider set than Deepgram — about 50 languages, with the same coverage in both single and multi modes
+- **Consideration:** Slightly higher latency than Deepgram, so UponAI prefers Deepgram when both providers support a language
+
+## How UponAI Picks a Provider
+
+UponAI evaluates the agent's selected languages against each provider's coverage and routes to the most accurate option:
+
+| Scenario | Provider chosen |
+|----------|----------------|
+| Single common language | Deepgram |
+| Single uncommon language (not covered by Deepgram) | Azure |
+| Multiple languages, all within Deepgram's multilingual set | Deepgram multilingual |
+| Multiple languages, broader combination | Soniox |
+| Multiple variants of the same base language (e.g., en-US + en-GB) | Routed as single-language — no accuracy penalty |
+
+<Note>
+  If no single provider can cover all of your selected languages together, the dashboard prevents you from selecting that combination. See [Configure a multilingual agent](/build/configure-multilingual) for details.
+</Note>

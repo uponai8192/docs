@@ -1,0 +1,81 @@
+---
+title: "Prompt Guide and Examples for Specific Situations"
+description: "Prompt patterns and examples for common voice agent challenges like phone numbers, emails, hold behavior, and more."
+---
+
+Common prompt patterns for situations you'll encounter when building a voice agent.
+
+<Tip>
+  Many of these patterns — including phone number pronunciation, email spelling, and speech normalization — are available as one-click presets in the [Agent Handbook](/build/agent-handbook).
+</Tip>
+
+## Pronounce Phone Numbers
+
+Use the [Read Slowly](/build/add-pause) feature to add pauses between digits. Include a prompt guideline so the agent consistently formats the number even when callers double-check it.
+
+```
+When people ask about your phone number, your phone number is 4158923245.
+
+## Guideline
+When speaking the phone number, transform the format as follows:
+- Input formats like 4158923245, (415) 892-3245, or 415-892-3245
+- Should be pronounced as: "four one five - eight nine two - three two four five"
+- Important: Don't omit the space around the dash when speaking
+```
+
+## Pronounce Email Addresses
+
+```
+## How to spell out an email address
+The possible email format is name@company.com
+To spell out an email address: n-a-m-e-@-c-o-m-p-a-n-y-dot-com
+@ is pronounced as "at"
+```
+
+## Pronounce Website URLs
+
+```
+Whenever you encounter a website URL, please:
+1. Identify each segment of the domain name.
+2. If a segment is individual letters (e.g., "NK"), pronounce each letter in spoken English
+   (e.g., "N" → "en", "K" → "kay").
+3. If a segment is a recognizable word (e.g., "laundry"), pronounce it normally.
+4. Say "dot" before the top-level domain (e.g., "dot com", "dot net", "dot org").
+
+Examples:
+"nklaundry.com" → "en-kay-laundry dot com"
+"abctest.net" → "A B C test dot net"
+"xyzco.org" → "ex-why-zee-co dot org"
+```
+
+## Pronounce Times and Dates
+
+```
+For times and dates:
+- For 1:00 PM, say "One PM."
+- For 3:30 PM, say "Three thirty PM."
+- For 8:45 AM, say "Eight forty-five AM."
+- Never say "O'clock" — say "O-Clock" instead.
+- Always say "AM" or "PM".
+```
+
+## Handle Being Put on Hold
+
+Use the built-in `NO_RESPONSE_NEEDED` stop sequence to make the agent stay silent when a caller asks it to hold.
+
+<Tabs>
+  <Tab title="Standard models">
+    ```
+    If user says "hold on", reply exactly the following: "NO_RESPONSE_NEEDED"
+    ```
+
+    When the LLM outputs `NO_RESPONSE_NEEDED`, response generation stops immediately and the agent says nothing.
+  </Tab>
+  <Tab title="Reasoning models (e.g. GPT-5)">
+    Reasoning models do not support the `NO_RESPONSE_NEEDED` stop sequence. Use prompt engineering instead:
+
+    ```
+    When user says "hold on", simply do not respond.
+    ```
+  </Tab>
+</Tabs>

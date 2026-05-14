@@ -1,0 +1,54 @@
+---
+title: 'Press Digit (IVR Navigation)'
+description: 'Enable your agent to navigate DTMF-based IVR phone menus by pressing digits.'
+---
+
+## Overview
+
+The Press Digit tool lets your agent send DTMF tones to navigate IVR systems — useful for outbound calls where your agent needs to get through a phone menu before reaching a person or department.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the tool">
+    In your agent's Functions section, select **Press Digit** from the dropdown. Optionally add a description specifying when and what digits to press.
+  </Step>
+  <Step title="Write navigation prompts">
+    Give the agent clear instructions for navigating the IVR. Two approaches:
+
+    **Goal-based** (when you don't know the exact sequence):
+    ```txt
+    Navigate the IVR to reach the scheduling department.
+    Preferred keywords: scheduling, appointments, new patients.
+    Avoid: billing, referrals.
+    ```
+
+    **Direct** (when you know the exact path):
+    ```txt
+    Press 1 for English, then press 2 for appointments.
+    ```
+  </Step>
+  <Step title="Define edge case rules">
+    Handle unexpected situations explicitly:
+
+    ```txt
+    If the IVR indicates you have reached the wrong company, immediately call end_call.
+    ```
+  </Step>
+  <Step title="Optionally extract post-call data">
+    Track IVR metrics like:
+    - Whether an IVR was encountered
+    - Whether a human was reached
+    - Navigation path taken
+    - Number of retries
+  </Step>
+  <Step title="Test">
+    Place actual outbound calls to the IVR system, or simulate one by speaking IVR-style prompts during a test call.
+  </Step>
+</Steps>
+
+<Note>
+  Where the IVR accepts speech, use spoken responses. Only use digit-pressing when the system requires numeric input.
+</Note>

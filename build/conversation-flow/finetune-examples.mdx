@@ -1,0 +1,38 @@
+---
+title: "Fine-tune Examples"
+description: "Supply examples to improve agent response and transition behavior when it doesn't meet your expectations."
+---
+
+When agent response or transition is not meeting your expectation, you can supply examples to fine-tune the behavior by adding finetune examples.
+
+## Supported Nodes
+
+| Node | Response Fine-tuning | Transition Fine-tuning |
+|------|---------------------|----------------------|
+| Conversation Node | Yes | Yes |
+| Subagent Node | Yes | Yes |
+| Function Node | No | Yes |
+
+## How to Configure
+
+When configuring a finetune example, provide a transcript as context. Select a role for each line of the transcript:
+
+- **user** — what the caller said
+- **agent** — what the agent said
+- **function** — a function invocation and its result
+
+Refer to the **History** tab in the dashboard to see examples of real transcripts.
+
+## Finetune Examples for Conversation
+
+Provide a transcript as context — that's all you need. It's not necessary to provide the entire call transcript; just the relevant part is enough.
+
+<Note>
+  At least one agent response is required, since you are fine-tuning the agent's response behavior.
+</Note>
+
+## Finetune Examples for Transition
+
+Provide both a transcript as context and the transition result (which node it should go to).
+
+If you cannot distinguish between the different nodes available as transition targets, rename your nodes to make them easier to tell apart.

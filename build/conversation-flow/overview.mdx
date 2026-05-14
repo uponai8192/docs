@@ -1,0 +1,57 @@
+---
+title: "Conversation Flow Overview"
+description: "Learn how to build structured conversational agents using nodes and transitions for complex call scenarios."
+---
+
+## What is a Conversation Flow Agent?
+
+Conversation flow agents allow you to create multiple nodes to handle different scenarios in conversations. This approach provides more fine-grained control over the conversation flow compared to Single/Multi Prompt agents, enabling you to handle more complex scenarios with predictable outcomes.
+
+## Key Benefits
+
+- **Structured conversations**: Define exact paths and transitions
+- **Predictable behavior**: Each node has specific logic and outcomes
+- **Complex scenario handling**: Support for conditional branching and state management
+- **Fine-tuning capabilities**: Improve performance with node-specific examples
+
+## Components
+
+- **Global Settings**: Configuration that applies to the entire conversation, including:
+  - Global prompt and personality
+  - Default voice and language settings
+  - Agent-wide parameters and behaviors
+
+- **Node**: The basic unit of conversation flow. Multiple node types are available:
+  - Conversation nodes for dialogue without tool calling
+  - Subagent nodes for dialogue with tool calling
+  - Function nodes for deterministic API and tool execution
+  - Logic nodes for branching
+  - End nodes for call termination
+
+- **Edge**: Connections between nodes that define transition logic:
+  - Condition-based transitions
+  - Default fallback paths
+  - Dynamic routing based on conversation context
+
+- **Tools / Functions**: Reusable capabilities that can be attached to subagent nodes or invoked from function nodes. Conversation nodes do not use tools / functions:
+  - Custom API integrations
+  - Built-in utilities (calendar, SMS, transfers)
+  - External service connections
+
+## How it Works
+
+Every node defines a small set of logic, and the transition condition is used to determine which node to transition to. Once the condition is met when checked, the agent will transition to the next node. There are also finetune examples on nodes that can help you further improve the performance. It might take longer to set up, as you want to cover all the scenarios, but after that it's much easier to maintain and the performance is more stable and predictable.
+
+## Quickstart
+
+Head to the UponAI Dashboard, create a new conversation flow agent and select a pre-built template to get started. You can view all options available to the agent within the Dashboard, with details of the options and any latency implications listed there. You can also view the estimated latency and cost of the agent. Modify the template to your needs — all changes are auto-saved.
+
+## Pricing
+
+Since the choice of model can be overridden within individual nodes, the pricing for each call is calculated based on:
+
+- Time spent in each node (seconds)
+- Model price per second for that specific node
+- Total aggregated across all nodes visited during the call
+
+This allows you to optimize costs by using different models for different parts of the conversation (e.g., cheaper models for simple routing, premium models for complex interactions).

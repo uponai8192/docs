@@ -1,0 +1,68 @@
+---
+title: 'Transfer Call'
+description: 'Route calls to human agents or other departments during a live conversation.'
+---
+
+## Overview
+
+Transfer Call enables your agent to hand off a conversation to a human agent or another destination mid-call.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the tool">
+    In your agent's Functions section, select **Transfer Call** from the dropdown.
+  </Step>
+  <Step title="Configure the transfer destination">
+    Provide the number or SIP URI to transfer to:
+
+    | Format | Example |
+    |--------|---------|
+    | E.164 phone number | `+14158923245` |
+    | SIP URI | `sip:username@domain.com` |
+
+    You can also include optional extensions, or use dynamic variables to set the destination at runtime.
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent when to trigger a transfer. Example:
+
+    ```txt
+    If the caller sounds frustrated or requests a human agent, use the transfer_call tool to route them to a representative.
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Transfer Types
+
+<CardGroup cols={2}>
+  <Card title="Cold Transfer" icon="phone-arrow-right">
+    Direct handoff. The AI agent disconnects immediately after routing the call — no introduction.
+  </Card>
+  <Card title="Warm Transfer" icon="phone-volume">
+    The AI agent stays on briefly to detect human presence, deliver a whisper message, and introduce the caller before dropping off.
+  </Card>
+</CardGroup>
+
+---
+
+## Warm Transfer Options
+
+| Setting | Description |
+|---------|-------------|
+| On-hold music | Played while connecting |
+| IVR navigation prompts | Navigate menus before reaching a human |
+| Human detection timeout | Default 30 seconds |
+| Auto-greeting | Agent speaks when human answers |
+| Whisper message | Private message delivered to the recipient only |
+| Three-way introduction | Agent introduces caller before dropping off |
+
+---
+
+## Additional Options
+
+- **Caller ID**: Show the agent's number or the original caller's number (depends on telephony provider support)
+- **Custom SIP headers**: Add headers prefixed with `X-` or labeled `User-To-User` for routing and metadata

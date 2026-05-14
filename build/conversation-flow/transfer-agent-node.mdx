@@ -1,0 +1,44 @@
+---
+title: "Agent Transfer Node"
+description: "Switch the handling agent mid-call, transferring the conversation from one AI agent to another."
+---
+
+In advanced call flows, it's common to switch the handling agent, transferring the conversation from one AI agent to another. Agent Transfer (also known as Agent Swap) enables you to modularize tasks and re-use specialized agents without relying on traditional phone-based transfers.
+
+Examples:
+- Transferring from a front-desk agent to an appointment-booking agent based on task
+- Transferring from an agent speaking one language to another agent handling a different language, based on user preference
+
+## Why Use Agent Transfer Instead of Call Transfer?
+
+| | Agent Transfer | Call Transfer |
+|--|----------------|---------------|
+| Latency | Near-instant | Slower — requires new phone call |
+| Reliability | No telephony failures | Potential phone connection failures |
+| Context | Destination agent has full conversation history — no handoff message needed | No context passed |
+| Phone numbers | One number for all agents | Receiving agents need their own numbers |
+
+## Transfer Settings Behavior
+
+The following settings of the first agent persist throughout the entire call:
+- `optInSignedUrl`
+- `optOutSensitiveDataStorage`
+- `webHookUrl`
+
+All other settings — such as language, voice, and voice model — reflect the currently active agent.
+
+## Setup
+
+<Steps>
+  <Step title="Add Agent Transfer Node">
+    Select **Agent Transfer** from the Add New Node menu.
+  </Step>
+  <Step title="Configure Details">
+    - **Transfer agent**: The ID and version of the agent to transfer to. You can select the latest version.
+    - **Speak during execution**: Whether the agent should say something while performing the transfer.
+    - **Post-call analysis setting**: For post-call analysis, extract dynamic variables for the transferred agent only, or both agents.
+  </Step>
+  <Step title="Test and Debug">
+    Test agent transfer in both web call and playground.
+  </Step>
+</Steps>

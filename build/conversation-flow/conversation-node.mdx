@@ -1,0 +1,35 @@
+---
+title: "Conversation Node"
+description: "The most commonly used node type — have a conversation with the user without tool calling."
+---
+
+Conversation node is the most commonly used node type in conversation flow. It's used to have a conversation with the user without tool calling during the conversation.
+
+<Note>
+  If you want the agent to talk to the user and call tools during the same node, use a Subagent Node instead.
+</Note>
+
+The agent can have a multi-turn conversation inside a single node, so you don't necessarily need to create a new conversation node for every sentence the agent needs to say. It's recommended to split a node when there's a logic split, or the instruction gets too long.
+
+## Write Instruction
+
+Inside the node, pick how you want to write the instruction for the agent to follow:
+
+- **Prompt**: Write a prompt for the agent to dynamically generate what to say
+- **Static Sentence**: Agent will say a fixed sentence first, and if still inside this node afterward, it will generate content dynamically based on the static sentence set
+
+## When Can Transition Happen
+
+- When user is done speaking
+- When **Skip Response** is enabled and agent finishes speaking
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Skip Response | When enabled, the transition will only have one edge. When the agent is done talking, it transitions via that specific edge. Useful for disclaimers where no user response is needed. |
+| Knowledge Base | Configure node-level knowledge bases to combine topic-specific knowledge with the agent-level knowledge base. |
+| Global Node | See Global Node guide. |
+| Block Interruptions | When enabled, the agent will not be interrupted by the user when speaking. |
+| LLM | Choose a different model for this particular node — used for response generation. |
+| Fine-tuning Examples | Fine-tune conversation response and transition. See Finetune Examples guide. |

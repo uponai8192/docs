@@ -1,0 +1,63 @@
+---
+title: "LLM Simulation Testing"
+description: "Automatically test your agent using AI-simulated user conversations and defined evaluation metrics."
+---
+
+Create user prompts to guide how a simulated user interacts with your agent, then evaluate the results using defined metrics. Useful for quality assurance and catching regressions before deployment.
+
+## Setup
+
+<Steps>
+  <Step title="Create a new test case">
+    Click **AI Simulated Chat** to create a new test case.
+  </Step>
+  <Step title="Define the user prompt">
+    Write a prompt describing the simulated user's identity, goal, and personality. Recommended format:
+
+    ```
+    ## Identity
+
+    Your name is Mike.
+    Your date of birth is June 10, 1999.
+    Your order number is 7891273.
+
+    ## Goal
+
+    Your primary objective is to return the package you received and get a refund.
+
+    ## Personality
+
+    You are a patient customer. However, if the conversation becomes too long or
+    complicated, you will show signs of impatience. If the issue remains unresolved,
+    you may become frustrated and angry.
+    ```
+  </Step>
+  <Step title="Select LLM model">
+    Choose which LLM model to use to generate the simulated user conversation.
+  </Step>
+  <Step title="Run the simulation">
+    Click **Test** to start the conversation.
+  </Step>
+  <Step title="Review the results">
+    Manually review the conversation to identify any issues.
+  </Step>
+  <Step title="Save as test case">
+    Click **Save** to preserve the test case for future regression runs.
+  </Step>
+  <Step title="Define evaluation metrics">
+    Add metrics to automatically score the conversation. Recommended format:
+
+    ```
+    1. Verify that the customer successfully returned the package and received a refund.
+    2. Confirm that the end_call function was called at the end of the conversation.
+    3. Ensure the agent's responses are conversational and contain 5 sentences or fewer.
+    ```
+  </Step>
+  <Step title="Configure variables and function mocks (optional)">
+    Specify dynamic variables to use during testing. Set up mocks for custom functions to prevent real calls during testing and ensure consistent results across runs.
+  </Step>
+</Steps>
+
+<Tip>
+  Save your best test cases — they become your regression suite. Run them after every prompt or function change to catch breakage early.
+</Tip>

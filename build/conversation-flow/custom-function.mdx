@@ -1,0 +1,176 @@
+---
+title: "Custom Functions"
+description: "Extend your agent by integrating external APIs, adding knowledge, or implementing custom logic."
+---
+
+Custom functions allow you to extend your agent's capabilities by integrating external APIs, providing additional knowledge, or implementing custom logic.
+
+## Steps to Create a Custom Function
+
+When a custom function is called, UponAI sends a request (POST, GET, PUT, PATCH, DELETE) to your specified URL with the function name and parameters. You can include headers and query parameters in the request, and extract data from the response.
+
+<Steps>
+  <Step title="Configure function details">
+    Add a name and description. The name must be unique and separated with underscores.
+
+    ```
+    Name: get_user_details
+    Description: Get user details based on name and age
+    ```
+  </Step>
+  <Step title="Select HTTP Method">
+    Choose the HTTP method: `GET`, `POST`, `PATCH`, `PUT`, or `DELETE`.
+  </Step>
+  <Step title="Add endpoint URL">
+    Add the URL where UponAI will send the request. Must be a valid URL.
+  </Step>
+  <Step title="Set request headers (optional)">
+    Define custom headers to include with the request. Header values can be static or include dynamic variables.
+  </Step>
+  <Step title="Set query parameters (optional)">
+    Define query parameters to append to your endpoint URL. Toggle between a parameter description (resolved by LLM) or a const value (applied directly). Both support dynamic variables.
+  </Step>
+  <Step title="Define parameters">
+    Define parameters using JSON schema format or JSON form. Only available for `POST`, `PATCH`, and `PUT` requests.
+
+    **Payload: args only** — When enabled, the JSON body contains only the function's arguments at the top level, with no outer wrapper (`name`, `call`, `args`). Enable this when your endpoint expects a flat JSON body matching your parameter object exactly.
+
+    Example parameter schema:
+    ```json
+    {
+      "type": "object",
+      "required": ["order_id"],
+      "properties": {
+        "name": {
+          "type": "object",
+          "description": "",
+          "properties": {
+            "first_name": {
+              "type": "string",
+              "description": "User first name"
+            },
+            "last_name": {
+              "type": "string",
+              "const": "{{last_name}}"
+            }
+          }
+        },
+        "order_id": {
+          "type": "number",
+          "const": 1234
+        }
+      }
+    }
+    ```
+  </Step>
+  <Step title="Set response variables (optional)">
+    Extract values from the API response and save them as dynamic variables for use later in the conversation.
+
+    For example, extract a user's name and reference it later using `{{user_name}}`.
+
+    ```json
+    {
+      "properties": {
+        "user": {
+          "name": "John Doe",
+          "age": 26
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  If you fail to save the custom function, it's likely because the parameters are not valid. A common mistake is not adding `"type": "object"` to the top level of the JSON schema.
+</Note>
+
+## Request & Response Spec
+
+### Request
+
+**Headers:**
+- `X-Retell-Signature`: encrypted request body using your secret key — used to verify the request is from UponAI
+- `Content-Type: application/json`
+
+**Body** (JSON, for POST/PUT/PATCH):
+- `name`: the name of the custom function
+- `call`: the call object with context including real-time transcript up to the time the request is sent
+- `args`: the arguments for the custom function as a JSON object
+
+If **Payload: args only** is enabled, the body is only the argument object — parse parameters from the top level and run signature verification on that same body string.
+
+**Timeout:** Your specified timeout, or 2 minutes if not specified. Failed requests are retried up to 2 times.
+
+### Response
+
+Return a status code between `200-299` to indicate success. Response can be in any format (string, buffer, JSON object, blob) — all are converted to string before being sent to the LLM.
+
+The function result is capped at **15,000 characters** to prevent overloading the LLM context window.
+
+## Verifying Requests from UponAI
+
+Verify the `X-Retell-Signature` header to confirm requests are coming from UponAI. For `GET` and `DELETE` requests, the request body is empty — use an empty string in the verify function.
+
+<CodeGroup>
+```javascript JavaScript
+import { Retell } from "retell-sdk";
+import express from "express";
+
+const app = express();
+// Use raw body for signature verification, not JSON.stringify(req.body).
+app.use(express.raw({ type: "application/json" }));
+
+app.post("/check-weather", async (req, res) => {
+  const rawBody = req.body.toString("utf-8");
+  if (
+    !Retell.verify(
+      rawBody,
+      process.env.RETELL_API_KEY,
+      req.headers["x-retell-signature"],
+    )
+  ) {
+    console.error("Invalid signature");
+    return;
+  }
+  const content = JSON.parse(rawBody);
+  if (content.args.city === "New York") {
+    return res.json("25f and sunny");
+  } else {
+    return res.json("20f and cloudy");
+  }
+});
+```
+
+```python Python
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from retell import Retell
+
+retell = Retell(api_key=os.environ["RETELL_API_KEY"])
+
+@app.post("/check-weather")
+async def check_weather(request: Request):
+  try:
+    raw_body = (await request.body()).decode("utf-8")
+    valid_signature = retell.verify(
+      raw_body,
+      api_key=str(os.environ["RETELL_API_KEY"]),
+      signature=str(request.headers.get("X-Retell-Signature")),
+    )
+    if not valid_signature:
+      print("Received Unauthorized")
+      return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    post_data = json.loads(raw_body)
+    args = post_data["args"]
+    if args["city"] == "New York":
+      return JSONResponse(status_code=200, content={"result": "25f and sunny"})
+    else:
+      return JSONResponse(status_code=200, content={"result": "20f and cloudy"})
+  except Exception as err:
+    print(f"Error in webhook: {err}")
+    return JSONResponse(status_code=500, content={"message": "Internal Server Error"})
+```
+</CodeGroup>
+
+You can also secure your server by only allowlisting UponAI's IP address: `100.20.5.228`

@@ -1,0 +1,29 @@
+---
+title: "Batch Test Simulation"
+description: "Run multiple simulation test cases at once to save time and improve reliability."
+---
+
+When you have multiple test cases to verify, running them in batch saves significant time. Since LLMs can sometimes produce inconsistent results, running tests multiple times also helps ensure more reliable outcomes.
+
+## How to Run a Batch Test
+
+<Steps>
+  <Step title="Navigate to the Simulation tab">
+    Go to your agent's detail page and open the **Simulation** tab.
+  </Step>
+  <Step title="Set up your test cases">
+    Choose from:
+    - **Existing test cases** — select from your saved test suite
+    - **New test cases** — create them here or from the [LLM Simulation Testing](/Test/llm-simulation-testing) page
+  </Step>
+  <Step title="Define parameters">
+    Configure run count and any variables or function mocks to apply across the batch.
+  </Step>
+  <Step title="Execute">
+    Select the test cases you want to run and start the batch. Results are collected and scored automatically.
+  </Step>
+</Steps>
+
+<Tip>
+  Run each test case multiple times in a batch to surface inconsistent behavior. An agent that passes 7/10 runs on a critical path needs attention before going to production.
+</Tip>

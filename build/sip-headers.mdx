@@ -1,0 +1,60 @@
+---
+title: "Set and Parse Custom SIP Headers"
+description: "Pass custom data between systems using SIP headers on inbound calls, outbound calls, and call transfers."
+---
+
+Custom SIP headers are used in telephony to pass information between systems. This feature is available for phone calls only. UponAI supports:
+
+- **Receiving** custom SIP headers on inbound calls
+- **Sending** custom SIP headers on outbound calls
+- **Sending** custom SIP headers when initiating call transfers
+
+<Warning>
+  Many SIP parsers and middleboxes assume a maximum of 1024 bytes per header line and may reject or truncate longer headers if not explicitly configured to allow more.
+</Warning>
+
+## Parse Custom SIP Headers for Inbound Calls
+
+Custom SIP headers (headers starting with `X-` or `x-`) on inbound calls are automatically received, extracted, and available in `call.custom_sip_headers`. They are also automatically added to your dynamic variables — accessible in your agent prompt by stripping the `X-`/`x-` prefix.
+
+No configuration is required for inbound SIP header parsing.
+
+**Example:** if an inbound call carries these SIP headers:
+
+```json
+{
+  "X-test-header": "something",
+  "X-another-header": "something else",
+  "from": "1234567890",
+  "to": "0987654321"
+}
+```
+
+Then `call.custom_sip_headers` will contain — and these will be added as dynamic variables:
+
+```json
+{
+  "test-header": "something",
+  "another-header": "something else"
+}
+```
+
+<Note>
+  If you have already set a dynamic variable with the same name for the call, it will override the value received from the SIP header.
+</Note>
+
+## Set Custom SIP Headers for Outbound Calls
+
+Add custom SIP headers to outbound calls as needed. All custom header names must start with `X-`.
+
+## Set Custom SIP Headers for Call Transfers
+
+You can also set custom SIP headers on call transfers. Header names must start with `X-`. Dynamic variable values are supported, so you can pass information extracted during the call to the receiving party.
+
+<Warning>
+  For cold transfers using a transferee number, UponAI uses SIP REFER. Some telephony providers — including Twilio — do not honor custom SIP headers in REFER requests. If you are using Twilio, custom SIP headers set in the transfer call tool will not be delivered on cold transfers.
+</Warning>
+
+For implementation details:
+- **Conversation Flow agents** — see [Call Transfer Node](/build/conversation-flow/call-transfer-node)
+- **Single / Multi Prompt agents** — see [Transfer Call](/build/transfer-call)

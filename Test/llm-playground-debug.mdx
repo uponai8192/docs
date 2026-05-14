@@ -1,0 +1,74 @@
+---
+title: "Debug Agent Responses"
+description: "Troubleshoot unexpected agent responses, transitions, and inconsistencies using the debug tools in the LLM Playground."
+---
+
+Use the debug tools in the LLM Playground to diagnose and fix issues with your agent's responses and transitions.
+
+## Unexpected Response
+
+<Steps>
+  <Step title="Click Debug">
+    Click the **Debug** button on the agent's response.
+  </Step>
+  <Step title="Follow suggested solutions">
+    Available solutions:
+    - Add fine-tuning examples
+    - Split the node into multiple nodes
+    - Adjust the LLM temperature
+  </Step>
+  <Step title="Regenerate">
+    Click **Regenerate Answer** to get a new response, or **Regenerate 10 Times** to test response consistency.
+  </Step>
+</Steps>
+
+## Agent Doesn't Transition Correctly
+
+<Steps>
+  <Step title="Click Debug">
+    Click the **Debug** button on the agent's response.
+  </Step>
+  <Step title="Select transition issue">
+    Click **Didn't transition as expected?**
+  </Step>
+  <Step title="Follow suggested solutions">
+    Available solutions:
+    - Add fine-tuning transition examples
+    - Split the node into multiple nodes
+  </Step>
+  <Step title="Regenerate">
+    Click **Regenerate Transition** to get a new result.
+  </Step>
+</Steps>
+
+## Agent Transitions at the Wrong Time
+
+<Steps>
+  <Step title="Click Debug on the transition dialog">
+    Click the **Debug** button on the transition dialog.
+  </Step>
+  <Step title="Follow suggested solutions">
+    Available solutions:
+    - Add fine-tuning transition examples
+    - Split the node into multiple nodes
+  </Step>
+  <Step title="Regenerate">
+    Click **Regenerate Transition** to get a new result.
+  </Step>
+</Steps>
+
+## Inconsistent Responses
+
+<Steps>
+  <Step title="Click Debug">
+    Click the **Debug** button on the agent's response.
+  </Step>
+  <Step title="Try these solutions">
+    - Add fine-tuning examples
+    - Split the node into multiple nodes
+    - Adjust the temperature
+  </Step>
+  <Step title="Test consistency">
+    Click **Regenerate 10 Times** to see how often the response varies. Use this to confirm whether the fix resolved the inconsistency.
+  </Step>
+</Steps>

@@ -1,0 +1,26 @@
+---
+title: "Global Node"
+description: "Create nodes that can be triggered from anywhere in the conversation flow."
+---
+
+Global nodes can be transitioned to from anywhere in the conversation flow, making them ideal for handling universal scenarios like user objections (e.g. "I want to talk to a human" / "I need to call back later"). Toggle on **Global Node** in the node settings to enable this.
+
+## Configure Global Node
+
+Set a condition for when the global node should be transitioned to. For example, the condition "When user indicates this is not a good time to continue" means that whenever the user says something like "I need to call back later", the agent transitions to this node.
+
+Since a global node can be transitioned to from anywhere, it does not need to be connected to the rest of the graph.
+
+## Global Node Examples
+
+Add example conversations to help the AI better understand when to jump to this global node. Click **+ Add** to create examples that demonstrate scenarios where the global node should or should not be activated.
+
+## Go Back to Previous Node
+
+Enable **Go back to previous node** to let the conversation return to where it left off after the global node is handled. Once enabled, a **Go Back Condition** section appears where you define when the agent should navigate back (e.g. "User changed their mind and wants to continue the call").
+
+Go back conditions support both prompt-based and equation-based conditions. You can add multiple conditions and reorder them by dragging.
+
+## Prevent Immediate Re-Trigger
+
+Enable **Prevent Immediate Re-Trigger** to pause the global node for a specified number of node steps after it has been triggered. Set the number of **Node steps** (defaults to 3) during which the global node will not be activated again. This prevents the conversation from looping when the user's phrasing keeps matching the global node condition.

@@ -1,0 +1,67 @@
+---
+title: "Step 2: Add Nodes"
+description: "Nodes are the fundamental building blocks of your conversation flow."
+---
+
+## What are Nodes?
+
+Nodes are the fundamental building blocks of your conversation flow. Each node represents a specific step or action in your agent's conversation, with its own logic, behavior, and purpose.
+
+## Key Concepts
+
+- **Node Type**: Determines the node's functionality (conversation, subagent, function call, logic, etc.)
+- **Edges**: Connections between nodes that define the conversation flow
+- **Transition Conditions**: Rules that determine when and where to move next
+- **Fine-tuning**: Each node can be optimized independently for better performance
+
+## Why Use Nodes?
+
+By breaking complex workflows into individual nodes:
+
+- **Precise Control**: Define exact behavior for each conversation scenario
+- **Better Performance**: Fine-tune specific parts without affecting others
+- **Easier Debugging**: Isolate and fix issues in specific conversation paths
+- **Reusability**: Connect nodes in different ways for various flows
+
+## Node Types Available
+
+### Conversation Nodes
+- **Conversation Node**: Handle dialogue and user interactions without tool calling
+- **Subagent Node**: Handle dialogue and user interactions with tool calling
+- **Extract DV Node**: Extract and store dynamic variables from conversations
+
+### Action Nodes
+- **Function Node**: Execute custom functions and API calls
+- **Code Node**: Execute JavaScript code directly without an external server
+- **SMS Node**: Send SMS messages during the call
+- **MCP Node**: Integrate with Model Context Protocol tools
+
+### Call Control Nodes
+- **Call Transfer Node**: Transfer calls to other phone numbers
+- **Transfer Agent Node**: Transfer to another agent
+- **Press Digit Node**: Send DTMF tones (press digits)
+- **End Node**: Terminate the call gracefully
+
+### Logic Nodes
+- **Logic Split Node**: Create conditional branches based on variables
+
+## Add a Node
+
+<Steps>
+  <Step title="Select node type">
+    Click from the left sidebar to select the node type you want to add. Click on it and it will be added to the canvas.
+  </Step>
+  <Step title="Configure the node">
+    Click on the node, check the settings on the right, and fill in node instructions inside the node. Check out the respective node guide for more details.
+  </Step>
+  <Step title="Add transition conditions as needed">
+    Add edges by clicking on the bottom part of the node and add your transition conditions. Check out the next step for more details.
+  </Step>
+  <Step title="Connect node">
+    Click and hold the circle to start a line that connects this node to other nodes, and other nodes to this node.
+  </Step>
+</Steps>
+
+## Organize Nodes
+
+After adding many nodes, the canvas can get cluttered. Use the **Organize** button to automatically arrange the nodes.

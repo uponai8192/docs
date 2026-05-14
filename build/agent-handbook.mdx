@@ -1,0 +1,81 @@
+---
+title: "Agent Handbook"
+description: "Enable pre-built best-practice prompts that improve agent personality, accuracy, and safety with a single toggle."
+---
+
+The Agent Handbook is a collection of ready-to-use prompt presets that improve how your agent communicates. Each preset encodes a specific best practice — toggle it on and the behavior is added automatically, no prompt writing needed.
+
+<Info>
+  New agents are created with **Default Personality** and **AI Disclosure When Asked** enabled by default.
+</Info>
+
+## How It Works
+
+The Agent Handbook organizes presets into three categories:
+
+- **Personality & Tone** — Shape how the agent sounds and feels in conversation
+- **Accuracy & Format** — Improve how the agent handles names, numbers, and data (voice agents only)
+- **Trust & Safety** — Control transparency and scope of responses
+
+Toggle any preset on or off from the Agent Handbook panel. Each preset adds a small number of tokens to every interaction — estimated token counts are shown on hover.
+
+To open the Agent Handbook, click the **Agent Handbook** button in the prompt section of your agent settings.
+
+## Presets
+
+### Personality & Tone
+
+| Preset | Est. Tokens | Default |
+|--------|-------------|---------|
+| Default Personality | ~480 | On |
+| Natural Filler Words | ~100 | Off |
+| High Empathy | ~70 | Off |
+
+### Accuracy & Format
+
+<Note>
+  All presets in this category are for voice agents only. They are automatically disabled for chat agents.
+</Note>
+
+| Preset | Est. Tokens | Default |
+|--------|-------------|---------|
+| Echo Verification | ~190 | Off |
+| NATO Phonetic Alphabet | ~190 | Off |
+| Speech Normalization | ~910 | Off |
+| Smart Matching | ~110 | Off |
+
+### Trust & Safety
+
+| Preset | Est. Tokens | Default |
+|--------|-------------|---------|
+| AI Disclosure When Asked | ~30 | On |
+| Scope Boundaries | ~60 | Off |
+
+## Token Cost Summary
+
+| Preset | Est. Tokens | Voice | Chat | Default |
+|--------|-------------|-------|------|---------|
+| Default Personality | ~480 | ✓ | ✓ | On |
+| Natural Filler Words | ~100 | ✓ | — | Off |
+| High Empathy | ~70 | ✓ | ✓ | Off |
+| Echo Verification | ~190 | ✓ | — | Off |
+| NATO Phonetic Alphabet | ~190 | ✓ | — | Off |
+| Speech Normalization | ~910 | ✓ | — | Off |
+| Smart Matching | ~110 | ✓ | — | Off |
+| AI Disclosure When Asked | ~30 | ✓ | ✓ | On |
+| Scope Boundaries | ~60 | ✓ | ✓ | Off |
+
+<Note>
+  Token counts are approximate. The token cost of all enabled presets is added to every interaction.
+</Note>
+
+## FAQ
+
+**Can I customize the content of a preset?**
+Handbook presets are fixed best-practice templates. To customize behavior further, add your own instructions directly in the prompt — handbook presets and custom prompts work together without conflict.
+
+**Do handbook presets conflict with my custom prompt?**
+No. Presets are appended to your prompt without overriding any of your custom instructions.
+
+**Why are some presets greyed out for my chat agent?**
+Accuracy & Format presets are voice-only features. They are automatically disabled for chat agents and cannot be toggled on.

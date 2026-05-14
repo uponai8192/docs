@@ -1,0 +1,48 @@
+---
+title: "LLM Playground"
+description: "Manually test and debug your AI agent without making real web or phone calls."
+---
+
+The LLM Playground provides an interactive environment for testing your AI agents without making actual web or phone calls. It enables:
+
+- Rapid prototyping and debugging of agent responses
+- Testing different conversation scenarios
+- Immediate feedback on agent behavior
+- Faster development iterations
+
+## How to Use
+
+<Steps>
+  <Step title="Access the LLM Playground">
+    - Navigate to your agent's detail page
+    - Click the **Test LLM** tab
+    - Choose **Manual Chat**
+
+    You'll see a chat interface ready for testing.
+  </Step>
+  <Step title="Test basic conversations">
+    Type your message in the input field and observe the agent's response.
+  </Step>
+  <Step title="Test function calling">
+    Use prompts that should trigger specific functions. Verify that functions are called with the correct parameters.
+  </Step>
+  <Step title="Test dynamic variables">
+    Use dynamic variables in your prompts. Verify that variables are properly interpolated and test different variable values.
+  </Step>
+  <Step title="Mock custom functions">
+    Add a mock response for functions during testing. The mock response is returned instead of making a real function call, ensuring no actual execution occurs during tests.
+  </Step>
+  <Step title="Iterate and refine">
+    Monitor agent behavior and responses. Update prompts or functions as needed, then click **Delete** to reset the conversation and test the updated behavior.
+  </Step>
+  <Step title="Save test cases">
+    Click **Save** to store your test conversation. Add a descriptive name — saved tests are accessible from the agent detail page for future regression testing.
+  </Step>
+</Steps>
+
+## Best Practices
+
+- Start with simple conversations and gradually test more complex scenarios
+- Save important test cases for regression testing
+- Test edge cases and error handling
+- Document unexpected behaviors for future reference

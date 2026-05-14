@@ -1,0 +1,23 @@
+---
+title: "Capture DTMF Input from User"
+description: "Let callers enter information via phone keypad presses instead of voice."
+---
+
+Sometimes callers prefer to provide information via DTMF (phone keypad presses) rather than speaking — for example, when entering a PIN in a public place.
+
+DTMF input from users is captured and included in the agent's context by default. To use it, simply prompt the agent to ask for the information via keypad.
+
+**Example prompt:**
+```
+Please enter your PIN number using the keypad. You can finish by pressing the pound key.
+```
+
+## DTMF Input Completion Options
+
+Configure when the agent considers DTMF input complete. These options are under **Call Settings**:
+
+| Option | API field | Description |
+|--------|-----------|-------------|
+| Digit Limit | `user_dtmf_options.digit_limit` | Maximum digits the user can enter. Input completes when limit is reached. |
+| Termination Key | `user_dtmf_options.termination_key` | A key (`#`, `*`, or any digit) that signals end of input. |
+| Timeout | `user_dtmf_options.timeout_ms` | Milliseconds to wait after the last digit before timing out. Resets with each new digit. |

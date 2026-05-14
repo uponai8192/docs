@@ -1,0 +1,24 @@
+---
+title: "Platform Voices"
+description: "UponAI's curated voice library, optimized for real-time phone conversations."
+---
+
+Platform voices are UponAI's curated voice library, fine-tuned specifically for conversational AI over the phone. They handle fillers, pacing, and conversational rhythm well, and are calibrated for clarity at telecom bitrates.
+
+<Info>
+  When using a platform voice, fallback is handled automatically to maintain the same voice experience — you do not need to configure a TTS fallback plan in Security & Fallback Settings.
+</Info>
+
+If you are using a non-platform voice, you will need to [configure TTS fallback](/build/tts-fallback) manually.
+
+## Select a Platform Voice
+
+Platform voices are available in the voice selector in your agent settings. You can preview each voice directly in the dashboard before selecting.
+
+{/* TODO: add UponAI dashboard screenshot — voice selector showing platform voices */}
+
+## Custom Voice Cloning as a Platform Voice
+
+You can clone your own voice and register it as a platform voice by setting `voice_provider` to `platform` when calling the Clone Voice API.
+
+The cloned voice behaves the same as a built-in platform voice — fallback is handled automatically and you do not need to configure TTS fallback separately.

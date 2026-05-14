@@ -1,0 +1,75 @@
+---
+title: "Step 1: Configure Global Settings"
+description: "Configure voice, language, model, and call-wide settings for your conversation flow agent."
+---
+
+Click on the empty canvas and click **Settings** to access global settings. This is where you configure agent-level settings.
+
+<Steps>
+  <Step title="Configure Voice Settings">
+    Open the voice selection dropdown menu. Listen to the available voice samples and select the voice you want to use for the agent.
+
+    **Custom Voices**: You can also add voices from the ElevenLabs community or clone voices by clicking "Add custom voice."
+
+    Additional voice settings:
+    - **Voice temperature**: Make the voice more variant or stable
+    - **Voice speed**: Make the agent speak faster or slower
+    - **Voice volume**: Make the agent speak louder or quieter
+    - **Voice model** (if applicable): When using certain voice providers, you can choose between different models. Check the dashboard for detailed nuances of each model.
+  </Step>
+
+  <Step title="Select Language of Agent">
+    Pick the language(s) the agent will understand and speak. This affects speech recognition, voice pronunciation, and the language the agent responds in — you do not need to add a "respond in X" instruction to your prompt.
+
+    To support multiple languages, switch the selector to **Multiselect** and pick the specific languages you want. For best accuracy, prefer a single language when possible.
+  </Step>
+
+  <Step title="Select a Language Model">
+    Select the model you want to use for the agent. You can override this within individual nodes. Optionally tune the LLM temperature to make answers more variant or more stable.
+
+    We recommend starting with **GPT-4.1**, which offers an optimal balance of:
+    - Response quality
+    - Latency
+    - Cost-effectiveness
+  </Step>
+
+  <Step title="Write Global Prompt">
+    Specify the agent's persona, identity, guardrails, etc. This text is available in every node and influences all response generation.
+  </Step>
+
+  <Step title="Configure Knowledge Base">
+    Supply context to the agent via documents, URLs, and texts. Read more in the Knowledge Base guide.
+  </Step>
+
+  <Step title="Configure Speech Settings">
+    Options for fine-tuning how your agent interacts with users:
+
+    - **Background sound**: Select a background sound that plays throughout the call (e.g. call center ambience) to make the conversation more human-like
+    - **Responsiveness**: How responsive the agent is. Set lower for slower responses — reducing by 0.1 adds 0.5 seconds of agent wait time
+    - **Interruption Sensitivity**: How quickly the agent gets interrupted. Set lower for more resilience to background speech
+    - **Backchanneling**: How often and what words the agent uses to acknowledge users
+    - **Boosted Keywords**: Biases speech recognition toward certain words like brand names or people's names
+    - **Speech Normalization**: Converts dates, currency, numbers into plain words to prevent mispronunciation
+    - **Reminder frequency**: How often the agent reminds the user when they are inactive
+    - **Pronunciation**: Set up a pronunciation guide for specific words
+  </Step>
+
+  <Step title="Configure Call Settings">
+    - **Voicemail**: Set up voicemail detection and what to do when voicemail is detected
+    - **End call on silence**: End the call if the user is inactive for a configured duration
+    - **Call duration**: Set a maximum call duration
+    - **Pause before speaking**: At the start of the call, if the agent speaks first, it waits for the configured duration before speaking — useful when the user is still picking up
+  </Step>
+
+  <Step title="Configure Post Call Analysis">
+    Set up later. Read more in the Post Call Analysis guide.
+  </Step>
+
+  <Step title="Configure Privacy & Webhook">
+    Set up whether to opt out of sensitive data storage, and configure webhook settings for receiving call-related events.
+  </Step>
+</Steps>
+
+## Configure Who Speaks First
+
+Click on the **Begin** icon to select who speaks first in the call.

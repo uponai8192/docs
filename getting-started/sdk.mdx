@@ -1,0 +1,165 @@
+---
+title: "SDKs"
+description: "Official Node.js and Python SDKs to integrate UponAI phone agents into your applications."
+---
+
+UponAI provides official SDKs for Node.js and Python. While you can use the REST API directly, the SDKs offer:
+
+- **Type safety** — full TypeScript support with autocomplete
+- **Simplified authentication** — built-in API key handling
+- **Error handling** — structured error responses with detailed messages
+- **Reduced boilerplate** — cleaner, more maintainable code
+
+## Available SDKs
+
+<CardGroup cols={2}>
+  <Card title="Node.js / TypeScript" icon="node-js">
+    Package: `retell-sdk` on NPM
+
+    Requirements: Node.js 18.10.0 or higher
+
+    Features: Full TypeScript support, async/await, promise-based API
+  </Card>
+  <Card title="Python" icon="python">
+    Package: `retell-sdk` on PyPI
+
+    Requirements: Python 3.7 or higher
+
+    Features: Type hints, async support, comprehensive error handling
+  </Card>
+</CardGroup>
+
+## Setup
+
+<Steps>
+  <Step title="Get your API key">
+    Navigate to the **API Keys** tab in your dashboard to obtain your API key.
+  </Step>
+  <Step title="Install the SDK">
+    <Tabs>
+      <Tab title="Node.js">
+        ```bash
+        npm i retell-sdk
+        ```
+      </Tab>
+      <Tab title="Python">
+        ```bash
+        pip install retell-sdk
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Initialize the client">
+    <Tabs>
+      <Tab title="Node.js">
+        ```typescript
+        import Retell from 'retell-sdk';
+
+        const client = new Retell({
+          apiKey: process.env.RETELL_API_KEY,
+        });
+        ```
+      </Tab>
+      <Tab title="Python">
+        ```python
+        from retell import Retell
+
+        client = Retell(api_key=os.environ["RETELL_API_KEY"])
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Make your first API call">
+    <Tabs>
+      <Tab title="Node.js">
+        ```typescript
+        try {
+          const response = await client.call.createPhoneCall({
+            from_number: '+14157774444',
+            to_number: '+12137774445',
+          });
+          console.log('Call initiated:', response);
+        } catch (error) {
+          console.error('Error making call:', error);
+        }
+        ```
+      </Tab>
+      <Tab title="Python">
+        ```python
+        response = client.call.create_phone_call(
+            from_number="+14157774444",
+            to_number="+12137774445",
+        )
+        print("Call initiated:", response)
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## SDK vs REST API
+
+<CodeGroup>
+  ```typescript REST API (verbose)
+  const options = {
+    method: 'POST',
+    headers: {
+      Authorization: '<YOUR_API_KEY>',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      response_engine: {
+        type: 'retell-llm',
+        llm_id: 'llm_234sdertfsdsfsdf'
+      },
+      agent_name: 'Jarvis',
+      voice_id: '11labs-Adrian',
+    })
+  };
+
+  fetch('https://api.retellai.com/create-agent', options)
+    .then(r => r.json())
+    .then(console.log);
+  ```
+
+  ```typescript SDK (concise)
+  import Retell from 'retell-sdk';
+
+  const client = new Retell({ apiKey: process.env.RETELL_API_KEY });
+
+  const agent = await client.agent.create({
+    response_engine: {
+      llm_id: 'llm_234sdertfsdsfsdf',
+      type: 'retell-llm'
+    },
+    voice_id: '11labs-Adrian',
+  });
+  ```
+</CodeGroup>
+
+## Best Practices
+
+**Error handling** — always wrap SDK calls in try/catch:
+```typescript
+try {
+  const response = await client.call.createPhoneCall(params);
+} catch (error) {
+  if (error.code === 'insufficient_funds') {
+    // handle specific error
+  }
+}
+```
+
+**Environment variables** — never hardcode API keys:
+```typescript
+const client = new Retell({ apiKey: process.env.RETELL_API_KEY });
+```
+
+**TypeScript types** — use provided types for autocomplete:
+```typescript
+import { Retell, AgentCreateParams } from 'retell-sdk';
+
+const params: AgentCreateParams = {
+  // TypeScript will autocomplete available fields
+};
+```

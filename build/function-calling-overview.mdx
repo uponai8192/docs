@@ -1,0 +1,72 @@
+---
+title: 'Function Calling Overview'
+description: 'Enable your AI agent to perform actions like transfers, bookings, and API integrations through function calling.'
+---
+
+## Introduction
+
+Function calling transforms your AI agent from a conversational interface into an action-oriented assistant. By connecting your agent to functions, you enable it to interact with external systems, manage call flows, and perform real-world tasks.
+
+---
+
+## Common Use Cases
+
+### Call Management
+- **Transfer calls**: Route to human agents or other departments
+- **End calls**: Gracefully terminate conversations
+- **Send DTMF tones**: Navigate phone menus
+
+### Business Operations
+- Schedule and book appointments
+- Check availability across systems
+- Create, modify, or cancel orders
+
+### Data Integration
+- Retrieve information from external systems
+- Update customer records and case details
+- Trigger notifications via email, SMS, or push
+
+---
+
+## How Function Calling Works
+
+<Steps>
+  <Step title="LLM detects need">
+    Based on conversation context, the LLM determines when a function is needed.
+  </Step>
+  <Step title="Parameters extracted">
+    The agent pulls the required values from the conversation.
+  </Step>
+  <Step title="Function executes">
+    UponAI runs the function against the configured endpoint or built-in tool.
+  </Step>
+  <Step title="Result integrated">
+    The response feeds back into the ongoing conversation.
+  </Step>
+</Steps>
+
+---
+
+## Available Function Types
+
+<CardGroup cols={3}>
+  <Card title="Pre-built Functions" icon="bolt">
+    Six ready-to-use options: End Call, Transfer Call, Press Digits, Check Availability, Book Calendar, and Send SMS.
+  </Card>
+  <Card title="Custom Functions" icon="code">
+    Connect your own APIs, implement business logic, and trigger workflows in external systems.
+  </Card>
+  <Card title="Code Tool" icon="terminal">
+    Execute JavaScript directly in UponAI's sandbox for data transformation, simple API calls, and calculations — no external server needed.
+  </Card>
+</CardGroup>
+
+---
+
+## Configuring Tool Calls
+
+Add functions from the **Functions** section of your agent in the UponAI Dashboard. Each function type has its own configuration panel.
+
+<Tip>
+  Always update your agent's prompt to tell it explicitly when to call each function. Tool descriptions alone are not always enough for consistent behavior.
+</Tip>

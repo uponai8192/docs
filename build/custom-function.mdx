@@ -1,0 +1,91 @@
+---
+title: 'Integrate Any System with Custom Functions'
+description: 'Connect your agent to any external API or internal system using custom function calls.'
+---
+
+## Overview
+
+Custom functions let your agent call any external API via HTTP request — enabling integrations with your CRM, database, booking system, or any other service.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the function">
+    In your agent's Functions section, click **Add Function** and select **Custom Function**.
+  </Step>
+  <Step title="Name the function">
+    Use underscores to separate words. Example: `check_order_status`, `create_lead`.
+  </Step>
+  <Step title="Select HTTP method">
+    Choose from: `GET`, `POST`, `PATCH`, `PUT`, or `DELETE`.
+  </Step>
+  <Step title="Set the endpoint URL">
+    Enter the full URL of your API endpoint.
+  </Step>
+  <Step title="Configure headers and query parameters">
+    Add any required authentication headers, API keys, or query params.
+  </Step>
+  <Step title="Define parameters">
+    For `POST`, `PATCH`, and `PUT` requests, define your request body using JSON schema format.
+
+    Enable **Payload: args only** to send only the function arguments as the JSON body, without an outer wrapper.
+  </Step>
+  <Step title="Handle the response">
+    Map API response values to dynamic variables for use later in the conversation. Response data is capped at **15,000 characters**.
+  </Step>
+  <Step title="Configure speech">
+    - **Speak when called**: Agent says something while waiting for the response
+    - **Speak after completion**: Agent discusses the result with the caller
+  </Step>
+</Steps>
+
+---
+
+## Security
+
+Every request includes an `X-Retell-Signature` header signed with your secret key. Verify this on your server to confirm requests are coming from UponAI.
+
+<CodeGroup>
+```javascript JavaScript
+const { Retell } = require('retell-sdk');
+const client = new Retell({ apiKey: 'YOUR_API_KEY' });
+
+app.post('/your-endpoint', (req, res) => {
+  const valid = client.verify(
+    JSON.stringify(req.body),
+    req.headers['x-retell-signature']
+  );
+  if (!valid) return res.status(401).send('Unauthorized');
+  // handle request
+});
+```
+
+```python Python
+from retell import Retell
+
+client = Retell(api_key="YOUR_API_KEY")
+
+@app.route('/your-endpoint', methods=['POST'])
+def handle():
+    valid = client.verify(
+        request.get_data(as_text=True),
+        request.headers.get('X-Retell-Signature')
+    )
+    if not valid:
+        return 'Unauthorized', 401
+    # handle request
+```
+</CodeGroup>
+
+---
+
+## Constraints
+
+| Setting | Value |
+|---------|-------|
+| Timeout | 2 minutes (default) |
+| Retries | Up to 2 attempts |
+| Response cap | 15,000 characters |
+| Function name format | Underscore-separated |

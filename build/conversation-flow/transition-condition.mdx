@@ -1,0 +1,108 @@
+---
+title: "Step 3: Add Transition Conditions"
+description: "Define the conditions that determine whether and which node the agent moves to next."
+---
+
+## What is a Transition Condition?
+
+Transition conditions are used to determine whether and which node the agent will transition to. If no transition condition is met, the agent will stay in the current node. This is the most essential part of the conversation flow — it gives you the most control, and requires the most careful testing.
+
+## Types of Transition Conditions
+
+There are two types:
+
+- **Prompt**: The condition is a natural language prompt evaluated by the LLM
+- **Equation**: The condition is a hardcoded mathematical equation — useful for testing if dynamic variables meet a certain condition
+
+All equation conditions are evaluated first (top to bottom), then prompt conditions. The agent travels on the first condition that evaluates to true.
+
+### Prompt condition examples
+
+```txt
+User said something about booking a meeting
+User said something about cancelling a meeting
+User claims to be over 18
+User said they lived in New York
+User said they lived in New York or Los Angeles
+```
+
+### Equation condition examples
+
+```txt
+{{user_age}} > 18
+{{current_time}} > 9 AND {{current_time}} < 18
+{{user_location}} == "New York"
+{{user_location}} != "New York"
+"New York, Los Angeles" CONTAINS {{user_location}}
+"New York, Los Angeles" NOT CONTAINS {{user_location}}
+{{user_age}} < 18 OR {{user_location}} == "New York"
+{{name}} exists
+```
+
+<Note>
+  You can only use variables that are passed in as dynamic variables for equation conditions. If you need to use information extracted by the LLM during the call, use prompt conditions instead.
+</Note>
+
+## Where to Define Transition Conditions
+
+**By node type:**
+- **Conversation, Function & Press Digit Node**: Define conditions to transition out of the node
+- **Call Transfer Node**: Select a destination node to transition to when transfer is unsuccessful
+
+**By feature:**
+- **Skip response**: Select a destination node to transition to when the agent finishes speaking
+- **Global node**: When enabled, must define the condition to transition into this node
+
+## How to Update Transition Conditions
+
+Click on the node, then click the **+** button to add a transition condition. Choose either a prompt or equation condition.
+
+For equation conditions, the equation editor lets you:
+- Add equations with the **Add equation** button
+- Delete equations with the trash icon
+- Change **ANY** to **ALL** to require all equations to be true instead of just one
+- Reorder equations by dragging the 6-dot handle
+
+## Check if a Dynamic Variable Exists
+
+```txt
+{{variable_name}} exists       — true if the variable is defined and has a value
+{{variable_name}} does not exists  — true if the variable is undefined
+```
+
+Examples:
+```txt
+{{user_email}} exists
+{{user_phone}} not exists
+{{preferred_language}} exists
+```
+
+## What to Write in a Transition Condition
+
+Write conditions that are clear and self-contained — don't rely heavily on the node instruction for context.
+
+Good examples:
+```txt
+When user indicates they want to book a meeting
+User declines the invitation
+User responds to question of their age
+CRM lookup returned a successful result
+```
+
+To ensure smooth transitions, cover all possible cases. Use global nodes for general cases like objection handling, and focus transition conditions on cases specific to the current node.
+
+For equation conditions covering branching paths:
+```txt
+{{user_location}} == "New York"
+{{user_location}} == "Los Angeles"
+```
+
+<Note>
+  `==`, `CONTAINS`, `NOT CONTAINS`, and `!=` are string comparisons — they do not require numerical input. All other comparison operators (`>`, `<`, etc.) require numerical input and will always evaluate to false if the input is not a number.
+</Note>
+
+## Improve Transition Conditions
+
+If you observe an incorrect transition:
+- Prompt engineer the conditions to be clearer
+- Add transition fine-tune examples (see Finetune Examples guide)

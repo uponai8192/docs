@@ -1,0 +1,59 @@
+---
+title: "Handle Voicemail and IVR"
+description: "Configure your AI agent to detect and handle voicemails and IVR systems automatically on outbound calls."
+---
+
+When making outbound calls, your phone agent may encounter voicemails or IVR (Interactive Voice Response) systems. You can configure your agent to automatically detect these and take appropriate action.
+
+## Voicemail Detection
+
+The system runs voicemail detection continuously within a timeout window. If the timeout is reached without detecting a voicemail, detection stops and the call continues normally.
+
+<Steps>
+  <Step title="Enable voicemail detection">
+    In your agent settings, open **Call Settings** and enable **Voicemail Detection**.
+  </Step>
+  <Step title="Choose voicemail behavior">
+    Select what the agent should do when a voicemail is detected:
+
+    **Hang up if reaching voicemail** — disconnect immediately, even if the voicemail greeting is still playing.
+
+    **Leave a message if reaching voicemail** — wait for the agent's turn to speak, then deliver a message. Choose between:
+    - **Prompt** — a dynamically generated message based on instructions you provide (e.g., *Summarize the call and ask the user to call back*)
+    - **Static Sentence** — a fixed message (e.g., *Hey `{{user_name}}`, sorry we could not reach you directly. Please give us a callback if you can.*)
+  </Step>
+</Steps>
+
+<Note>
+  Static voicemail messages support dynamic variables, so you can personalize them per call.
+</Note>
+
+## IVR Hangup
+
+When enabled, the system detects if your outbound call reaches an IVR (automated phone menu) and automatically hangs up.
+
+To enable: open your agent settings, go to **Call Settings**, and toggle on **IVR Hangup**.
+
+<Info>
+  IVR hangup is separate from IVR navigation, which lets your agent interact with and navigate phone menus using DTMF tones. See [Press Digit](/build/press-digit) for IVR navigation.
+</Info>
+
+## FAQ
+
+**The voicemail isn't being hung up even though hang up is enabled. What's wrong?**
+The hang up fires as soon as a voicemail is detected — but if detection hasn't triggered yet when the greeting ends, the agent may stay on the call. Check your detection timeout setting.
+
+**Will voicemail or IVR detection run for the entire call?**
+No. Detection runs within a configurable timeout window from the start of the call. After that window, detection stops and the call proceeds normally.
+
+**Is there a latency impact when using voicemail detection?**
+Minimal. Detection runs in parallel with the call and does not add noticeable delay to normal conversations.
+
+**How can I tell if a call reached a voicemail or IVR?**
+Check the call details in your dashboard — the call reason will indicate if voicemail or IVR was detected.
+
+**If the voicemail greeting keeps playing, will the agent hang up?**
+Yes — with hang up mode, the agent disconnects as soon as a voicemail is detected, regardless of whether the greeting is still playing.
+
+**If the voicemail greeting keeps playing, will the agent leave a message?**
+With leave a message mode, the agent waits for its turn to speak. If the greeting is still playing, it waits until the beep before delivering the message.

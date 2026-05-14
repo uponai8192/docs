@@ -1,0 +1,48 @@
+---
+title: 'MCP'
+description: 'Extend your agent with Model Context Protocol tools from connected MCP servers.'
+---
+
+## Overview
+
+MCP (Model Context Protocol) lets you connect external tool servers to your agent, giving it access to a wide range of capabilities without building custom functions from scratch.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Connect an MCP server">
+    In your agent's Functions section, click **+ Add MCP** and authenticate to establish the connection.
+  </Step>
+  <Step title="Configure headers">
+    Optionally add custom headers to be sent with requests to your MCP server.
+  </Step>
+  <Step title="Add query parameters">
+    Optionally append query parameters to the MCP server endpoint URL.
+  </Step>
+  <Step title="Choose a tool">
+    Select from the available tools provided by your connected MCP server.
+  </Step>
+  <Step title="Extract response data">
+    Map response values to dynamic variables for use later in the conversation:
+
+    ```txt
+    Extract the user_name from the MCP response and store it as {{user_name}}.
+    ```
+  </Step>
+  <Step title="Save configuration">
+    Save your MCP tool configuration to make it available to your agent.
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent explicitly when to invoke the MCP tool:
+
+    ```txt
+    When the user asks for their account details, call the get_account_info MCP tool.
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Always instruct your agent in the prompt when to trigger MCP tools. The agent won't reliably infer usage from tool names alone.
+</Tip>

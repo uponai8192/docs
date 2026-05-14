@@ -1,0 +1,37 @@
+---
+title: "TTS Provider Comparison"
+description: "Choose the best text-to-speech provider for your use case based on naturalness, spelling accuracy, and accent support."
+---
+
+When selecting a TTS provider, consider the trade-offs between spelling accuracy (pronouncing spelled-out words like "W - O - R - D"), voice naturalness, pacing/tone consistency, and accent support.
+
+<Info>
+  These observations are based on internal testing. Results may vary depending on the specific voice, model, or language used.
+</Info>
+
+## Provider Overview
+
+### ElevenLabs
+
+- **Best for:** Most natural sounding; best support for niche accent needs (e.g., Australian English)
+- **Consideration:** Occasional small pacing/tone quirks; less reliable for exact spelling
+
+### Cartesia
+
+- **Best for:** Natural sounding with stronger spelling accuracy than ElevenLabs
+- **Consideration:** Pacing/tone can sometimes be less consistent; localization may be weaker for certain accents
+
+### MiniMax
+
+- **Best for:** Strongest spelling accuracy + most consistent tone (rarely has pacing/tone quirks); great for Asian languages
+- **Consideration:** Voice can sometimes feel more robotic compared to other providers
+
+## Rules of Thumb
+
+| Goal | Recommended provider |
+|------|---------------------|
+| Most natural sound | ElevenLabs (or Cartesia) |
+| Spelling accuracy | MiniMax (or Cartesia) |
+| Most consistent tone | MiniMax |
+| Specific or niche accents | ElevenLabs |
+| Asian languages | MiniMax |
