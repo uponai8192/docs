@@ -1,0 +1,86 @@
+---
+title: "Testing Overview"
+description: "Comprehensive testing methods to validate your AI agent's performance before production deployment."
+---
+
+Thorough testing is crucial for building reliable AI phone agents. UponAI provides multiple testing methods, each designed to validate different aspects of your agent's behavior and performance.
+
+## Available Testing Methods
+
+<CardGroup cols={1}>
+  <Card title="1. LLM Playground" icon="comment" href="/Test/llm-playground">
+    **Purpose:** Interactive text-based testing for rapid iteration and debugging.
+
+    **Key features:** Real-time conversation testing, function call visualization, variable inspection, prompt debugging.
+
+    **Best for:** Initial development, prompt refinement, debugging specific conversation paths.
+  </Card>
+  <Card title="2. LLM Simulation Testing" icon="robot" href="/Test/llm-simulation-testing">
+    **Purpose:** Automated testing with predefined scenarios for consistent quality assurance.
+
+    **Key features:** Batch testing, success metrics and scoring, scenario templates, regression testing.
+
+    **Best for:** Quality assurance, regression testing, validating changes before deployment.
+  </Card>
+  <Card title="3. Web Call / Phone Call Testing" icon="phone" href="/Test/test-phone">
+    **Purpose:** Real-world testing with actual voice interactions to validate audio performance.
+
+    **Key features:** Voice quality and latency testing, interruption handling, background noise, DTMF and telephony features.
+
+    **Best for:** Final validation, voice quality testing, production readiness checks.
+  </Card>
+</CardGroup>
+
+## Testing Method Comparison
+
+| Feature | LLM Playground | LLM Simulation | Web/Phone Call |
+|---------|---------------|----------------|----------------|
+| Setup effort | Medium | Low | High |
+| Test speed | Fast | Very fast | Real-time |
+| Response accuracy | ✅ | ✅ | ✅ |
+| Function calls | ✅ | ✅ | ✅ |
+| Background noise | ❌ | ❌ | ✅ |
+| Interruptions | ❌ | ❌ | ✅ |
+| Batch testing | ❌ | ✅ | ❌ |
+| Cost | Per message | Per message | Call charges |
+
+## Recommended Testing Workflow
+
+<Steps>
+  <Step title="Phase 1: Development Testing">
+    **Tool:** LLM Playground
+
+    - Iterate on prompts and conversation flows
+    - Debug function calling logic
+    - Test edge cases interactively
+    - Validate dynamic variables
+  </Step>
+  <Step title="Phase 2: Quality Assurance">
+    **Tool:** LLM Simulation Testing
+
+    - Create comprehensive test scenarios
+    - Run regression tests after changes
+    - Validate success metrics
+    - Ensure consistent performance
+  </Step>
+  <Step title="Phase 3: Production Validation">
+    **Tool:** Web / Phone Call Testing
+
+    - Test actual voice interactions
+    - Verify audio quality and latency
+    - Check telephony features
+    - Validate real-world performance
+  </Step>
+  <Step title="Phase 4: Continuous Testing">
+    **Tool:** Batch Testing (Simulation)
+
+    - Set up automated test suites
+    - Monitor agent performance over time
+    - Catch regressions early
+    - Maintain quality standards
+  </Step>
+</Steps>
+
+<Tip>
+  Create a test checklist covering all critical paths before each deployment. Include both happy paths and edge cases.
+</Tip>

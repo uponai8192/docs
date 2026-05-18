@@ -1,0 +1,38 @@
+---
+title: "Setup TTS Fallback"
+description: "Configure a fallback voice so your UponAI agent keeps talking even when a TTS provider has an outage."
+---
+
+<Info>
+  If you are using a platform voice, fallback is handled automatically — no additional setup is required. The steps below only apply if you are using a custom or third-party provider voice.
+</Info>
+
+When a TTS provider experiences an outage or temporary issue, your agent needs to keep talking. Fallback switches to a different voice provider seamlessly during the call.
+
+## Default Fallback Behavior
+
+If no custom TTS fallback is configured, UponAI uses a default fallback plan:
+
+- Uses a voice of the same gender as the original (if the original voice has a gender field)
+- Falls back to the next available voice in the fallback list in order
+- Once switched to a fallback voice, the agent **stays on that voice** for the rest of the call — even if the original provider recovers — to avoid jarring mid-call voice changes
+
+## Setup a Custom Fallback Plan
+
+Configure your own fallback plan so the replacement voice sounds as close as possible to the original.
+
+<Steps>
+  <Step title="Open Security & Fallback Settings">
+    Go to your agent settings and open the **Security & Fallback Settings** panel.
+  </Step>
+  <Step title="Add fallback voices">
+    Add one or more fallback voices. Each fallback voice must use a **different TTS provider** from the original voice and from each other.
+  </Step>
+  <Step title="Order your fallbacks">
+    Arrange fallback voices in priority order. UponAI tries each in sequence if the previous provider is unavailable.
+  </Step>
+</Steps>
+
+<Warning>
+  You cannot use the same TTS provider for both the primary voice and a fallback voice.
+</Warning>

@@ -1,0 +1,56 @@
+---
+title: "Debug Call Disconnection"
+description: "Look up disconnection reasons to diagnose why calls ended unexpectedly."
+---
+
+Check disconnection reasons via the **Call History** tab in the dashboard or the Get Call API.
+
+<Note>
+  Phone numbers that make many short calls in a short period may be marked as spam at the carrier level, causing calls to show up as `dial_failed`.
+</Note>
+
+## Disconnection Reasons
+
+### Expected / Normal
+
+| Reason | Call Status | Description |
+|--------|-------------|-------------|
+| `user_hangup` | ended | User hung up |
+| `agent_hangup` | ended | Agent hung up |
+| `call_transfer` | ended | Agent transferred the call |
+| `voicemail_reached` | ended | Voicemail detected and agent is configured to handle it |
+| `ivr_reached` | ended | IVR detected and agent is configured to hang up |
+| `inactivity` | ended | Call ended due to `end_call_after_silence_ms` threshold |
+| `max_duration_reached` | ended | Call ended due to maximum duration setting |
+
+### Not Connected
+
+| Reason | Description |
+|--------|-------------|
+| `dial_busy` | Outbound call — number dialed is busy |
+| `dial_failed` | Outbound call — dialing failed with no or unknown SIP error code |
+| `dial_no_answer` | Outbound call — number didn't answer |
+| `invalid_destination` | Number is invalid, has spaces/invalid characters, or wrong format (check E.164) |
+| `telephony_provider_permission_denied` | SIP trunk credentials not authenticated |
+| `telephony_provider_unavailable` | Telephony provider is down |
+| `sip_routing_error` | SIP routing has too many hops or is in a loop |
+| `marked_as_spam` | Number marked as spam. See [Spam Likely Overview](/Deploy/call-pickup-rate/spam-likely). |
+| `user_declined` | User declined the outbound call |
+
+### Errors
+
+| Reason | Description |
+|--------|-------------|
+| `concurrency_limit_reached` | Concurrency limit hit — add retry with exponential backoff, or upgrade plan |
+| `no_valid_payment` | No valid payment on file, or service shut down due to overdue bill |
+| `scam_detected` | Scam detected for that particular agent |
+| `error_llm_websocket_open` | LLM websocket failed to open — check Custom LLM URL and server reachability |
+| `error_llm_websocket_lost_connection` | LLM websocket dropped during the call |
+| `error_llm_websocket_runtime` | LLM websocket received a non-1000 closing signal from your server |
+| `error_llm_websocket_corrupt_payload` | LLM websocket received unspecified payload |
+| `error_no_audio_received` | No audio received from telephony or web frontend after connection |
+| `error_asr` | ASR encountered a problem |
+| `error_retell` | Unspecified UponAI-side problem |
+| `error_unknown` | Unknown error |
+| `error_user_not_joined` | User didn't join web call within 30s of `startWebCall` |
+| `registered_call_timeout` | Phone call placed 5+ minutes after registration |

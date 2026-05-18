@@ -1,0 +1,56 @@
+---
+title: "Create Chat Agent"
+description: "Learn how to create and configure a chat agent in UponAI."
+---
+
+This guide explains how to create and configure a chat agent in UponAI. Chat agents let you implement conversational AI experiences through text-based interfaces.
+
+<Note>
+  UponAI does not provide native integration with SMS or chat applications at this time. You can only interact with a chat agent via API.
+</Note>
+
+## Creating a Chat Agent
+
+You have two options:
+
+### Create a New Chat Agent
+
+<Steps>
+  <Step title="Navigate to Agents">
+    Go to the Agents section in your UponAI dashboard at [app.uponai.com](https://app.uponai.com).
+  </Step>
+  <Step title="Create a new agent">
+    Click **Create New Agent**.
+  </Step>
+  <Step title="Select agent type">
+    Select **Chat Agent** as the agent type.
+  </Step>
+  <Step title="Configure settings">
+    Configure your agent settings and prompts.
+  </Step>
+</Steps>
+
+### Convert an Existing Voice Agent
+
+<Steps>
+  <Step title="Open the voice agent">
+    Open an existing voice agent from the Agents section.
+  </Step>
+  <Step title="Convert">
+    Click **Convert to Chat Agent**.
+  </Step>
+  <Step title="Review warnings">
+    Review the conversion warnings before confirming.
+  </Step>
+</Steps>
+
+<Warning>
+  Chat agents do not support voice-specific functions like call transfers, DTMF (press digits), or telephony features. During conversion, any such nodes or functions are automatically removed.
+</Warning>
+
+## Next Steps
+
+After creating your chat agent, you can:
+
+- **Create a chat session** — start a session via the API to begin a conversation
+- **Generate responses** — use the chat completion endpoint to send and receive messages

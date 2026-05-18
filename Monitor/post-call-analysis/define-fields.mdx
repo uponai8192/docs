@@ -1,0 +1,48 @@
+---
+title: "Define the Information You Want to Extract"
+description: "Configure custom post-call analysis fields to extract structured data from every call."
+---
+
+<Steps>
+  <Step title="Navigate to Post-Call Analysis">
+    Go to the agent detail page and click the **Post-Call Analysis** tab.
+  </Step>
+  <Step title="Choose a category type and configure it">
+    Select the type that fits your data:
+
+    **Boolean** — Yes/no determinations
+    ```
+    Name: user_reached
+    Description: Was the user reached? Set to false if voicemail is detected,
+    if only asked for reason of call, or if only asked to leave a message.
+    Otherwise set to true.
+    ```
+
+    **Text** — Detailed textual extraction
+    ```
+    Name: detailed_call_summary
+    Description: Provide a detailed summary so that when the call is transferred,
+    the new agent has full context.
+    Format example: "Customer called about billing issue. Resolved by explaining
+    recent price changes. Follow-up needed in 2 weeks."
+    ```
+
+    **Number** — Numerical value extraction
+    ```
+    Name: purchase_intent_amount
+    Description: Extract the dollar amount the customer is interested in spending.
+    ```
+
+    **Selector** — Categorize from predefined options
+    ```
+    Name: issue_category
+    Description: Categorize the main reason for the call. Explain each choice
+    in this description field.
+    Choices: ["Technical Support", "Billing Question", "Sales Inquiry", "Product Information"]
+    ```
+
+    <Note>
+      Write explanations for choices inside the **description** field. The choices list should contain only the choice labels themselves.
+    </Note>
+  </Step>
+</Steps>

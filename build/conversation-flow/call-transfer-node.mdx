@@ -1,0 +1,87 @@
+---
+title: "Call Transfer Node"
+description: "Transfer the call to another phone number or SIP destination."
+---
+
+This node only works during phone calls — not web calls. It's available for UponAI numbers and imported numbers.
+
+The agent will not speak when inside this node. If you want the agent to say something like "Let me transfer you right away" before the transfer, add a Conversation Node (with Skip Response enabled) before this node.
+
+## When Can Transition Happen
+
+Transition happens when the transfer fails. There is a pre-populated failure edge — connect it to a node to handle transfer failure.
+
+## Configure Transfer
+
+<Steps>
+  <Step title="Setup Transfer To Target">
+    Set the transfer number to:
+    - A number in e.164 format, or a SIP URI in the format `sip:username@domain` (e.g. `sip:user@retellai.com`)
+    - A dynamic variable that gets substituted at runtime
+
+    Optionally, if your transfer destination is not in e.164 format, choose **raw format** to keep the input as-is. This only applies when using custom telephony (not UponAI Telephony) — useful for transferring to internal pseudo numbers.
+
+    Set the transfer number extension if needed. Extension must be `0-9`, `*`, `#` (e.g. `123#`).
+  </Step>
+
+  <Step title="Configure Transfer Type">
+    Choose between:
+
+    - **Cold transfer**: The call is transferred to the destination number — that's it.
+    - **Warm transfer**: After transfer, the AI agent can detect if the other side is human, leave private messages not heard by the user, and do a three-way introduction.
+    - **Agentic warm transfer**: A transfer agent has a two-way conversation with the transfer target and then decides to either bridge the original caller or cancel the transfer.
+  </Step>
+
+  <Step title="Configure Transfer Dial Timeout (All Modes)">
+    Set how long the destination should ring for this transfer. If not set, the agent-level ring duration setting is used. Applies to cold, warm, and agentic warm transfer.
+  </Step>
+
+  <Step title="Configure Caller ID (Optional)">
+    Choose which caller ID shows up to the transfer destination:
+
+    - **Agent's number**: The transfer destination sees the UponAI agent's number
+    - **User's number**: The transfer destination sees the original caller's number (telephony provider must support caller ID override)
+
+    <Note>
+      UponAI Twilio numbers support showing the user's number on both warm and cold transfer. Telnyx numbers only support this via cold transfer using SIP REFER. If caller ID override is not supported, the transfer will fail.
+    </Note>
+  </Step>
+
+  <Step title="Configure Cold Transfer Specific Settings">
+    - **SIP INVITE** (default): Establishes or updates the active call path, then bridges the transfer
+    - **SIP REFER**: Asks an endpoint to start a separate call to a third party — use only if your telephony provider supports it
+  </Step>
+
+  <Step title="Configure Warm Transfer Specific Settings (Non-Agentic)">
+    - **On-hold music**: Audio played to the caller while on hold (default: standard ringtone)
+    - **Navigate IVR**: Prompt to navigate if the transfer target is an IVR system
+    - **Enable human detection**: Agent checks if a human is present before connecting the original caller
+    - **Auto-greet**: Agent immediately says "Hello" when transfer target picks up, increasing human detection likelihood
+    - **Agent detection timeout**: Max time to wait for human detection (default: 30 seconds). If not detected in time, transfer is marked failed
+    - **Whisper message** (optional): Spoken privately to the transfer target before connecting to the original caller
+    - **Three-way message** (optional): Spoken to both the transfer target and original caller once connected
+  </Step>
+
+  <Step title="Configure Agentic Warm Transfer Specific Settings">
+    - **On-hold music**: Audio played to the original caller while the transfer agent is working
+    - **Two-way conversation agent**: Select the transfer agent (and version) that converses with the transfer target
+    - **Wait time for agent answer**: How long to wait for the transfer agent to make a decision
+    - **Three-way ring tone**: Audio the original caller hears while the transfer agent handles the handoff
+    - **Three-way message** (optional): Shared with both parties when the call is bridged
+  </Step>
+
+  <Step title="Add Custom SIP Headers (Optional)">
+    Add custom SIP headers to pass session-specific data (e.g. user IDs, campaign codes) between VoIP endpoints.
+
+    - All header names must start with `X-` or be `User-To-User` (case insensitive)
+    - Headers are preserved only when transferring directly to a SIP endpoint — may be stripped for PSTN transfers
+  </Step>
+</Steps>
+
+## Other Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Speak During Execution | Write instructions for the agent to generate an utterance (e.g. "Let me check that for you.") while the transfer executes. Choose **Prompt** or **Static Sentence**. |
+| Global Node | See Global Node guide. |
+| LLM | Choose a different model for this node — used for function argument generation and speak-during-execution message generation. |

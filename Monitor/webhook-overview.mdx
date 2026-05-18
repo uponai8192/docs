@@ -1,0 +1,165 @@
+---
+title: "Webhook Overview"
+description: "Receive real-time push notifications for call and chat events instead of polling the API."
+---
+
+Webhooks push data to your application as events happen — no polling required.
+
+## Event Types
+
+### Voice Call Events
+
+| Event | Description | Payload |
+|-------|-------------|---------|
+| `call_started` | New call begins | Basic call information |
+| `call_ended` | Call completes, transfers, or errors | Full call object (excluding `call_analysis`) |
+| `call_analyzed` | Call analysis complete | Full call data including `call_analysis` |
+| `transcript_updated` | Turn-taking transcript updates + final update on call end | Full call data + `transcript_with_tool_calls` |
+| `transfer_started` | Transfer initiated | Full call data + `transfer_destination` and `transfer_option` |
+| `transfer_bridged` | Transfer successfully bridged | Full call data + `transfer_destination` and `transfer_option` |
+| `transfer_cancelled` | Transfer cancelled or failed | Full call data + `transfer_destination` and `transfer_option` |
+| `transfer_ended` | Transfer leg ends | Full call data |
+
+<Note>
+  If a call did not connect (e.g. `dial_failed`, `dial_no_answer`, `dial_busy`), `call_started` will NOT be triggered. `call_ended` and `call_analyzed` will still fire.
+</Note>
+
+### Chat Events
+
+| Event | Description | Payload |
+|-------|-------------|---------|
+| `chat_started` | New chat begins | Basic chat information |
+| `chat_ended` | Chat completes or errors | Full chat object (excluding `chat_analysis`) |
+| `chat_analyzed` | Chat analysis complete | Full chat data including `chat_analysis` |
+
+## Webhook Behavior
+
+- **Timeout:** 10 seconds. If no 2xx response is received, retried up to 3 times.
+- **Ordering:** Events fire in order but are non-blocking. A failed `call_started` won't prevent `call_ended` from firing.
+- **Expected response:** Return a `2xx` status code. No body required.
+
+## Event Filtering
+
+Limit which events are delivered per agent using the `webhook_events` field when creating or updating an agent.
+
+| Agent type | Default events |
+|-----------|---------------|
+| Voice | `call_started`, `call_ended`, `call_analyzed` |
+| Chat | `chat_started`, `chat_ended`, `chat_analyzed` |
+
+## Webhook Types
+
+| Type | Setup | Scope |
+|------|-------|-------|
+| **Account-level** | Dashboard → Webhooks tab | All agents under your account |
+| **Agent-level** | `webhook_url` field on agent | That agent only. When set, account-level webhook will NOT fire for that agent. |
+
+## Sample Payloads
+
+**`call_ended` payload:**
+
+```json
+{
+  "event": "call_ended",
+  "call": {
+    "call_type": "phone_call",
+    "from_number": "+12137771234",
+    "to_number": "+12137771235",
+    "direction": "inbound",
+    "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6",
+    "agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+    "call_status": "registered",
+    "start_timestamp": 1714608475945,
+    "end_timestamp": 1714608491736,
+    "disconnection_reason": "user_hangup",
+    "transcript": "...",
+    "retell_llm_dynamic_variables": {
+      "customer_name": "John Doe"
+    }
+  }
+}
+```
+
+**`transfer_started` payload:**
+
+```json
+{
+  "event": "transfer_started",
+  "call": {
+    "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6"
+  },
+  "transfer_destination": {
+    "number": "+12137771235",
+    "extension": "1234"
+  },
+  "transfer_option": {
+    "type": "warm_transfer",
+    "showTransfereeAsCaller": true,
+    "agentDetectionTimeoutMs": 15000
+  }
+}
+```
+
+## Verify Webhooks
+
+All requests include an `x-retell-signature` header (HMAC-SHA256). Verify using your UponAI API key:
+
+```javascript Node
+import { UponAI } from "uponai-sdk";
+import express from "express";
+
+const app = express();
+// Use raw body — not JSON.stringify(req.body)
+app.use(express.raw({ type: "application/json" }));
+
+app.post("/webhook", (req, res) => {
+  const rawBody = req.body.toString("utf-8");
+  if (
+    !UponAI.verify(
+      rawBody,
+      process.env.UPONAI_API_KEY,
+      req.headers["x-retell-signature"],
+    )
+  ) {
+    console.error("Invalid signature");
+    return res.status(401).send();
+  }
+
+  const { event, call } = JSON.parse(rawBody);
+
+  switch (event) {
+    case "call_started":
+      console.log("Call started", call.call_id);
+      break;
+    case "call_ended":
+      console.log("Call ended", call.call_id);
+      break;
+    case "call_analyzed":
+      console.log("Call analyzed", call.call_id);
+      break;
+    case "transcript_updated":
+      console.log("Transcript updated", call.call_id);
+      break;
+    case "transfer_started":
+    case "transfer_bridged":
+    case "transfer_cancelled":
+    case "transfer_ended":
+      console.log("Transfer event", event, call.call_id);
+      break;
+    default:
+      console.log("Unknown event:", event);
+  }
+
+  res.status(204).send();
+});
+```
+
+You can also allowlist UponAI's IP address: `100.20.5.228`.
+
+## Local Testing
+
+Use [ngrok](https://ngrok.com) to expose a local endpoint for webhook testing during development.
+
+## Privacy
+
+If you enable **Opt-Out of Personal and Sensitive Data Storage**, transcripts and recordings won't be stored post-call. However, they remain accessible via webhooks for up to 10 minutes via the `recording_url` field.

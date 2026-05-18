@@ -1,0 +1,102 @@
+---
+title: 'Build a Multi-Prompt Agent'
+description: 'Structure complex agents using multiple states, each with its own focused prompt and behavior.'
+---
+
+## Overview
+
+A multi-prompt agent breaks your conversation into **states**. Each state has its own prompt, available functions, and transition logic. This gives you precise control over what the agent can do and say at each point in the conversation.
+
+---
+
+## Structuring Conversation Flow
+
+Design your agent as a sequence of states. Each state should have a single, focused purpose.
+
+```txt
+State 1: Lead Qualification
+- Gather customer information
+- No booking functions available
+
+State 2: Appointment Scheduling
+- Booking functions enabled
+- Context from qualification available
+```
+
+Keep each state's prompt short and specific. Avoid putting all instructions in one state.
+
+---
+
+## State Transitions
+
+Use conditional logic to move between states based on what the caller says.
+
+```txt
+## Task
+
+1. Ask if the caller is interested in scheduling a tour.
+
+- if yes, transition to schedule_tour state.
+- if no or hesitant, call function end_call to hang up politely.
+```
+
+Transitions happen when the agent detects a condition is met. Define these explicitly so the agent doesn't guess.
+
+---
+
+## Function Integration
+
+Each state can have its own set of functions. Only expose functions relevant to that state.
+
+```txt
+## Task
+
+1. Confirm the appointment details with the caller (date, time, name, purpose).
+2. Once confirmed, call function book_appointment to book the appointment.
+```
+
+<Warning>
+  Do not expose booking or sensitive functions in early states (e.g. qualification). Only enable them in the state where they are needed.
+</Warning>
+
+---
+
+## Example — Lead Qualification Agent
+
+<Steps>
+  <Step title="State 1: Qualify the Lead">
+    Gather basic information. No booking tools available.
+
+    ```txt
+    ## Identity
+    You are a friendly assistant for UponAI helping qualify leads.
+
+    ## Task
+    1. Ask for the caller's name.
+    2. Ask what product or service they are interested in.
+    3. Ask if they would like to schedule a demo.
+
+    - if yes, transition to schedule_demo state.
+    - if no, call end_call and thank them for their time.
+    ```
+  </Step>
+  <Step title="State 2: Schedule the Demo">
+    Booking tools are now available. Context from State 1 is carried over.
+
+    ```txt
+    ## Identity
+    You are a scheduling assistant for UponAI.
+
+    ## Task
+    1. Confirm the caller's name (carried from previous state).
+    2. Ask for preferred date and time.
+    3. Invoke check_available_slots and return options.
+    4. Ask for their email address.
+    5. Confirm all details, then invoke book_demo.
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Start from the **Lead Qualification** template in your UponAI Dashboard to see this pattern pre-built and ready to customize.
+</Tip>

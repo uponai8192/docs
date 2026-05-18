@@ -1,0 +1,35 @@
+---
+title: "Troubleshoot High Latency"
+description: "Steps to diagnose and fix end-to-end latency issues exceeding 3 seconds."
+---
+
+If your end-to-end latency P90 exceeds **3 seconds**, follow these steps.
+
+<Steps>
+  <Step title="Check estimated latency">
+    - Look for features marked with a **turtle icon** in your agent configuration
+    - If estimated latency exceeds 1.5s, disable some of those features to reduce it
+  </Step>
+  <Step title="Monitor LLM response time">
+    Check your LLM latency. Normal range: **500ms–900ms**.
+
+    If consistently above 900ms:
+    - Switch to the fast tier
+    - Switch to an alternative LLM provider
+    - Or wait for your current provider to resolve performance issues
+  </Step>
+  <Step title="Check the status page">
+    Check the UponAI Status Page for any ongoing incidents. Wait for active issues to resolve before further troubleshooting.
+  </Step>
+  <Step title="Consider geographic distance">
+    International calls introduce additional latency due to geographic distance:
+    - Check if you're calling across countries or continents
+    - Use a phone number geographically closer to your target audience
+  </Step>
+  <Step title="Contact support">
+    If the above steps don't resolve the issue, contact support with:
+    - Your **Call ID**
+    - Steps already tried
+    - Current latency measurements
+  </Step>
+</Steps>

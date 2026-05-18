@@ -1,0 +1,116 @@
+---
+title: "MCP Server"
+description: "Manage UponAI voice agents directly from AI coding tools like Cursor, Claude Desktop, and Claude Code using the Model Context Protocol."
+---
+
+UponAI supports the Model Context Protocol (MCP), letting you build and manage voice agents directly from MCP-capable clients — Cursor, Claude Desktop, Claude Code, and similar tools.
+
+If you already use UponAI via the REST API or SDKs, MCP is simply a different interface to the same functionality, optimized for agentic workflows in IDEs and AI assistants.
+
+## What the MCP Server Can Do
+
+With an MCP client connected, your AI assistant has native access to:
+
+| Category | Actions |
+|----------|---------|
+| **Agents** | Create, update, publish, list, fetch versions |
+| **Calls** | Create phone/web calls, fetch details, list, delete, update metadata, run QA |
+| **Phone numbers** | Import, provision, list, fetch |
+| **Knowledge base** | Create KBs, attach/remove sources, list |
+| **Voices** | List, clone, search community voices |
+| **Chats** | Create chats and chat agents, end chats, update metadata |
+| **Testing & QA** | Create test cases, run tests, list/rerun QA, submit scores |
+| **Alerts & webhooks** | Create/list alert rules, list incidents, test webhooks |
+
+## Prerequisites
+
+- A UponAI API key (from the **API Keys** tab in your dashboard)
+- An MCP client (Cursor, Claude Desktop, Claude Code, etc.)
+- MCP server URL: `https://retell.stlmcp.com`
+- Auth header: `Authorization: Bearer <YOUR_API_KEY>`
+
+## Setup
+
+<Tabs>
+  <Tab title="Cursor">
+    Open the command palette → **Cursor Settings → MCP → Add new global MCP server**:
+
+    ```json
+    {
+      "mcpServers": {
+        "uponai": {
+          "url": "https://retell.stlmcp.com",
+          "headers": {
+            "Authorization": "Bearer <YOUR_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Claude Desktop">
+    Add to your Claude Desktop MCP config:
+
+    ```json
+    {
+      "mcpServers": {
+        "uponai": {
+          "url": "https://retell.stlmcp.com",
+          "headers": {
+            "Authorization": "Bearer <YOUR_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Claude Code">
+    Run in your terminal:
+
+    ```bash
+    claude mcp add --transport http uponai https://retell.stlmcp.com \
+      --header "Authorization: Bearer <YOUR_API_KEY>"
+    ```
+  </Tab>
+  <Tab title="Other clients">
+    Configure with:
+    - **Transport:** Streamable HTTP
+    - **URL:** `https://retell.stlmcp.com`
+    - **Header:** `Authorization: Bearer <YOUR_API_KEY>`
+  </Tab>
+</Tabs>
+
+## Example Prompts
+
+Once connected, try these prompts in your MCP client:
+
+- *"List my agents and summarize what each one does."*
+- *"Create a new agent for inbound sales qualification and publish it."*
+- *"Show me the last 20 calls and flag any with low QA scores."*
+- *"Create a knowledge base and attach these sources, then update my agent to use it."*
+- *"Import this phone number and assign it to my agent."*
+- *"Rerun QA on this call and summarize the failure reasons."*
+
+## Security
+
+Connecting an LLM to operational tools introduces prompt injection risk — untrusted content in call transcripts, user messages, or KB documents can include instructions that try to trick the model into taking unintended actions.
+
+<Warning>
+  Keep "confirm before running tools" enabled in your MCP client and review tool calls carefully before approving.
+</Warning>
+
+**Recommendations:**
+- Use least privilege — create API keys with minimum required permissions
+- Never paste API keys into chat — store them in client secrets/settings
+- Prefer read-first workflows — fetch a resource before updating or deleting it
+- Gate destructive actions — delete and publish should require explicit intent
+- Avoid sending full call transcripts to the model if you don't need them — they may contain PII
+- Use development data when exploring agent behavior, not production
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Tools not showing up | Verify the server URL, auth header, and that the client can reach the endpoint |
+| 401 Unauthorized | Confirm `Authorization: Bearer <YOUR_API_KEY>` and that the key is active |
+| Tool call errors | Re-run with smaller inputs and inspect the returned error payload |

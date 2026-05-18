@@ -1,0 +1,38 @@
+---
+title: "Add Backchannel"
+description: "Enable your UponAI agent to make natural listening sounds like 'uh-huh' and 'I see' during caller speech."
+---
+
+Backchannel lets the agent make small acknowledgment sounds — like "uh-huh", "I see", or "okay" — while the caller is speaking. This improves engagement and makes the conversation feel more natural.
+
+## Configuration Fields
+
+Set these fields via the Create Agent API or your agent settings:
+
+**`enable_backchannel`**
+Set to `true` to enable backchannel. Defaults to `false`.
+
+**`backchannel_frequency`**
+Controls how often backchannel triggers when the engine determines a backchannel is appropriate. Range: `0` (never) to `1` (always). Default: `0.8`.
+
+**`backchannel_words`**
+The words the agent can use as backchannels. Defaults vary by language and voice provider. You can override this field to customize the words used.
+
+<Note>
+  Certain voices do not work well with certain words. Experiment before customizing the word list.
+</Note>
+
+## Default Backchannel Words by Provider
+
+<Tabs>
+  <Tab title="English (en)">
+    | Voice provider | Default words |
+    |----------------|--------------|
+    | ElevenLabs | `"okay"`, `"uh-huh"`, `"mhmm"`, `"yah"` |
+    | OpenAI | `"okay"`, `"uh-huh"`, `"yah"` |
+    | Deepgram | `"okay"`, `"uh-huh"`, `"yah"` |
+  </Tab>
+  <Tab title="Other languages">
+    Defaults for Spanish (es), Hindi (hi), German (de), French (fr), Japanese (ja), and Portuguese (pt) are set automatically based on language and voice provider support.
+  </Tab>
+</Tabs>

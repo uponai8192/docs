@@ -1,103 +1,146 @@
 ---
-title: 'Knowledge Base'
-description: 'Extra Information for Your Agent Tab'
+title: "Knowledge Base"
+description: "Enhance your AI agent with a knowledge base using URLs, documents, and custom text for better responses."
 ---
 
-## Overview
+A knowledge base is a collection of information sources your agent can search during a call to retrieve relevant context. It improves response quality — especially when there is too much information to fit in a prompt — and is ideal for support, helpdesk, and FAQ use cases.
 
-A knowledge base is a collection of information sources that your agent can use to find helpful details during calls.  
-This gives your agent more context for better conversations.  
-It helps improve how well your agent responds and the overall experience, especially when you have lots of information that’s too much to put directly in your prompt but your agent still needs it to answer correctly.  
-
-Works great for:
-- Customer support
-- Help desks
-- Frequently asked questions
-
----
+**Supported sources:**
+- Website content (via URLs)
+- Documents: `.bmp`, `.csv`, `.doc`, `.docx`, `.eml`, `.epub`, `.heic`, `.html`, `.jpeg`, `.png`, `.md`, `.msg`, `.odt`, `.org`, `.p7s`, `.pdf`, `.ppt`, `.pptx`, `.rst`, `.rtf`, `.tiff`, `.txt`, `.tsv`, `.xls`, `.xlsx`, `.xml`
+- Custom text snippets
 
 ## How It Works
 
-- You can make knowledge bases and connect them to your agents.  
-- When you link a knowledge base to an agent, the agent will always look for useful information from it before answering.  
-- You don’t need to change your prompt to make this happen—it works automatically every time the agent responds.  
-- When you create a knowledge base, the system:  
-  - Breaks your information into smaller pieces  
-  - Turns them into searchable data  
-  - Saves them in a special database  
-- During calls, right before your agent responds:  
-  - It looks at the conversation so far (not including your original prompt)  
-  - Finds the most helpful pieces from the knowledge base  
-  - Uses this information to give better answers  
+Create a knowledge base and link it to your agent. When linked, the agent automatically searches the knowledge base before every response — no prompt changes needed.
 
----
+**At creation time:** sources are chunked, embedded, and stored in a vector database.
 
-## Supported Formats
+**During a call:** before responding, the agent uses the conversation transcript to find the most relevant chunks and feeds them to the LLM as context under `## Related Knowledge Base Contexts`.
 
-You can upload:
-- PDF  
-- DOC  
-- DOCX  
-- TXT documents  
-- Text themselves  
-- URL to website pages  
+## Auto-Refreshing and Auto-Crawling
 
-Capable of having over **300 pages of information** per knowledge base.
+For URL sources, you can enable:
 
----
+- **Auto-refreshing** — re-fetches all URLs every 24 hours to keep content current
+- **Auto-crawling** — crawls all pages under specified URL paths every 24 hours, excluding any URLs on the exclusion list
 
-## How To Create
+## Limits
 
-- In the top navigation bar under **Agents**  
-- Navigate to **Knowledge Bases**  
-- Click **Create Knowledge Base**  
+| Source type | Limit |
+|-------------|-------|
+| URLs | 500 per knowledge base |
+| Auto-crawling exclusion URLs | 200 per path; 500 per knowledge base |
+| Text snippets | 50 per knowledge base |
+| Files | 25 files, max 50 MB each |
+| CSV/TSV/XLS/XLSX | 1,000 rows, 50 columns |
+
+<Tip>
+  Create multiple knowledge bases to overcome these limits. An agent can have more than one knowledge base linked to it.
+</Tip>
+
+## Best Practices
+
+- Prefer `.md` (Markdown) files over `.txt` — structured Markdown is chunked and retrieved more accurately
+- Use clear, descriptive headings; split long sections into `##`/`###` subsections
+- Write short paragraphs and lists; avoid walls of text
+- Avoid ambiguous pronouns like "it" or "this" — prior chunks won't be present, so references must be self-contained
+- Use specific URL paths for auto-crawling instead of broad paths with many exclusions
+- Put supporting information in the knowledge base; put agent instructions in the prompt
+
+## Setup
+
+<Steps>
+  <Step title="Access Knowledge Base settings">
+    In the top navigation bar under **Agents**, navigate to **Knowledge Bases** and click **Create Knowledge Base**.
+  </Step>
+</Steps>
 
 <img
   src="/images/fifth.png"
-  alt="Begin message type options"
+  alt="Create Knowledge Base"
   height="300"
   className="rounded-lg"
 />
 
-
-## Here you’ll be able to upload a document, text or URL
+<Steps>
+  <Step title="Add sources">
+    Choose a source type:
+    - **URL** — import from web pages; supports single pages or full sites
+    - **File** — upload documents (PDF, TXT, DOCX, etc.), max 50 MB
+    - **Text** — paste or type custom content directly
+  </Step>
+</Steps>
 
 <img
   src="/images/sixth.png"
-  alt="Begin message type options"
+  alt="Upload document, text or URL"
   height="300"
   className="rounded-lg"
 />
 
-## Connecting Your Knowledge Base to an Agent
+<Steps>
+  <Step title="Enable auto-crawling (optional)">
+    Enable auto-crawling for specific URL paths. URLs not selected will be added to the exclusion list.
+  </Step>
+  <Step title="Connect to your agent">
+    Once created (may take a few minutes), go into your agent, navigate to **Knowledge Base** on the right, click **Add Knowledge Base**, select your knowledge base, then click **Save**.
+  </Step>
+  <Step title="Configure retrieval settings">
+    Adjust **KB Retrieval Chunks and Similarity**:
+    - **Chunks to retrieve** — max chunks returned per response (range 1–10, default: 3)
+    - **Similarity threshold** — how strictly chunks must match the context (default: 0.60)
 
-Once uploaded, it may take a few minutes.
+    <Note>
+      Default settings (3 chunks, 0.60 threshold) work well for most cases. Increasing chunks gives more context but raises prompt length and can reduce generation quality.
+    </Note>
+  </Step>
+  <Step title="Set node-level knowledge base (Conversation Flow only)">
+    For Conversation Flow agents, attach a knowledge base to individual Conversation Nodes or Subagent Nodes for more focused context on specific topics.
+  </Step>
+</Steps>
 
-- Go into your agent.  
-- Navigate to **Knowledge Base** on the right.  
-- Click **Add Knowledge Base** and select the one you uploaded.  
-- Remember to **Click Save**.  
+## FAQ
+
+**Do I need to change my prompt to use a knowledge base?**
+No. The knowledge base retrieves automatically on every response.
+
+**How can I prevent the LLM from generating information not in the knowledge base?**
+Add instructions like "Only answer based on the information provided. If you don't know, say so." to your prompt.
+
+**Will this add latency to calls?**
+Retrieval adds a small amount of latency — typically under 200ms.
+
+**Is there a way to check what's being retrieved?**
+Yes — the dashboard call logs show which chunks were retrieved for each response.
+
+## Pricing
+
+| Item | Cost |
+|------|------|
+| First 10 knowledge bases | Free |
+| Additional knowledge bases | $8 / month each |
+| Calls with knowledge base enabled | $0.005 / minute |
+
+<Note>
+  The per-minute charge is the same regardless of how many knowledge bases are linked to the agent.
+</Note>
 
 ---
 
-## Post Call Analysis (All under Build)
+## Post Call Analysis
 
-Post-call analysis is a powerful feature that automatically analyzes customer conversations after they have ended, helping you derive valuable insights from your calls.
-
-We provide several built-in analysis categories you can add to your agent under **Common Examples**.
+Post-call analysis automatically analyzes conversations after they end, helping you derive insights from your calls. Several built-in analysis categories are available under **Common Examples** in your agent settings.
 
 ### Adding Post-Call Analysis Data Fields
 
-- Under **Post-Call Analysis**, click **Add Data Field**.  
-- You can add several data types the agent will retrieve.  
-- The retrieval of this information is what is shown on your:
-  - CDR
-  - Emails
-  - SMS (if you have opted in to that option through the webhook) 
+- Under **Post-Call Analysis**, click **Add Data Field**
+- Add data types you want the agent to retrieve
+- This data appears in your CDR, emails, and SMS (if opted in via webhook)
 
 <img
   src="/images/seventh.png"
-  alt="Begin message type options"
+  alt="Post Call Analysis settings"
   height="300"
   className="rounded-lg"
 />

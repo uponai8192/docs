@@ -1,0 +1,64 @@
+---
+title: "Setup Versioning for Agents"
+description: "Publish and lock agent versions for production use while keeping version history."
+---
+
+Versioning lets you update an agent while keeping old versions unchanged for production use.
+
+**Two main purposes:**
+
+1. **Lock in configuration** — Published versions cannot be changed. Pin a specific version to a phone number to lock the agent configuration in production.
+2. **Version control & history** — Create draft versions from past versions, track changes, and revert if needed.
+
+Each agent (and its corresponding LLM or conversation flow) has a version number — a monotonically increasing integer. Both the agent and its LLM/flow share the same version number.
+
+## Version Number Example
+
+| Version | Meaning |
+|---------|---------|
+| `0` | First published version |
+| `1` | Second published version |
+| `2` | Current (latest) version |
+
+<Note>
+  Published versions cannot be changed. Only the latest version (draft) is editable.
+</Note>
+
+## How to Generate a New Version
+
+Click the **Deployment** button in the upper right corner of the agent page. This creates a new published version of the agent and its LLM/conversation flow.
+
+In the deployment modal, you can:
+- Optionally give the version a title
+- Attach phone numbers for production use
+
+<Note>
+  You can also attach phone numbers later via the **Phone Numbers** tab in the dashboard.
+</Note>
+
+## How to View Old Versions
+
+Click the **Clock icon** in the upper right corner of the agent page to see all published versions. Clicking a version opens its configuration (read-only).
+
+To attach phone numbers to an old version, click **Update Deployment** after opening that version. The modal works the same as the main Deployment modal.
+
+## Using the Phone Numbers Tab
+
+The **Phone Numbers** tab lets you attach phone numbers to old versions or existing draft versions.
+
+- Select **Draft** to always fetch the latest (unpublished) version of the agent.
+- Select a specific version number to pin production calls to that exact configuration.
+
+## Using Version Numbers in the API
+
+Version numbers can be used as parameters in:
+- `get_agent` / `get_retell_llm` API
+- `create_web_call`
+- `create_phone_number`
+
+```python
+get_agent(version=2)  # Gets version 2
+get_agent()           # Gets the latest version (default)
+```
+
+If using the UponAI SDK, version defaults to latest if not specified.

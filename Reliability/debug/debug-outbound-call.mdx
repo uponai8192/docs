@@ -1,0 +1,50 @@
+---
+title: "Debug Outbound Connection Issues"
+description: "Diagnose why outbound calls have a not_connected status."
+---
+
+When an outbound call has `not_connected` status, the call failed to reach the destination. The cause is tracked in the `disconnection_reason` field.
+
+## Disconnection Reasons for Not Connected Calls
+
+| Reason | Description |
+|--------|-------------|
+| `invalid_destination` | Destination number has spaces, invalid characters, or wrong format (check E.164) |
+| `telephony_provider_permission_denied` | SIP trunk authentication failed |
+| `telephony_provider_unavailable` | Telephony provider is down or erroring |
+| `sip_routing_error` | SIP routing loop or misconfiguration |
+| `marked_as_spam` | Call blocked because the number is marked as spam |
+| `user_declined` | User explicitly declined the call |
+| `dial_failed` | SIP error code unavailable or unknown error |
+| `dial_busy` | Number dialed is busy |
+| `dial_no_answer` | Number dialed did not answer |
+
+## Troubleshooting Steps
+
+<Steps>
+  <Step title="Check call history and detailed log">
+    The log contains the disconnection reason, error message, and optionally a SIP error code. If a SIP error is present, check the PCAP file for details — see [Debug Calls with PCAP](/Reliability/debug/debug-calls-pcap).
+
+    <Note>
+      PCAP files are only available when the agent's data retention is set to **Everything** and SIP transport is **UDP/TCP**. TLS transport calls will not have a PCAP.
+    </Note>
+  </Step>
+  <Step title="Dig deeper if logs are insufficient">
+    **For custom telephony:**
+    - Double-check your imported number configuration
+    - If configuration is wrong, delete and re-import the number
+    - If still failing, check with your telephony provider for their-side errors
+
+    **For UponAI-purchased numbers:**
+    - Ensure the destination number can accept calls (UponAI numbers currently call US numbers only)
+  </Step>
+</Steps>
+
+## Number Marked as Spam
+
+High outbound call volume spikes without warmup, or a low pickup rate, can cause carriers to mark your number as spam.
+
+**Remediation options:**
+- Purchase a new number and warm it up slowly before routing full traffic to it
+- Increase your pickup rate — see [Increase Call Pickup Rate](/Deploy/call-pickup-rate/spam-likely)
+- Register with the verified phone number feature — see [Verified Phone](/Deploy/call-pickup-rate/verified-phone)

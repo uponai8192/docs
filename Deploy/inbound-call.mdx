@@ -1,0 +1,48 @@
+---
+title: "Receive Calls"
+description: "Set up your phone number to receive inbound calls with a bound voice agent."
+---
+
+## Bind Voice Agents
+
+Only when you bind agents to a number will the number be able to receive and make calls.
+
+- You can assign different inbound and outbound agents to the same number.
+- Leave an agent unset to disable inbound or outbound (e.g. if you're doing outbound only and don't want callbacks, leave `inbound_agent_id` unset).
+- After binding an inbound agent, your number is ready to receive calls immediately.
+
+## A/B Testing
+
+See [A/B Testing](/Deploy/ab-testing) to route a percentage of inbound calls to different agents.
+
+## Inbound Call Webhook
+
+Often you'll want to use different agents to handle inbound calls on the same number, provide dynamic variables, or customize other call fields per-call. Use the **Inbound Call Webhook** to handle this.
+
+<Note>
+  Read more at the Inbound Call Webhook documentation.
+</Note>
+
+## Inbound Custom SIP Headers
+
+You can use custom SIP headers to pre-set dynamic variables for a call.
+
+UponAI extracts any header starting with `sip.h.x-`, along with common SIP headers like `Diversion`, `History-Info`, `User-To-User`, and `P-Asserted-Identity`, and converts each into a dynamic variable by stripping the `sip.h.` prefix.
+
+**Examples:**
+- `sip.h.x-caller: abc` → `x-caller: abc`
+- `sip.h.p-asserted-identity: +12345678910` → `p-asserted-identity: +12345678910`
+- `sip.h.diversion: <sip:2000@192.168.254.254>;privacy=off;reason=no-answer` → `diversion: <sip:2000@192.168.254.254>;privacy=off;reason=no-answer`
+
+## Get Call Details
+
+After a call completes, you can retrieve full call information:
+
+<CardGroup cols={2}>
+  <Card title="API">
+    Use the **Get Call API** to retrieve the transcript, recording, latency tracking, and more.
+  </Card>
+  <Card title="Webhook">
+    Set up webhooks to receive real-time updates when a call is initiated, ends, and is analyzed. Read more at the Call Webhook Guide.
+  </Card>
+</CardGroup>

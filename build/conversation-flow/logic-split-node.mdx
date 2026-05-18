@@ -1,0 +1,24 @@
+---
+title: "Logic Split Node"
+description: "Branch the conversation flow based on conditions without the agent speaking."
+---
+
+Logic split node is used to branch out the conversation flow based on conditions. When entering this node, the agent will immediately evaluate the conditions and branch out to the corresponding destination nodes. The agent will not speak in this node, and the time spent in this node is minimal.
+
+It can come in handy when you want to further split the conversation flow based on conditions without stacking all your conditions in previous nodes. It can also be hard for the agent to handle many conditions at once, so this node helps break it down. It is also useful when you want to branch out based on dynamic variables.
+
+## When Can Transition Happen
+
+Transition happens immediately when the agent enters this node.
+
+## Configure Branching Logic
+
+- Add conditions just like you would in other nodes
+- Set up the **else destination** — there will always be an else condition, which is the default destination if none of the conditions are met. This node is designed to be a split point, so you want to make sure the conversation flow does not get stuck here.
+
+## Other Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Global Node | See Global Node guide. |
+| Fine-tuning Examples | Fine-tune transition behavior. See Finetune Examples guide. |

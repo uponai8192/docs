@@ -1,0 +1,47 @@
+---
+title: "Guardrails"
+description: "Detect and prevent prohibited topics in agent output and user input using built-in content guardrails."
+---
+
+Guardrails are a built-in content moderation layer that checks agent responses and user messages for prohibited topics. When a guardrail triggers, the prohibited content is automatically replaced with a safe placeholder message, keeping the call going without interruption.
+
+## How Guardrails Work
+
+Guardrails apply in two ways:
+
+- **Output guardrails** — check what the agent says. If the response contains a prohibited topic, it is replaced with a placeholder before being spoken.
+- **Input guardrails** — check what the user says. If the user's message contains a prohibited topic, the agent responds with a placeholder instead of processing the request.
+
+In both cases, the call continues normally after the placeholder is delivered. Guardrails do not end the call, transfer the call, or trigger any other action — they only replace the problematic message.
+
+## Configuring Guardrails
+
+Configure guardrails when creating or updating an agent via the dashboard or API. In the dashboard, guardrail settings are under **Security & Fallback Settings**.
+
+<Note>
+  Guardrails add approximately 50ms of latency to calls.
+</Note>
+
+## Output Topics
+
+These categories detect prohibited content in agent responses:
+
+| Topic | Description |
+|-------|-------------|
+| `harassment` | Harassing or abusive language |
+| `self_harm` | Content related to self-harm |
+| `sexual_exploitation` | Sexually exploitative content |
+| `violence` | Violent content |
+| `defense_and_national_security` | Defense and national security topics |
+| `illicit_and_harmful_activity` | Illicit or harmful activities |
+| `gambling` | Gambling-related content |
+| `regulated_professional_advice` | Regulated professional advice (legal, medical, financial) |
+| `child_safety_and_exploitation` | Child safety and exploitation content |
+
+## Input Topics
+
+One input topic is available — it detects attempts to manipulate or jailbreak the agent:
+
+| Topic | Description |
+|-------|-------------|
+| `platform_integrity_jailbreaking` | Attempts to jailbreak or manipulate the agent |

@@ -1,0 +1,40 @@
+---
+title: "Set Language for Your Agent"
+description: "Configure which language your UponAI agent speaks, transcribes, and responds in."
+---
+
+You can set a specific language for an agent. The language setting affects three things during a call:
+
+- **Speech recognition** — which language the agent transcribes the caller from
+- **Voice pronunciation** — the language the voice uses to pronounce words and shape its accent
+- **Agent text** — the agent is automatically instructed to respond in the configured language. You do not need to add a "respond in X" instruction to your prompt.
+
+<Info>
+  The voice you select is still the primary determinant of accent — the language setting refines pronunciation rules and ensures the right speech recognition model is used.
+</Info>
+
+## Pick a Single Language (Recommended)
+
+A single-language agent is the most accurate setup: the agent transcribes in one language only, the voice speaks with that language's pronunciation, and the agent always responds in that language — no language detection involved.
+
+<Note>
+  If no language is selected, the agent defaults to English (US).
+</Note>
+
+The chosen voice must support the chosen language. The dashboard hides unsupported combinations from the picker, with a tooltip explaining which voice or voice model is blocking it.
+
+## Need More Than One Language?
+
+For agents that serve callers in different languages, see the [multilingual agent guide](/build/configure-multilingual).
+
+<Tip>
+  If you already know the caller's language at call time — for example, from CRM context or the dialed number — prefer overriding the language per call via the inbound call webhook. This gives you single-language accuracy on each call without limiting which customers the agent can serve.
+</Tip>
+
+## Supported Languages
+
+The language you pick must be supported by both your chosen voice provider (for pronunciation) and at least one speech recognition provider (for transcription).
+
+On any agent page, open the language picker — the dropdown shows the live set of supported languages and updates as you change the voice provider, voice, and ASR provider. Unsupported combinations are greyed out, with a tooltip explaining which selection is blocking each one.
+
+For locale variants (for example, British English vs. US English, or European Spanish vs. Latin American Spanish), the language picker exposes the specific dialect codes when supported.

@@ -1,0 +1,22 @@
+---
+title: "Make Agent Hold and Respond Nothing"
+description: "Keep your UponAI agent silent when a caller asks it to hold or wait."
+---
+
+Sometimes you want the agent to stay silent — for example, when the caller says "hold on" or "give me a minute".
+
+## How It Works
+
+UponAI has a hard-coded stop sequence in the LLM: `NO_RESPONSE_NEEDED`. When the LLM outputs this exact sequence, response generation stops immediately and the agent says nothing.
+
+## Setup
+
+Add a prompt instruction telling the agent to output the stop sequence on hold requests:
+
+```
+If user says "hold on", reply exactly the following: "NO_RESPONSE_NEEDED"
+```
+
+<Note>
+  This feature does not apply to reasoning models (e.g., GPT-5, GPT-5.1), which do not support custom stop sequences. For those models, use prompt engineering instead: `When user says "hold on", simply do not respond.`
+</Note>

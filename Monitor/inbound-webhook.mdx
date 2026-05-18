@@ -1,0 +1,92 @@
+---
+title: "Inbound Call Webhook"
+description: "Override agent, set dynamic variables, and filter inbound calls and SMS before they connect."
+---
+
+The inbound webhook fires when an inbound call or SMS arrives on your number — before the call connects. Use it to dynamically route calls, inject context, or reject unwanted callers.
+
+<Note>
+  This does not apply to dial-to-SIP calls — you can provide call-specific info directly when registering the phone call.
+</Note>
+
+## Use Cases
+
+- Filter and reject unwanted inbound calls or SMS
+- Add context (dynamic variables, metadata) to inbound calls
+- Override agent ID, version, or specific agent settings per call
+- Pause the call to pick it up with a delay
+- Log inbound calls in your internal systems
+
+## Webhook Spec
+
+- **Method:** POST to your endpoint
+- **Timeout:** 10 seconds. Retried up to 3 times if no 2xx response.
+- **Verification:** Use your UponAI API key. See [Secure the Webhook](/Monitor/secure-webhook).
+
+## Request Payload
+
+```json
+{
+  "event": "call_inbound",
+  "call_inbound": {
+    "agent_id": "agent_12345",
+    "agent_version": 1,
+    "from_number": "+12137771234",
+    "to_number": "+12137771235"
+  }
+}
+```
+
+<Note>
+  The call is not yet connected when this fires — no call object or call ID exists yet. If you reject the call, no call object is created.
+</Note>
+
+Fields present depend on your number config: `agent_id` and `agent_version` appear only if set on the number. `from_number` and `to_number` are always present.
+
+## Response
+
+Return a `2xx` JSON response. All fields are optional:
+
+```json
+{
+  "call_inbound": {
+    "override_agent_id": "agent_12345",
+    "override_agent_version": 1,
+    "agent_override": {
+      "agent": {
+        "voice_id": "11labs-Adrian",
+        "voice_temperature": 0.6,
+        "interruption_sensitivity": 0.8,
+        "max_call_duration_ms": 1800000
+      },
+      "retell_llm": {
+        "model": "gpt-4o-mini",
+        "model_temperature": 0.2,
+        "knowledge_base_ids": ["kb_abc123"],
+        "start_speaker": "agent",
+        "begin_message": "Hi {{customer_name}}, thanks for calling."
+      }
+    },
+    "dynamic_variables": {
+      "customer_name": "John Doe"
+    },
+    "metadata": {
+      "random_id": "12345"
+    }
+  }
+}
+```
+
+For inbound SMS, replace `call_inbound` with `chat_inbound`.
+
+## Agent Override Fields
+
+| Group | Supported Fields |
+|-------|----------------|
+| `agent` | `voice_id`, `voice_model`, `voice_temperature`, `voice_speed`, `volume`, `language`, `responsiveness`, `interruption_sensitivity`, `enable_backchannel`, `end_call_after_silence_ms`, `max_call_duration_ms`, `voicemail_option`, `webhook_url`, `post_call_analysis_data`, and more |
+| `retell_llm` | `model`, `s2s_model`, `model_temperature`, `knowledge_base_ids`, `kb_config`, `start_speaker`, `begin_after_user_silence_ms`, `begin_message` |
+| `conversation_flow` | `model_choice`, `model_temperature`, `knowledge_base_ids`, `kb_config`, `start_speaker`, `begin_after_user_silence_ms`, `begin_message` |
+
+<Note>
+  If both `override_agent_id`/`override_agent_version` and `agent_override` are provided, UponAI first resolves the target agent by ID/version, then applies `agent_override` on top. Overrides do not persist to the saved agent.
+</Note>

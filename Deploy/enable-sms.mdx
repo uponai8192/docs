@@ -1,0 +1,91 @@
+---
+title: "Send & Receive SMS"
+description: "Enable two-way SMS conversations and in-call SMS with UponAI Twilio numbers or your own Twilio number."
+---
+
+SMS is a common way to communicate with customers. This guide shows you how to enable SMS with UponAI Twilio numbers or bring your own Twilio number.
+
+<Note>
+  SMS capabilities are currently limited to **US numbers only**. Telnyx is not supported yet. For other custom telephony providers, check your provider's documentation on enabling SMS.
+</Note>
+
+## Enable SMS Capabilities
+
+Choose one of three options depending on your setup:
+
+<Tabs>
+  <Tab title="Option 1: UponAI Twilio Numbers">
+    Enabling SMS for UponAI Twilio numbers requires A2P (Application-to-Person) registration — a mandatory regulatory process for business SMS in the US.
+
+    **One-time fees:**
+    - Business profile approval: Free
+    - Low-volume brand ($4) — fewer than 6,000 message segments/day to US (2,000 to T-Mobile)
+    - Standard brand ($45) — up to 400,000 message segments/day
+    - SMS campaign: $15
+
+    <Warning>
+      The full application can take 2–3 weeks (sometimes longer) as it involves manual review by the telephony provider. We'll notify you by email when approved or rejected. If stuck in pending for over a month, contact support.
+    </Warning>
+
+    <Steps>
+      <Step title="Get approved for a business profile">
+        Create or reuse an existing business profile and follow the Business Profile approval steps.
+      </Step>
+      <Step title="Select a brand type and get approved">
+        Only one brand can be created per business profile — this cannot be changed later. Choose **Low-volume** or **Standard** based on your expected SMS volume.
+      </Step>
+      <Step title="Get approved for an SMS campaign">
+        Fill out your intended use case and sample messages. SMS traffic must match your campaign — mismatches can result in your number being suspended. Be accurate about your actual use case.
+
+        If you need to send different types of messages later, you can create a new campaign.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Option 2: Bring Your Own Twilio Number">
+    If you already have a Twilio number with SMS capabilities, integrate it with UponAI:
+
+    <Steps>
+      <Step title="Click Setup SMS Function">
+        Navigate to your phone number settings in the UponAI dashboard and click **Setup SMS Function** under Advanced Add-Ons.
+      </Step>
+      <Step title="Provide Twilio credentials">
+        Enter your **Account SID** and **Twilio Auth Token** from your Twilio Console under Account Info.
+      </Step>
+      <Step title="Configure SMS settings">
+        Once verified, your Twilio number is integrated. To enable two-way SMS conversations, enable `useInboundWebhookOnNumber` in your Twilio dashboard phone number configuration.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Option 3: SMS-Approved UponAI Number (No A2P)">
+    If you only need to **send SMS during active phone calls** and want to skip A2P registration entirely, use UponAI's pool of SMS-approved numbers.
+
+    - No setup or approval required
+    - A number from the pool is automatically selected per call
+    - All SMS within the same call use the same number
+
+    <Warning>
+      When sending from an SMS-approved UponAI number, the message content is a **preset template** — you cannot customize the text or use a prompt. This option is for in-call SMS only and does not support two-way SMS conversations.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Send SMS During a Call
+
+Configure your agent to send SMS messages during an active phone call:
+
+- **Conversation Flow agents** — Use the [SMS Node](/build/conversation-flow/sms-node)
+- **Single/Multi Prompt agents** — Use the [Send SMS function](/build/send-sms)
+
+## Receive SMS During a Call
+
+Agents can receive and understand SMS (including MMS) during an active phone call — even if the agent hasn't sent any SMS first. This lets users send supplementary information mid-conversation, such as a photo, screenshot, or reference number.
+
+- **UponAI Twilio numbers** — Works out of the box, no additional setup needed
+- **Custom telephony numbers** — Supported after A2P approval
+
+## Set Up Two-Way SMS Conversations
+
+Once SMS is enabled for your number, attach a **chat agent** to the number. The number will then receive inbound SMS and reply automatically.
+
+- **Inbound SMS** — Works immediately once a chat agent is attached. Use the Inbound Webhook to filter and add context to incoming messages.
+- **Outbound SMS** — Click **Make an outbound SMS** in the dashboard, or use the Create Outbound SMS API to send programmatically.

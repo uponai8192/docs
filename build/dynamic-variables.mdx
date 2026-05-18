@@ -1,0 +1,131 @@
+---
+title: "Dynamic Variables"
+description: "Inject personalized data into your agent's responses for each specific call using the double curly brace syntax."
+---
+
+Dynamic variables let you inject personalized data into your agent for each specific call. Using `{{variable_name}}` syntax, you can create agents that adapt to different contexts while keeping consistent conversation flows.
+
+**Common use cases:**
+- Personalized greetings: `Hello {{customer_name}}, thanks for calling!`
+- Context-aware responses: `I see you're calling about order {{order_id}}`
+- Dynamic routing: transfer to different numbers based on `{{department}}`
+- Time-sensitive info: reference `{{appointment_date}}` or `{{deadline}}`
+
+## Where Dynamic Variables Work
+
+Dynamic variables can be used in:
+
+- **Prompts** — agent instructions and personality
+- **Begin message** — opening greeting
+- **Tool configurations** — custom function URLs, tool descriptions, property descriptions
+- **Call handling** — voicemail prompts and messages, transfer call phone numbers, warm transfer instructions, webhook URLs
+
+## Setup
+
+<Steps>
+  <Step title="Add variables to your prompt">
+    Use `{{variable_name}}` wherever you want to inject data. A variable picker appears when you type `{{` — filter by typing more characters, then select with Enter, click, or Tab.
+
+    ```
+    Hello {{user_name}}, I understand you're interested in {{product_name}}. How can I help you today?
+    ```
+  </Step>
+  <Step title="Set agent-level defaults (optional)">
+    Configure default values in agent settings. Defaults are used as fallback when a variable is not supplied in the call request.
+  </Step>
+  <Step title="Pass variables in production">
+    <Tabs>
+      <Tab title="Outbound calls">
+        Set variables in the `retell_llm_dynamic_variables` field of the Create Phone Call API:
+
+        ```json
+        {
+          "user_name": "John Smith",
+          "product_name": "Premium Plan",
+          "account_status": "active"
+        }
+        ```
+      </Tab>
+      <Tab title="Inbound calls">
+        Supply variables via the Inbound Call Webhook. See the [inbound webhook guide](/build/configure-basic-settings) for details.
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      All values in `retell_llm_dynamic_variables` must be strings. Numbers, booleans, and other types are not supported.
+    </Warning>
+  </Step>
+</Steps>
+
+## Default System Variables
+
+UponAI provides these variables automatically — no configuration needed:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{current_agent_state}}` | Current state name (multi-state agents) | `"greeting"` |
+| `{{previous_agent_state}}` | Previous state name (multi-state agents) | `"qualification"` |
+| `{{current_time}}` | Current time in America/Los_Angeles | `"Thursday, March 28, 2024 at 11:46:04 PM PST"` |
+| `{{current_time_[timezone]}}` | Current time in specified timezone (e.g. `{{current_time_Australia/Sydney}}`) | `"Thursday, March 28, 2024 at 11:46:04 PM AEDT"` |
+| `{{current_hour}}` | Current hour as a fraction in America/Los_Angeles | `"3.5"` |
+| `{{current_hour_[timezone]}}` | Current hour as fraction in specified timezone | `"3.5"` |
+| `{{current_calendar}}` | 14-day calendar in America/Los_Angeles | `"Thursday, March 28, 2024 PST (Today)..."` |
+| `{{current_calendar_[timezone]}}` | 14-day calendar in specified timezone | — |
+| `{{session_type}}` | Session type | `"voice"` or `"chat"` |
+| `{{session_duration}}` | How long the session has been running | `"20 minutes 30 seconds"` |
+
+### Phone Call Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{direction}}` | Call direction | `"inbound"` or `"outbound"` |
+| `{{user_number}}` | Caller's phone number | `"+12137771234"` |
+| `{{agent_number}}` | Agent's phone number | `"+12137771235"` |
+| `{{call_id}}` | Call session ID | `"call_12345678906eaa0222bd3dd2a6c"` |
+| `{{call_type}}` | Call type | `"phone_call"` |
+
+### Chat Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{chat_id}}` | Unique chat session identifier | `"chat_12345678906eaa0222bd3dd2a6c"` |
+
+## Nested Variables
+
+You can nest variables inside system variable names:
+
+```
+{{current_time_{{my_timezone}} }}
+```
+
+If `my_timezone` is set to `America/Los_Angeles`, this evaluates to `{{current_time_America/Los_Angeles}}` first, then resolves to the actual time.
+
+## Handling Missing Variables
+
+When a variable has no assigned value, it remains as raw text with curly braces intact:
+
+```
+Prompt:  "Hello {{user_name}}, how can I help you?"
+No value set:  "Hello {{user_name}}, how can I help you?"
+Value is "John":  "Hello John, how can I help you?"
+```
+
+**Checking for unset variables:**
+
+In Conversation Flow conditions:
+```
+Equation: {{user_name}} exists
+Result: True if variable is defined (empty string counts as defined)
+```
+
+In prompts:
+```
+If {{user_name}} appears with curly braces, use a generic greeting.
+Otherwise, greet the customer by name.
+```
+
+**Best practices:**
+- Set defaults at the agent level as fallback values
+- Design prompts that work with or without variables
+- Test with both set and unset variable states
+- Document which variables are required vs optional

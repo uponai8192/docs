@@ -1,0 +1,46 @@
+---
+title: "MCP Node"
+description: "Call tools on your MCP server from within a conversation flow."
+---
+
+MCP node is used to call tools on your MCP server. It's not intended for having a conversation with the user, but the agent can still talk while in this node if needed.
+
+## Add MCP Server
+
+<Steps>
+  <Step title="Add MCP server">
+    To create an MCP node, first add an MCP server connection.
+  </Step>
+  <Step title="Set request headers (optional)">
+    Define custom headers to include with requests sent to your MCP server.
+  </Step>
+  <Step title="Set query parameters (optional)">
+    Define query parameters to append to your MCP server endpoint URL.
+  </Step>
+  <Step title="Add MCP Tool">
+    Select the MCP tool to use.
+  </Step>
+  <Step title="Set response variables (optional)">
+    Extract values from the MCP tool response and save them as dynamic variables for use later in the conversation.
+
+    For example, extract a user's name from the response and reference it later using `{{user_name}}`.
+
+    ```json
+    {
+      "properties": {
+        "user": {
+          "name": "John Doe",
+          "age": 26
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Global Node | See Global Node guide. |
+| Fine-tuning Examples | Fine-tune transition behavior. See Finetune Examples guide. |

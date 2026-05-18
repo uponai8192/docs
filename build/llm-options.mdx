@@ -1,0 +1,84 @@
+---
+title: "Configure LLM Options"
+description: "Optimize your agent's language model settings for reliability, performance, and cost."
+---
+
+LLM configuration options let you fine-tune how your agent processes and responds to conversations. Different settings can significantly impact behavior, reliability, and cost.
+
+<Note>
+  Not all options are available for every model. Check your dashboard for model-specific capabilities.
+</Note>
+
+## Temperature
+
+Temperature controls the randomness and creativity of your agent's responses — a value between 0 and 1 that affects how the model selects its next words.
+
+| Range | Behavior | Best for |
+|-------|----------|----------|
+| 0.0 – 0.3 | Highly consistent, deterministic | Function calling, data collection, technical support |
+| 0.4 – 0.7 | Balanced consistency and variation | General customer service, sales calls |
+| 0.8 – 1.0 | Creative, varied responses | Creative brainstorming, casual conversation |
+
+**Recommendations by use case:**
+
+| Use case | Recommended temperature |
+|----------|------------------------|
+| Appointment booking | 0.1 – 0.3 |
+| Customer support | 0.3 – 0.5 |
+| Sales outreach | 0.5 – 0.7 |
+| Virtual companion | 0.7 – 0.9 |
+
+## Structured Output
+
+Structured Output ensures LLM responses strictly follow predefined schemas — particularly important for reliable function calling. When enabled, the model is constrained to output only valid function calls with all required parameters.
+
+**Benefits:**
+- Eliminates missing or malformed function arguments
+- Prevents invalid function calls from being attempted
+- Ensures all outputs match expected schemas
+
+**Trade-offs:**
+- Schema caching may delay agent configuration saves
+- Model cannot deviate from defined structures
+- First load after changes may be slower
+
+<CardGroup cols={2}>
+  <Card title="Enable when">
+    - Production agents with critical function calls
+    - Agents handling financial or medical data
+    - Integration with strict API requirements
+  </Card>
+  <Card title="Consider disabling when">
+    - Development and testing phases
+    - Agents with simple or flexible function needs
+    - Rapid iteration is more important than reliability
+  </Card>
+</CardGroup>
+
+## Fast Tier
+
+Fast Tier routes LLM calls through dedicated, high-priority infrastructure for superior performance and consistency. It eliminates latency variability you might experience with standard routing.
+
+**Key benefits:**
+- Consistent, predictable response times on every call
+- Priority access to compute resources
+- Minimal fluctuation in processing speeds
+- Smoother, more natural conversations
+
+<Warning>
+  Fast Tier is priced at 1.5× the standard rate for your selected model. Calculate the ROI for your use case before enabling.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="Ideal for">
+    - High-value customer interactions
+    - Time-sensitive operations (emergency services, urgent support)
+    - Premium service tiers
+    - Demos and sales calls
+  </Card>
+  <Card title="May not be necessary for">
+    - Internal testing
+    - Low-volume or non-critical calls
+    - Cost-sensitive applications
+  </Card>
+</CardGroup>

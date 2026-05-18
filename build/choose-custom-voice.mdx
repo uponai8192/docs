@@ -1,0 +1,32 @@
+---
+title: "Choose a Custom Voice"
+description: "Customize your AI agent with community voices or train a voice clone for a unique sound."
+---
+
+If the built-in voices don't meet your needs, you can add a custom voice. There is a limit of 100 custom voices per account. If you need more, contact [support@uponai.com](mailto:support@uponai.com).
+
+## Add a Community Voice
+
+In the voice selector, click **Add custom voice** to search and add publicly available community voices.
+
+{/* TODO: add UponAI dashboard screenshot — voice selector with "Add custom voice" button */}
+
+## Add a Voice Clone
+
+You can also train a voice clone from your own recordings.
+
+<Steps>
+  <Step title="Open the voice selector">
+    In your agent settings, open the voice selector and click **Add custom voice**.
+  </Step>
+  <Step title="Select Voice Clone tab">
+    In the dialog that appears, select the **Voice Clone** tab.
+  </Step>
+  <Step title="Upload recordings">
+    Upload your voice recordings to train the clone. Higher quality and longer recordings produce better results.
+  </Step>
+</Steps>
+
+<Tip>
+  To use a voice clone as a platform voice with automatic fallback handling, set `voice_provider` to `platform` when calling the Clone Voice API. See [Platform Voices](/build/platform-voices) for details.
+</Tip>

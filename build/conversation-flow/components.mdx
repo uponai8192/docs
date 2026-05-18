@@ -1,0 +1,90 @@
+---
+title: "Components"
+description: "Package parts of your conversation into reusable Components to build, reuse, and maintain complex agents more easily."
+---
+
+Make complex agents easier to build, reuse, and maintain by packaging parts of your conversation into Components. A Component is a mini flow (a group of nodes) that you can reuse across agents and flows.
+
+## Why Use Components?
+
+- **Reuse**: Build once, drop into many agents and flows
+- **Consistency**: Keep behavior uniform across use cases (e.g. identity check)
+- **Clean canvas**: Hide detailed logic inside a focused sub-flow
+- **Faster iteration**: Update a shared Component to improve every agent that uses it
+
+## Where to Find It
+
+In the dashboard, open your agent's builder:
+
+**Left sidebar → Components tab**
+
+Two sections:
+- **Library Components**: Account-level, shared across agents
+- **Agent Components**: Local to the current agent
+
+## Create a Component
+
+<Steps>
+  <Step title="Create">
+    In the Components tab, click **+ Create**. You'll start with a Begin node, a basic conversation node, and an Exit Component end node.
+  </Step>
+  <Step title="Build your sub-flow">
+    Add nodes and connect edges to form your sub-flow. Set a start node by connecting the Begin tag to the first node. Make sure you link the Exit node correctly so the flow doesn't get stuck inside the component.
+  </Step>
+  <Step title="Navigate and rename">
+    Switch back to the main agent using the bottom navigation bar. Rename the component by clicking the **…** on the right of the component name.
+  </Step>
+</Steps>
+
+<Note>
+  Components cannot contain other Components — add regular nodes inside a Component. Available node types match your agent's channel (voice vs chat).
+</Note>
+
+## Add a Component to Your Flow
+
+1. From the Components tab, click a Component — a single Component node appears on your canvas
+2. Connect into the Component: link any node to the Component node
+3. Connect out of the Component: select the Component node and connect its outgoing edge to where the conversation should continue
+4. To edit what's inside, click **Edit Component** and modify its internal nodes
+
+<Tip>
+  End nodes inside the Component hand control back to the main flow. On the main canvas, make sure the Component node's outgoing edge points to the next step.
+</Tip>
+
+## Shared vs Local Components
+
+| | Shared (Library) | Local (Agent) |
+|--|-----------------|---------------|
+| Scope | Account-level, reusable across agents | Lives only in the current agent |
+| Edits | Sync to every agent using it | Affect this agent only |
+| Best for | Universal steps used organization-wide | Agent-specific logic |
+
+**Convert between shared and local:**
+- Turn on **Save component to library** to create a shared version
+- Turn off syncing to convert to a local copy that stops receiving updates
+
+**Deletion behavior:** Deleting a shared Component from the library downgrades linked instances to local copies and stops sync — your agents keep working.
+
+## Publish Behavior
+
+When you publish an agent:
+- Published version snapshots shared Components as local copies
+- This prevents future library updates from changing already-published calls
+- Your draft stays linked to the shared Component and continues to receive updates
+- Publish again when ready to roll out the latest changes to production
+
+**Recommended workflow:** Build using Library Components → test → Publish → keep iterating in draft → Publish again to promote changes.
+
+## Testing
+
+To test a component, it must be added to the main conversation flow first — it cannot be tested in isolation from the component panel. The global prompt of the main flow is applied to all component nodes implicitly.
+
+To test a component alone, make it a shared component and create a new empty agent with only one component node.
+
+## Best Practices
+
+- **Keep Components focused**: One clear job (e.g. "Collect Shipping Address")
+- **Name clearly**: Use action + outcome (e.g. "Verify Identity")
+- **Design clean entry/exit**: Always set a start node; include an exit node to exit cleanly
+- **Reuse variables**: Use dynamic variables to pass captured data back to the main flow
+- **Test in context**: Use the Test panel to simulate end-to-end behavior after inserting the Component

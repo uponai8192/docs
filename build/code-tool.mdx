@@ -1,0 +1,72 @@
+---
+title: 'Code Tool'
+description: "Execute JavaScript directly in UponAI's sandbox for calculations, formatting, and simple API calls — no external server needed."
+---
+
+## Overview
+
+The Code Tool lets your agent run JavaScript code inline during a call. It's ideal for lightweight tasks like data transformation, formatting, and simple read-only API lookups without needing to set up a custom function endpoint.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the tool">
+    In your agent's Functions section, click **Add Function** and select **Code Tool**.
+  </Step>
+  <Step title="Name and describe it">
+    Give the tool a unique name and a clear description so the LLM knows when to invoke it.
+  </Step>
+  <Step title="Write your JavaScript">
+    Use the available globals in your script:
+
+    | Global | Description |
+    |--------|-------------|
+    | `dv` | Access agent dynamic variables as strings |
+    | `metadata` | Call metadata passed via API |
+    | `fetch(url)` | Make HTTP requests |
+    | `console.log()` | Debug output |
+
+    Standard built-ins (`Math`, `JSON`, `Date`, `Array` methods) work normally. `require` and `import` are not available.
+  </Step>
+  <Step title="Extract response values">
+    Map JSON paths from your script's return value to dynamic variable names for use later in the conversation.
+  </Step>
+  <Step title="Configure speech">
+    Optionally set what the agent says while the code runs or after it completes.
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent when to invoke the tool:
+
+    ```txt
+    When the user provides their order number, call the format_order_lookup tool to retrieve their details.
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Configuration Options
+
+| Setting | Default | Range |
+|---------|---------|-------|
+| Timeout | 30 seconds | 5–60 seconds |
+| Response cap | 15,000 characters | — |
+| Speech after execution | Enabled | — |
+
+---
+
+## When to Use Code Tool vs. Custom Functions
+
+<Warning>
+  Do not use Code Tool to access internal systems, write to production databases, or handle sensitive credentials. Both `dv` and `metadata` are stored as plaintext in call records.
+</Warning>
+
+| Use Code Tool for | Use Custom Functions for |
+|-------------------|--------------------------|
+| Data formatting | Internal system access |
+| Simple calculations | Database writes |
+| Read-only public API calls | Sensitive credentials |
+| Routing logic | Audit logging |
+| | Payment processing |

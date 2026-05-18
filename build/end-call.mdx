@@ -1,0 +1,32 @@
+---
+title: 'End Call'
+description: 'Configure your agent to automatically terminate calls based on conversation conditions.'
+---
+
+## Overview
+
+By default, agents do not automatically end calls. You must configure explicit conditions that tell the agent when to hang up.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Add the tool">
+    In your agent's Functions section, select **End Call** from the dropdown.
+  </Step>
+  <Step title="Set termination conditions">
+    Define the triggers that should end the call. Be specific so the agent doesn't hang up prematurely.
+
+    ```txt
+    If the user says "thank you", "goodbye", or "bye", use the end_call tool to terminate the conversation.
+    ```
+  </Step>
+  <Step title="Add to your prompt">
+    Include the end call instructions directly in your agent's prompt so it understands when and how to use the tool.
+  </Step>
+</Steps>
+
+<Warning>
+  Without explicit configuration, your agent will not hang up — the call will stay open until the caller disconnects.
+</Warning>

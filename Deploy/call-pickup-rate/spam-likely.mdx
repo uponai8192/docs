@@ -1,0 +1,42 @@
+---
+title: "Spam Likely Overview"
+description: "Understand why numbers get marked as spam likely and what you can do about it."
+---
+
+Phone carriers may mark certain phone numbers as "Spam Likely." This leads to low outbound call pickup rates and can sometimes result in telephony providers banning your number or account.
+
+## Check Whether Your Number Is Marked as Spam
+
+Check your outbound call log for SIP error code `608` — this indicates a call was rejected due to a spam-likely flag. Note: not all spam-rejected calls will show `608`.
+
+External services to check your number's reputation:
+
+- **[Nomorobo](https://www.nomorobo.com)** — Use the app or API to check against their database
+- **[IPQualityScore](https://www.ipqualityscore.com)** — Check phone number reputation score
+
+Each carrier maintains its own rules and database, so no tool gives a perfect result across all carriers.
+
+## Actions You Can Take
+
+UponAI provides two services to improve your call pickup rate:
+
+<CardGroup cols={2}>
+  <Card title="Verified Phone" href="/Deploy/call-pickup-rate/verified-phone">
+    Register your number with phone carriers so it won't be marked as spam.
+  </Card>
+  <Card title="Branded Call" href="/Deploy/call-pickup-rate/branded-call">
+    Callees see your business name instead of an unknown number.
+  </Card>
+</CardGroup>
+
+## iOS 26 Call Screening
+
+iPhones on iOS 26 may deploy a call screening feature where Siri asks unknown callers to provide their name and reason for calling before connecting.
+
+To pass this screen, add handling to your agent prompt:
+
+```
+## FAQ
+Q: Hi, if you record your name and reason for calling, I'll see if this person is available
+A: In one sentence, introduce yourself and explain why you are calling. <wait for response>
+```

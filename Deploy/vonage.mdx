@@ -1,0 +1,30 @@
+---
+title: "Connect Vonage via SIP Trunking"
+description: "Integrate your Vonage numbers with UponAI using elastic SIP trunking."
+---
+
+<Steps>
+  <Step title="Create Elastic SIP Trunking in Vonage">
+    In the Vonage dashboard, locate the **SIP** section and select **"Something else"** for the provider type.
+
+    Follow the Vonage step-by-step SIP trunk setup instructions.
+
+    **Configure Termination (outbound):**
+    - Note the **Termination SIP URI**, **username**, and **password** — you'll need these when importing to UponAI.
+
+    **Configure Origination (inbound):**
+    - Set the origination SIP URI to: `sip.retellai.com`
+  </Step>
+  <Step title="Move numbers to your SIP trunk">
+    Purchase new numbers or link existing Vonage numbers to the SIP trunk you just created.
+  </Step>
+  <Step title="Import numbers to UponAI">
+    In the UponAI dashboard, import the number by supplying:
+    - The **Termination SIP URI** from Step 1
+    - The **username** and **password** from Step 1
+
+    You can also import numbers programmatically via the Import Number API.
+
+    Once imported, the number appears in your dashboard. You can bind agents and make or receive calls just like with a UponAI-purchased number.
+  </Step>
+</Steps>

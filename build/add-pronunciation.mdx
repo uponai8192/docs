@@ -1,0 +1,27 @@
+---
+title: "Add Custom Pronunciation"
+description: "Customize how your UponAI agent pronounces specific words using IPA or CMU phonetic dictionaries."
+---
+
+<Warning>
+  This feature only works with English agents using ElevenLabs voices that have selected the **eleven turbo v2 (English only)** voice model.
+</Warning>
+
+You can control how certain words are pronounced. This is useful for uncommon terms, brand names, or technical words that the TTS model mispronounces by default.
+
+## How It Works
+
+Set a pronunciation dictionary for the agent. Each entry has three fields:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Word | The word to be pronounced | `actually` |
+| Phonetic alphabet | `ipa` or `cmu` | `ipa` |
+| Pronunciation | The phonetic spelling of the word | `æktʃuəli` |
+
+## Find Phonetic Pronunciations
+
+Use these tools to look up the phonetic pronunciation of any word:
+
+- [IPA Pronouncing Dictionary Tool](https://www.ipachart.com/)
+- [CMU Pronouncing Dictionary Tool](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)

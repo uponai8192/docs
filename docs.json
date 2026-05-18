@@ -15,24 +15,307 @@
         "groups": [
           {
             "group": "Begin Your AI Journey",
-            "pages": ["getting-started"]
-          },
-          {
-            "group": "Custom Telephony Integration",
-            "pages": ["Deploy/index", "Deploy/analyze"]
+            "pages": [
+              "getting-started/index",
+              "getting-started/quick-start",
+              "getting-started/sdk",
+              "getting-started/mcp-server"
+            ]
           },
           {
             "group": "Build",
             "pages": [
-              "build/setup-agent",
+              {
+                "group": "Setup single / multi prompt agent",
+                "pages": [
+                  {
+                    "group": "Step 1: Write the prompt",
+                    "pages": [
+                      "build/prompt-overview",
+                      "build/write-single-prompt",
+                      "build/build-multi-prompt"
+                    ]
+                  },
+                  "build/configure-basic-settings",
+                  {
+                    "group": "Step 3: Add function calling",
+                    "pages": [
+                      "build/function-calling-overview",
+                      "build/end-call",
+                      "build/transfer-call",
+                      "build/send-sms",
+                      "build/check-calendar-availability",
+                      "build/book-calendar",
+                      "build/press-digit",
+                      "build/custom-function",
+                      "build/code-tool",
+                      "build/extract-dynamic-variables",
+                      "build/agent-transfer",
+                      "build/mcp"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Setup conversation flow agent",
+                "pages": [
+                  "build/conversation-flow/overview",
+                  "build/conversation-flow/global-setting",
+                  {
+                    "group": "Step 2: Add nodes",
+                    "pages": [
+                      "build/conversation-flow/node",
+                      "build/conversation-flow/conversation-node",
+                      "build/conversation-flow/end-node",
+                      "build/conversation-flow/call-transfer-node",
+                      "build/conversation-flow/extract-dv-node",
+                      "build/conversation-flow/function-node",
+                      "build/conversation-flow/code-node",
+                      "build/conversation-flow/press-digit-node",
+                      "build/conversation-flow/sms-node",
+                      "build/conversation-flow/logic-split-node",
+                      "build/conversation-flow/subagent-node",
+                      "build/conversation-flow/mcp-node",
+                      "build/conversation-flow/transfer-agent-node",
+                      "build/conversation-flow/global-node"
+                    ]
+                  },
+                  "build/conversation-flow/transition-condition",
+                  "build/conversation-flow/components",
+                  "build/conversation-flow/flex-mode",
+                  {
+                    "group": "Advanced features",
+                    "pages": [
+                      "build/conversation-flow/finetune-examples",
+                      "build/conversation-flow/custom-function"
+                    ]
+                  },
+                  "build/conversation-flow/debug-guide"
+                ]
+              },
+              {
+                "group": "Language & Chat",
+                "pages": [
+                  "build/set-language",
+                  "build/configure-multilingual",
+                  "build/create-chat-agent"
+                ]
+              },
+              {
+                "group": "Understand User Speech",
+                "pages": [
+                  "build/asr-provider-comparison",
+                  "build/transcription-mode",
+                  "build/handle-background-noise"
+                ]
+              },
+              {
+                "group": "Generate Better Responses from LLM",
+                "pages": [
+                  "build/agent-handbook",
+                  "build/prompt-engineering-guide",
+                  "build/prompt-situation-guide",
+                  "build/llm-options"
+                ]
+              },
+              {
+                "group": "Customize the Synthesized Speech",
+                "pages": [
+                  "build/choose-custom-voice",
+                  "build/platform-voices",
+                  "build/tts-provider-comparison",
+                  "build/add-pronunciation",
+                  "build/add-backchannel",
+                  "build/no-response",
+                  "build/add-pause",
+                  "build/tts-fallback"
+                ]
+              },
+              {
+                "group": "Integrate Telephony Features",
+                "pages": [
+                  "build/handle-voicemail",
+                  "build/user-dtmf",
+                  "build/sip-headers"
+                ]
+              },
+              {
+                "group": "Provide Context to the Agent",
+                "pages": [
+                  "build/knowledge-base",
+                  "build/dynamic-variables"
+                ]
+              },
+              "build/guardrails",
               "build/advanced-customization",
-              "build/functions",
-              "build/knowledge-base"
+              "build/functions"
             ]
           },
           {
             "group": "Test",
-            "pages": ["Test/index"]
+            "pages": [
+              "Test/test-overview",
+              {
+                "group": "LLM Playground",
+                "pages": [
+                  "Test/llm-playground",
+                  "Test/llm-playground-debug"
+                ]
+              },
+              {
+                "group": "LLM Simulation Testing",
+                "pages": [
+                  "Test/llm-simulation-testing",
+                  "Test/batch-test-simulation"
+                ]
+              },
+              {
+                "group": "Audio Testing",
+                "pages": [
+                  "Test/test-phone",
+                  "Test/test-web"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Deploy",
+            "pages": [
+              "Deploy/purchase-number",
+              "Deploy/ab-testing",
+              {
+                "group": "Connect to custom telephony via SIP",
+                "pages": [
+                  "Deploy/custom-telephony",
+                  "Deploy/twilio",
+                  "Deploy/telnyx",
+                  "Deploy/vonage",
+                  "Deploy/amazon-connect",
+                  "Deploy/avaya",
+                  "Deploy/five9",
+                  "Deploy/genesys"
+                ]
+              },
+              {
+                "group": "Make & receive phone calls",
+                "pages": [
+                  "Deploy/inbound-call",
+                  "Deploy/outbound-call"
+                ]
+              },
+              "Deploy/international-call",
+              "Deploy/create-chat-completion",
+              "Deploy/chat-widget",
+              "Deploy/enable-sms",
+              "Deploy/make-batch-call",
+              "Deploy/agent-versioning",
+              "Deploy/version-comparison",
+              {
+                "group": "Increase call pickup rate",
+                "pages": [
+                  "Deploy/call-pickup-rate/spam-likely",
+                  "Deploy/call-pickup-rate/business-profile",
+                  "Deploy/call-pickup-rate/verified-phone",
+                  "Deploy/call-pickup-rate/branded-call",
+                  "Deploy/call-pickup-rate/handle-rejection",
+                  "Deploy/call-pickup-rate/stop-service"
+                ]
+              },
+              "Deploy/web-call",
+              "Deploy/concurrency"
+            ]
+          },
+          {
+            "group": "Monitor",
+            "pages": [
+              "Monitor/session-history",
+              "Monitor/analytics-dashboard",
+              "Monitor/alerting",
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "Monitor/webhook-overview",
+                  "Monitor/register-webhook",
+                  "Monitor/secure-webhook",
+                  "Monitor/inbound-webhook"
+                ]
+              },
+              {
+                "group": "Post Call Analysis",
+                "pages": [
+                  "Monitor/post-call-analysis/overview",
+                  "Monitor/post-call-analysis/define-fields",
+                  "Monitor/post-call-analysis/consume-data",
+                  "Monitor/post-call-analysis/rerun-analysis"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Reliability & Debugging",
+            "pages": [
+              "Reliability/reliability-overview",
+              {
+                "group": "Latency",
+                "pages": [
+                  "Reliability/latency/check-actual-latency",
+                  "Reliability/latency/check-estimated-latency",
+                  "Reliability/latency/troubleshoot-latency"
+                ]
+              },
+              {
+                "group": "Fix Agent Behaviors",
+                "pages": [
+                  "Reliability/fix-behaviors/wrong-response",
+                  "Reliability/fix-behaviors/wrong-transcript"
+                ]
+              },
+              {
+                "group": "Debug",
+                "pages": [
+                  "Reliability/debug/debug-call-disconnect",
+                  "Reliability/debug/debug-call-transfer",
+                  "Reliability/debug/debug-outbound-call",
+                  "Reliability/debug/debug-calls-pcap"
+                ]
+              },
+              "Reliability/prevent-abuse",
+              "Reliability/fraud-protection"
+            ]
+          },
+          {
+            "group": "Accounts and Workspace",
+            "pages": [
+              "Accounts/workspace",
+              "Accounts/account",
+              "Accounts/access-control",
+              "Accounts/kyc",
+              {
+                "group": "Billing",
+                "pages": [
+                  "Accounts/billing/billing-overview",
+                  "Accounts/billing/billing-exceptions",
+                  "Accounts/billing/add-payment",
+                  "Accounts/billing/fail-payment"
+                ]
+              },
+              {
+                "group": "Keys",
+                "pages": [
+                  "Accounts/keys/api-keys-overview",
+                  "Accounts/keys/manage-api-keys",
+                  "Accounts/keys/public-keys"
+                ]
+              },
+              {
+                "group": "Privacy",
+                "pages": [
+                  "Accounts/privacy/data-storage",
+                  "Accounts/privacy/data-retention",
+                  "Accounts/privacy/signed-secure-url"
+                ]
+              }
+            ]
           }
         ]
       },

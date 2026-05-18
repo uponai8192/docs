@@ -1,0 +1,45 @@
+---
+title: "Function Node"
+description: "Call a pre-built or custom function when the flow reaches this node."
+---
+
+Function node is used to call a function, whether it's a pre-built function or a custom function. It's not intended for having a conversation with the user, but the agent can still talk while in this node if needed.
+
+The function associated with this node will be called when entering this node.
+
+## Add a Function
+
+Add the function first, then select it inside the node. This way if you delete the node, you don't need to re-create the function again.
+
+For specific instructions on different function types:
+- Custom Function
+- Pre-built Functions: Check Calendar Availability, Book Calendar
+
+## When Can Transition Happen
+
+**If Wait for Result is turned off:**
+- If Speak During Execution is on — agent transitions once done talking
+- If Speak During Execution is off — agent transitions immediately after function is invoked (right upon entering the node)
+- If the user interrupts the agent — transition can also happen once user is done speaking
+
+**If Wait for Result is turned on:**
+- If Speak During Execution is on — agent transitions once function result is ready and agent is done talking
+- If Speak During Execution is off — agent transitions once function result is ready
+- If the user interrupts — transition can also happen once function result is ready and user is done speaking
+
+Since the function node takes function result into consideration for transition timing, you can write your transition condition based on the function result.
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Speak During Execution | When enabled, write instructions for the agent to generate an utterance (e.g. "Let me check that for you.") while the function executes. Choose **Prompt** or **Static Sentence**. |
+| Wait for Result | When enabled, the agent waits for the function to finish before transitioning. Guarantees the result is ready when the next node is reached. |
+| Global Node | See Global Node guide. |
+| Block Interruptions | When enabled, the agent will not be interrupted by the user when speaking. |
+| LLM | Choose a different model for this node — used for function argument generation and speak-during-execution message generation. |
+| Fine-tuning Examples | Fine-tune transition behavior. See Finetune Examples guide. |
+
+## How to Tell the User the Result
+
+Since the function node is not intended for conversation, attach a Conversation Node after it to tell the user the result. You can create different conversation nodes for different function results so the agent engages the user differently depending on the outcome.

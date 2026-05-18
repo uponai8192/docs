@@ -1,0 +1,51 @@
+---
+title: "Handle Background Speech and Noise"
+description: "Configure denoising and interruption settings to keep your UponAI agent accurate in noisy environments."
+---
+
+Phone calls often face audio quality challenges — background noise, echo, or competing voices. UponAI provides two tools to handle these: denoising modes and interruption sensitivity tuning.
+
+## Set Denoising Mode
+
+Choose a denoising mode based on your environment:
+
+<CardGroup cols={1}>
+  <Card title="No Denoising">
+    Disables all audio preprocessing and passes the raw audio signal directly to the speech recognition model. The model itself handles minimal ambient noise. Choose this if you experience missing short responses (e.g., "sure", "yes") or degraded accuracy with non-English transcription when background noise is not significant.
+  </Card>
+  <Card title="Remove Noise (Default)">
+    Removes background noise with nearly no distortion to the waveform — no meaningful impact on speech-to-text accuracy. Does not remove loud background speech.
+  </Card>
+  <Card title="Remove Noise + Background Speech">
+    A more aggressive mode that removes both background noise and background speech. May distort the waveform and reduce speech-to-text accuracy in some cases.
+
+    <Warning>
+      This option incurs a $0.005/min surcharge due to additional processing.
+    </Warning>
+  </Card>
+</CardGroup>
+
+**Recommended guidance:**
+
+- Loud background speech (TV, construction site) → **Remove noise + background speech**
+- Most use cases → **Remove noise** (default)
+- Quiet environment, transcription completeness is priority → **No denoising**
+
+## Tune Interruption Sensitivity
+
+Even after denoising, unwanted interruptions can still occur. The interruption sensitivity setting controls how easily the agent gets interrupted.
+
+Set **Interruption Sensitivity** lower to make the agent more resilient to background speech or user interruptions.
+
+<Warning>
+  Lowering interruption sensitivity also makes it harder for real users to interrupt the agent mid-response. Test to find the right balance for your use case.
+</Warning>
+
+For extremely noisy environments, experiment with lower values until false interruptions stop.
+
+## Reduce Noise from the Caller's Side
+
+Since audio quality is largely determined by the caller's device, you can also:
+
+- **Web calls:** Use a better microphone or client-side noise reduction libraries
+- **Prompt the agent:** Instruct it to ask callers to speak louder when background noise is detected

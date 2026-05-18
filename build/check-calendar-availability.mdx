@@ -1,0 +1,48 @@
+---
+title: 'Check Calendar Availability'
+description: 'Let your agent check real-time calendar availability using Cal.com during a call.'
+---
+
+## Overview
+
+The Check Calendar Availability tool connects your agent to Cal.com so it can look up open time slots in real time based on what the caller requests.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Create a Cal.com account">
+    Sign up at [cal.com](https://cal.com) if you don't have one.
+  </Step>
+  <Step title="Configure an event type">
+    In your Cal.com dashboard, create an event type with your preferred duration, availability, and settings.
+  </Step>
+  <Step title="Collect your credentials">
+    You'll need two values from Cal.com:
+
+    | Credential | Where to find it |
+    |------------|-----------------|
+    | Event Type ID | The numeric ID in your event type's URL |
+    | API Key | Settings → Developer → API Keys |
+  </Step>
+  <Step title="Add the function in UponAI">
+    In your agent's Functions section, select **Check Calendar Availability** and enter:
+    - Tool name
+    - Cal.com API Key
+    - Event Type ID
+    - Tool description
+    - Timezone (optional)
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent exactly when to check availability:
+
+    ```txt
+    When the user states a time range, check calendar availability by calling the check_calendar_availability function.
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Be explicit in your prompt about when to invoke this function. Vague instructions lead to inconsistent behavior.
+</Tip>

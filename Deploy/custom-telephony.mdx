@@ -1,0 +1,131 @@
+---
+title: "Custom Telephony"
+description: "Connect your own telephony provider to UponAI using SIP trunking or dial-to-SIP methods."
+---
+
+Connect UponAI agents with your own telephony provider and phone numbers. This works independently of the agent type you're using.
+
+## Integration Methods
+
+<CardGroup cols={2}>
+  <Card title="Elastic SIP Trunking (Recommended)">
+    Connect via SIP trunk. Supports all telephony features available with UponAI numbers. Works with most major telephony providers.
+  </Card>
+  <Card title="Dial to SIP URI">
+    Dial calls directly to a UponAI SIP URI. Use this if your provider doesn't support elastic SIP trunking or you have complex routing needs.
+  </Card>
+</CardGroup>
+
+## UponAI SIP Server Details
+
+| Setting | Value |
+|---------|-------|
+| SIP Server URI | `sip:sip.retellai.com` |
+| IP Block (all regions) | `18.98.16.120/30` |
+| IP Block (US traffic) | `143.223.88.0/21`, `161.115.160.0/19` |
+
+**Transport methods supported:**
+
+| Transport | SIP URL |
+|-----------|---------|
+| TCP (Recommended) | `sip:sip.retellai.com;transport=tcp` |
+| UDP | `sip:sip.retellai.com;transport=udp` |
+| TLS | `sip:sip.retellai.com;transport=tls` |
+| mTLS | Contact support |
+
+**Audio codecs:** PCMU, PCMA, G.722 (HD)
+
+**Media encryption:** SRTP (requires TLS transport)
+
+---
+
+## Method 1: Elastic SIP Trunking (Recommended)
+
+Elastic SIP Trunking connects UponAI's VoIP infrastructure with the PSTN so your agents can make and receive calls. All telephony features supported by UponAI numbers are also supported here (assuming your provider supports them).
+
+**Supported providers with detailed guides:**
+
+<CardGroup cols={2}>
+  <Card title="Twilio" href="/Deploy/twilio">Connect via Twilio SIP trunking</Card>
+  <Card title="Telnyx" href="/Deploy/telnyx">Connect via Telnyx SIP trunking</Card>
+  <Card title="Vonage" href="/Deploy/vonage">Connect via Vonage SIP trunking</Card>
+  <Card title="Amazon Connect" href="/Deploy/amazon-connect">Connect via Amazon Connect</Card>
+  <Card title="Avaya" href="/Deploy/avaya">Connect via Avaya</Card>
+  <Card title="Five9" href="/Deploy/five9">Connect via Five9</Card>
+  <Card title="Genesys" href="/Deploy/genesys">Connect via Genesys</Card>
+</CardGroup>
+
+Other providers that support SIP trunks are also compatible — use the guides above as reference.
+
+---
+
+## Method 2: Dial to SIP URI
+
+Use this method if your provider doesn't support elastic SIP trunking, or you have complex routing requirements.
+
+With this method, UponAI doesn't directly make or receive calls — your system dials the call to a specific SIP URI. All traffic appears as inbound to UponAI, so you specify the call direction.
+
+<Warning>
+  When using Dial to SIP URI, you cannot use UponAI's built-in call transfer feature. You must implement your own transfer logic using a custom function.
+</Warning>
+
+<Steps>
+  <Step title="Register the phone call">
+    Call the **Register Phone Call API** to get a `call_id` and determine which agent handles the call.
+  </Step>
+  <Step title="Construct the SIP URI">
+    Build the SIP URI using the `call_id`:
+    ```
+    sip:{call_id}@sip.retellai.com
+    ```
+  </Step>
+  <Step title="Dial the call">
+    Dial the call to that SIP URI within **5 minutes** of calling Register Phone Call. If not connected in time, the call disconnects with `registered_call_timeout`.
+  </Step>
+</Steps>
+
+**Example — handling a Twilio inbound webhook:**
+
+```javascript Node
+const client = new UponAI({
+  apiKey: 'YOUR_API_KEY',
+});
+
+server.app.post("/voice-webhook", async (req, res) => {
+  const phoneCallResponse = await client.call.registerPhoneCall({
+    agent_id: 'oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD',
+    from_number: "+12137771234",
+    to_number: "+12137771235",
+    direction: "inbound",
+  });
+
+  const voiceResponse = new VoiceResponse();
+  const dial = voiceResponse.dial();
+  dial.sip(`sip:${phoneCallResponse.call_id}@sip.retellai.com`);
+  res.set("Content-Type", "text/xml");
+  res.send(voiceResponse.toString());
+});
+```
+
+---
+
+## Security
+
+UponAI uses enterprise-grade security for all SIP communications. We recommend **TLS 1.2 or higher** for all SIP signaling.
+
+### Mutual TLS (mTLS)
+
+mTLS requires both client and server to present certificates — providing stronger authentication than standard TLS and protecting against man-in-the-middle attacks.
+
+UponAI uses a client certificate issued by AWS Private Certificate Authority (PCA). To validate UponAI's TLS client certificate, add the root certificate to your SIP server's trusted certificate store.
+
+To enable mTLS for your account, contact [support@uponai.com](mailto:support@uponai.com).
+
+---
+
+## Telephony Partners
+
+For custom SIP call flow manipulation or needs not directly supported by UponAI:
+
+- **Jambonz** — SIP server with static IP support. Can connect to UponAI's SIP server for call flow manipulation. Dedicated support channel available for UponAI users.
+- **Cloudonix** — CPaaS that connects to UponAI's SIP server for call flow manipulation.

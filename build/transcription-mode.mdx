@@ -1,0 +1,30 @@
+---
+title: "Balance Transcription Accuracy and Latency"
+description: "Choose the right transcription mode for your UponAI agent based on your accuracy and latency needs."
+---
+
+<Note>
+  This guide only applies to cascading agents. If you are using speech-to-speech models, this feature does not apply.
+</Note>
+
+Real-time transcription is a trade-off between latency and accuracy. Using interim results gives the lowest latency but with a higher chance of errors due to less context. Waiting for results with more context improves accuracy but adds delay after the user stops speaking.
+
+## Transcription Modes
+
+<CardGroup cols={2}>
+  <Card title="Optimize for Speed">
+    Uses the latest interim results with a low endpointing setting for downstream processing. Best latency, slightly less accurate on entities like numbers and dates.
+  </Card>
+  <Card title="Optimize for Accuracy">
+    Uses results with a higher endpointing setting, waiting longer with more context to generate more accurate transcripts. Incurs ~200ms additional latency.
+  </Card>
+</CardGroup>
+
+## Which Mode Should You Use?
+
+Benchmarking shows that both modes have similar Word Error Rate (WER). The main difference is in capturing entities like numbers, dates, and proper nouns.
+
+| Use case | Recommended mode |
+|----------|-----------------|
+| General conversation, low latency priority | Optimize for speed |
+| Capturing numbers, dates, or specific entities | Optimize for accuracy |

@@ -1,0 +1,39 @@
+---
+title: "Add Pause or Read Slowly"
+description: "Control speech pacing by adding dashes to slow down your UponAI agent at specific points."
+---
+
+You can adjust the overall voice speed in agent settings, but sometimes you only want to slow down at certain points — like when reading a phone number or address. Do this by prompting the LLM to include dashes between words or digits.
+
+## Short Pauses
+
+Add a single ` - ` (space-dash-space) between items to slow the agent down:
+
+```
+The number is 2 - 1 - 3 - 4
+```
+
+<Warning>
+  The spaces around the dash are required. A dash without surrounding spaces will not produce a pause.
+</Warning>
+
+## Long Pauses
+
+For a longer pause, chain multiple dashes with double spaces between them:
+
+```
+The number is 2 - - - - 1 - - - - 3
+```
+
+<Note>
+  Use double spaces between the dashes for longer pauses to work correctly.
+</Note>
+
+## Tip: Use in Prompts
+
+Instruct the LLM to format output with dashes when reading sensitive data:
+
+```
+When reading a phone number, format each digit group separated by " - " dashes.
+Example: 415-892-3245 → "four one five - eight nine two - three two four five"
+```

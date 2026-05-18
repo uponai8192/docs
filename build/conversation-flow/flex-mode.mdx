@@ -1,0 +1,55 @@
+---
+title: "Flex Mode"
+description: "Combine the clarity of conversation flow with the flexibility of a single prompt agent."
+---
+
+Flex Mode combines the best of both worlds:
+- **Conversation Flow**: clear, visual business logic that's easy to manage
+- **Single Prompt Agent**: flexible, natural handling of varied user behavior
+
+You design your conversation flow as usual (nodes, edges, tools). At runtime, Flex Mode compiles that flow into one structured prompt made of Tasks and available Tools. The agent then navigates Tasks dynamically while still following your global prompt.
+
+## Cost Impact
+
+<Warning>
+  Flex Mode can significantly increase your LLM costs. Because all node instructions, transitions, and tool descriptions are compiled into a single prompt, the total token count is much higher than in rigid mode (where only the active node's prompt is sent to the LLM). When the combined prompt exceeds 3,500 tokens, the token scaling billing rule applies, which can multiply your costs several times over.
+
+  To control costs, consider using rigid mode or breaking your flow into smaller components. If you do use Flex Mode, keep node instructions concise to minimize token usage.
+</Warning>
+
+## When to Use
+
+Use Flex Mode when you want the clarity of a flowchart but need the freedom of a single prompt:
+
+- You need easy context-switching between tasks (every node becomes a global node)
+- The user could complete multiple tasks at the same time and the agent needs to move on correctly
+- After switching context to another flow, the agent should resume the previous task without repeating already-completed steps
+
+## How It Works
+
+Enable Flex Mode at either the **Component level** or the **Agent level**:
+
+- **Agent level**: All nodes get converted into a single flex node. The agent stays on the flex node and behaves like a single prompt agent until it reaches End Call.
+- **Component level**: Only that component's nodes are converted into a single prompt. The rest of the flow stays as standard conversation flow.
+
+## Differences from Standard Mode
+
+### Tool Call / Function
+
+| Setting | Standard Mode | Flex Mode |
+|---------|--------------|-----------|
+| Speak During Execution | Configurable | Works the same |
+| Speak After Execution | Configurable | Always on — agent always speaks after function execution |
+| Wait for Result | Configurable | Always on — agent always waits for function to complete |
+
+### Knowledge Base
+
+Node-level knowledge bases are ignored in Flex Mode. Configure the knowledge base at the agent level instead.
+
+## Best Practices & Known Issues
+
+- **Write node instructions concisely** — helps the LLM focus on the task
+- **Only use Prompt edges** — avoid Equation edges, as the LLM interprets equation conditions poorly and may produce unexpected behavior
+- **Be explicit on transitions** — write crisp, observable conditions
+- **Limit to 20 nodes or fewer** — performance may degrade and hallucination risk increases beyond this
+- **Static text instructions** may not always be followed by the LLM

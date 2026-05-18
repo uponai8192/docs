@@ -1,0 +1,65 @@
+---
+title: "Debug Guide"
+description: "How to improve your conversation flow agent's performance."
+---
+
+Conversation flow is a powerful and flexible tool, which means that there are many actions you can take when your agent's performance is not meeting expectations. This guide helps you identify the root cause and provides actionable steps to improve responses and transitions.
+
+<Note>
+  This guide only covers the response part of the agent. If you have issues with agent audio, like pronunciation, please refer to other guides.
+</Note>
+
+## Step 1: Identify the Issue
+
+When the agent is not responding as expected, there can be several reasons:
+
+- The agent is not following instructions within a node
+- Node transitions are not working as expected
+- The actual conversation does not match the flow graph (e.g., users deviate from expected steps)
+
+## Step 2: Fix the Issue
+
+Note that these issues are not mutually exclusive — you may need to implement multiple solutions to fully resolve the problem.
+
+### Issue: Agent is not following instructions within a node
+
+#### Split the node into multiple nodes
+
+For example, if a node contains instructions to collect customer name, phone number, and address, the agent might inconsistently ask for only some of this information.
+
+You can improve consistency by splitting this into three separate nodes.
+
+#### Change the node model
+
+If the instructions are concise but the agent struggles to follow them, try using a more capable LLM model for this node.
+
+#### Add conversation fine-tune examples
+
+To achieve a specific response style, add conversation fine-tune examples. Learn more in our [Fine-tune Examples](/build/conversation-flow/finetune-examples) guide.
+
+#### Adjust the LLM temperature
+
+If the agent's responses are inconsistent, try adjusting the LLM temperature for that node.
+
+---
+
+### Issue: Node transitions are not working as expected
+
+If the agent is not transitioning to the expected node, try these solutions:
+
+- **Review your transition conditions** — Ensure they precisely match your intended triggers. Consider prompt engineering or breaking down complex conditions into multiple simpler ones.
+- **Add transition fine-tune examples** — Provide examples to help the model understand your expectations. See our [Fine-tune Examples](/build/conversation-flow/finetune-examples) guide.
+
+To handle missing transition scenarios:
+
+- **Add more nodes** to cover edge cases, particularly global nodes for handling unexpected situations. Learn more in [Global Nodes](/build/conversation-flow/global-node).
+- **Make transition conditions more flexible and general.**
+
+---
+
+### Issue: Actual conversation does not match the flow graph
+
+When users deviate from the defined flow:
+
+- **Add key steps as global nodes** to allow users to skip or jump between nodes. This is particularly useful for inbound support cases without a rigid call structure. See our [Global Node](/build/conversation-flow/global-node) guide.
+- **Make node instructions more flexible** and let the model handle the details naturally.

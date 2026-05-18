@@ -1,0 +1,32 @@
+---
+title: "Extract Dynamic Variable Node"
+description: "Extract information from the conversation and store it as dynamic variables."
+---
+
+Extract dynamic variable node is used to extract information from conversation and store them as dynamic variables. It's not intended for having a conversation with the user.
+
+## Add a Variable
+
+To create a variable, fill in the following details:
+
+- **Variable Name** – A short name to reference this variable
+- **Description** – A brief explanation of what this value should be
+- **Variable Type** – Choose from Text, Number, Enum, or Boolean
+- **Enum Options** – Options to choose from (only when type is Enum)
+
+## Variable Types
+
+| Type | Description | Examples |
+|------|-------------|---------|
+| Text | Any word or sentence | `"headache"`, `"John Smith"` |
+| Number | A numeric value | `42`, `98.6` |
+| Enum | A value from a predefined list | `"Yes"`, `"No"`, `"Maybe"` |
+| Boolean | True or false | `true`, `false` |
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Global Node | See Global Node guide. |
+| LLM | Choose a different model for this node — used for variable extraction. |
+| Fine-tuning Examples | Fine-tune transition behavior. See Finetune Examples guide. |

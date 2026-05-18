@@ -1,0 +1,71 @@
+---
+title: "A/B Testing"
+description: "Compare multiple agents by splitting traffic across them to test different prompts, voices, or flows."
+---
+
+A/B testing lets you compare multiple agents or scripts by sending a percentage of traffic to each. You define a traffic split (for example, 80% to one agent and 20% to another) so you can test different prompts, voices, or flows without changing your main agent.
+
+## Where A/B Testing Is Available
+
+A/B testing is supported for:
+
+- **Inbound calls** — Calls received on a phone number
+- **Outbound calls** — Calls made from a phone number
+- **Inbound chats** — Incoming chat conversations
+- **Outbound chats** — Chat sessions you initiate
+
+## How It Works
+
+1. **Multiple agents** — Bind two or more agents to the same number or chat configuration.
+2. **Traffic split** — Set the percentage of traffic each agent receives (e.g., 80% / 20%). Traffic is distributed according to this split.
+3. **Use cases** — Test different scripts on marketing or support calls, try prompt or voice changes, or compare conversation flows in chat.
+
+## Where to Configure
+
+| Context | Configure in |
+|---------|-------------|
+| Inbound calls | Number configuration: bind multiple agents to the number and set the traffic split. See [Receive Calls](/Deploy/inbound-call). |
+| Outbound calls | Number configuration: bind multiple agents for outbound and set the traffic split. See [Outbound Calls](/Deploy/outbound-call). |
+| Chat (inbound & outbound) | Chat agent or widget configuration where you assign the chat agent; enable A/B testing and set the traffic split. See [Create Chat Completion](/Deploy/create-chat-completion) and [Chat Widget](/Deploy/chat-widget). |
+
+<Steps>
+  <Step title="Enable A/B Testing">
+    On the phone number configuration page, find the **A/B Testing** toggle next to the Call Agent field. Turn it on to bind multiple agents.
+  </Step>
+  <Step title="Set traffic split">
+    Click **Edit** to open the A/B Testing modal. Choose which agents to use and set a weight (percentage) for each. Weights must total 100%. Click **Deploy** to save.
+  </Step>
+  <Step title="Monitor results">
+    After deploying, the Call Agent section shows each agent and its traffic percentage. Click **Edit** anytime to adjust agents or weights.
+  </Step>
+</Steps>
+
+## View Analytics by Agent Version
+
+After deploying an A/B test, compare performance by specific agent versions in the Analytics dashboard.
+
+<Steps>
+  <Step title="Open Analytics">
+    Open **Analytics** in the UponAI dashboard.
+  </Step>
+  <Step title="Set date range">
+    Set a date range that covers your experiment period.
+  </Step>
+  <Step title="Filter by agent">
+    In the filter bar, click **Agent** (or click **Filter** and add Agent). In the left panel, select the agent(s) used in your A/B test.
+  </Step>
+  <Step title="Select versions">
+    In the right panel, select the specific version(s) you want to analyze (e.g., Version 3 vs Version 4 of the same agent).
+  </Step>
+  <Step title="Apply and compare">
+    Click **Save** to apply the filter. All charts update to the selected agent-version scope so you can compare metrics like call success rate, duration, and latency.
+  </Step>
+</Steps>
+
+## A/B Testing vs Dynamic Agent Selection
+
+| | A/B Testing | Dynamic Selection (webhook / API) |
+|--|------------|----------------------------------|
+| **Best for** | Random percentage-based traffic splits | Per-call or per-chat routing logic |
+| **Setup** | Configure in dashboard | Implement custom webhook logic |
+| **Control** | Percentage-based | Full programmatic control |

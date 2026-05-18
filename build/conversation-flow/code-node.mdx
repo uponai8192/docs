@@ -1,0 +1,186 @@
+---
+title: "Code Node"
+description: "Execute JavaScript code directly in UponAI's sandbox — no external server needed."
+---
+
+Code node executes JavaScript code when the agent enters it. Unlike custom functions, code nodes run directly in UponAI's sandbox — no external server needed. The node is not intended for having a conversation with the user, but the agent can still talk while code is running if needed.
+
+## Code Node vs Custom Function
+
+| | Code Node | Custom Function |
+|--|-----------|-----------------|
+| Runs | JavaScript in UponAI's sandbox | HTTP request to your server |
+| Requires | Nothing — runs directly | Your own API endpoint |
+| Best for | Data transformation, simple API calls, logic & calculations | Complex integrations, accessing internal systems |
+| Max code size | 5,000 characters | N/A (runs on your server) |
+
+<Warning>
+  Code Node is designed for lightweight logic like formatting, calculations, and simple read-only lookups. Do not use it to access internal systems, write to production databases, or handle sensitive credentials. Both `dv` and `metadata` values are stored in plaintext with every call record. For integrations that require authentication, secrets management, or write access, use a Custom Function hosted on your own backend.
+</Warning>
+
+## Write Your Code
+
+<Steps>
+  <Step title="Add a Code Node">
+    Click the Code node from the left sidebar to add it to the canvas.
+  </Step>
+  <Step title="Open the code editor">
+    Click **Open** on the code node to launch the code editor.
+  </Step>
+  <Step title="Write JavaScript">
+    Write your JavaScript code in the editor. You have access to dynamic variables, call metadata, and the fetch function for HTTP requests.
+
+    ```javascript
+    // Example: look up an order and return the status
+    const response = await fetch("https://api.example.com/orders/" + dv.order_id);
+    const data = await response.json();
+    return { status: data.status, estimated_delivery: data.delivery_date };
+    ```
+  </Step>
+  <Step title="Set response variables (optional)">
+    Use **Store Fields as Variables** to extract values from your code's return value and save them as dynamic variables. Specify a variable name and the JSON path to the value.
+
+    For example, if your code returns `{ "status": "shipped", "estimated_delivery": "March 25" }`:
+
+    | Variable Name | JSON Path | Extracted Value |
+    |---------------|-----------|-----------------|
+    | order_status | status | "shipped" |
+    | delivery_date | estimated_delivery | "March 25" |
+
+    These variables can then be referenced as `{{order_status}}` and `{{delivery_date}}` in other nodes.
+  </Step>
+  <Step title="Test your code">
+    Click **Run Code** at the bottom of the editor to test. Use the Dynamic Variables dropdown to set test values — these only apply during testing and won't affect your live agent. The output panel shows the result and any `console.log()` output.
+  </Step>
+</Steps>
+
+## JavaScript Environment
+
+Your code runs in a JavaScript sandbox with the following globals available. The code editor provides autocomplete for globals, dynamic variable names, and built-in functions.
+
+### `dv` — Dynamic Variables
+
+Access your agent's dynamic variables as properties on the `dv` object. All values are strings.
+
+```javascript
+const name = dv.customer_name;       // "John Doe"
+const orderId = dv.order_id;         // "78542"
+const total = parseFloat(dv.amount); // Convert to number if needed
+```
+
+### `metadata` — Call Metadata
+
+Access metadata passed when the call was created via the API.
+
+```javascript
+const customerId = metadata.customer_id;
+const priority = metadata.priority_level;
+```
+
+<Warning>
+  Both `dv` and `metadata` values are stored in plaintext with every call record and are visible in call logs and API responses. Do not use them to pass API keys, database credentials, or other sensitive secrets.
+</Warning>
+
+### `fetch(url)` — HTTP Requests
+
+Make HTTP requests to external APIs. Works like the standard Fetch API.
+
+```javascript
+// GET request
+const response = await fetch("https://api.example.com/data");
+const data = await response.json();
+
+// POST request
+const response = await fetch("https://api.example.com/submit", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: dv.customer_name })
+});
+```
+
+### `console.log()` — Debugging
+
+Logs appear in the test output panel when using Run Code, and are also available in call logs.
+
+```javascript
+console.log("Customer:", dv.customer_name);
+console.log("API response:", JSON.stringify(data));
+```
+
+**Environment notes:**
+- Standard JavaScript built-ins available: `Math`, `JSON`, `Date`, `Array`, `Object`, `String` methods, etc.
+- External packages (`require`, `import`) are not available — use `fetch()` for external integrations
+- Code is limited to 5,000 characters
+
+## Examples
+
+### Format data from dynamic variables
+
+```javascript
+const fullName = dv.first_name + " " + dv.last_name;
+const summary = `Customer ${fullName} (ID: ${dv.customer_id}) requested a callback.`;
+return { full_name: fullName, summary: summary };
+```
+
+### Fetch data from a public API
+
+```javascript
+const response = await fetch("https://api.weatherapi.com/v1/current.json?q=" + encodeURIComponent(dv.city));
+const weather = await response.json();
+return {
+  location: weather.location.name,
+  temperature: weather.current.temp_f + "°F",
+  condition: weather.current.condition.text
+};
+```
+
+### Conditional logic with API call
+
+```javascript
+const response = await fetch("https://api.example.com/customers/" + dv.customer_id);
+const customer = await response.json();
+
+if (customer.tier === "premium") {
+  return { action: "priority_support", wait_time: "0 minutes" };
+} else if (customer.tier === "standard") {
+  return { action: "standard_queue", wait_time: "5 minutes" };
+} else {
+  return { action: "general_queue", wait_time: "10 minutes" };
+}
+```
+
+## Security and Architecture Guidance
+
+| Use case | Recommended |
+|----------|-------------|
+| Formatting, calculations, string cleanup | Code Node |
+| Simple read-only lookups to low-risk public APIs | Code Node, with caution |
+| Accessing internal systems or private APIs | Custom Function |
+| Writing to CRM, EHR, booking, payment, or ticketing systems | Custom Function |
+| Workflows requiring secrets, audit logs, retries, idempotency, or policy enforcement | Custom Function |
+
+## When Can Transition Happen
+
+**If Wait for Result is turned off:**
+- Speak During Execution on → transitions once agent is done talking
+- Speak During Execution off → transitions immediately after code starts running
+- User interrupts → transition happens once user is done speaking
+
+**If Wait for Result is turned on:**
+- Speak During Execution on → transitions once code finishes and agent is done talking
+- Speak During Execution off → transitions once code finishes
+- User interrupts → transition happens once code finishes and user is done speaking
+
+You can write transition conditions based on the code result or the extracted dynamic variables.
+
+## Node Settings
+
+| Setting | Description |
+|---------|-------------|
+| Speak During Execution | Agent says something while code runs. Choose **Prompt** (LLM generates) or **Static Text** (exact text). |
+| Wait for Result | Agent waits for code to finish before transitioning. Guarantees result and variables are ready at the next node. |
+| Timeout | How long code can run before timing out. Range: 5–60 seconds. Default: 30 seconds. |
+| Global Node | See Global Node guide. |
+| Block Interruptions | Agent will not be interrupted by user when speaking. |
+| LLM | Choose a different model — used for speak-during-execution message generation when set to Prompt. |
+| Fine-tuning Examples | Fine-tune transition behavior. See Finetune Examples guide. |

@@ -1,0 +1,46 @@
+---
+title: 'Book Calendar'
+description: 'Let your agent book appointments directly through Cal.com during a call.'
+---
+
+## Overview
+
+The Book Calendar tool connects your agent to Cal.com so it can confirm and book appointments in real time after the caller selects a time slot.
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Create a Cal.com account">
+    Sign up at [cal.com](https://cal.com) if you don't have one.
+  </Step>
+  <Step title="Configure an event type">
+    In your Cal.com dashboard, set up the event type you want bookings created under.
+  </Step>
+  <Step title="Collect your credentials">
+    | Credential | Where to find it |
+    |------------|-----------------|
+    | Event Type ID | The numeric ID in your event type's URL |
+    | API Key | Settings → Developer → API Keys |
+  </Step>
+  <Step title="Add the function in UponAI">
+    In your agent's Functions section, select **Book Calendar** and enter:
+    - Tool name
+    - Cal.com API Key
+    - Event Type ID
+    - Tool description
+    - Timezone (optional)
+  </Step>
+  <Step title="Update your prompt">
+    Tell the agent when to book:
+
+    ```txt
+    When the user selects a slot, book the appointment by calling the book_appointment function.
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Pair this with the **Check Calendar Availability** tool so your agent first checks open slots before confirming a booking.
+</Tip>

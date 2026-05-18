@@ -1,0 +1,52 @@
+---
+title: "Create Chat Completion"
+description: "Implement text-based chat sessions with your UponAI chat agents via the API."
+---
+
+This guide explains how to implement chat functionality using the UponAI Chat API — start a session, generate responses, and end the session.
+
+<Steps>
+  <Step title="Create a Chat Agent">
+    Before starting a chat session, you need a chat agent to handle the conversation.
+
+    Refer to the [Website Widget guide](/Deploy/chat-widget) or the Create Chat Agent guide for setup instructions.
+  </Step>
+  <Step title="Create a Chat Session">
+    Use the `create-chat` API endpoint to start a session. The API returns a `chat_id` you'll need for all subsequent requests.
+
+    See the Create Chat API Reference for full parameter details.
+  </Step>
+  <Step title="Create a Chat Completion">
+    Use the `create-chat-completion` endpoint to generate a response from your chat agent.
+
+    The API returns the agent's response in the `messages` array. All conversation history is automatically stored — you don't need to manage conversation context yourself.
+
+    See the Create Chat Completion API Reference for full parameter details.
+  </Step>
+  <Step title="Retrieve Chat Details">
+    Retrieve details about a chat session using the `get-chat` endpoint, or list all sessions using `POST /v3/list-chats`.
+
+    See the Get Chat API Reference and List Chats API Reference.
+  </Step>
+  <Step title="End the Chat Session">
+    End a completed conversation using the `end-chat` endpoint.
+
+    <Note>
+      If **Auto-Close Inactive Chats** is enabled, chat sessions will automatically end when the timeout triggers. You can also end them at any time via the API.
+    </Note>
+  </Step>
+</Steps>
+
+## SMS Integration
+
+UponAI also supports Twilio SMS integration, letting you deploy chat agents to receive and respond to text messages.
+
+See the [Enable SMS guide](/Deploy/enable-sms) to set it up. Once configured, you'll have access to:
+
+- **Make an outbound SMS** button to start a new SMS session
+- Inbound and outbound SMS agent configuration
+- Inbound webhook setup for receiving SMS messages
+
+<Note>
+  SMS conversations on a phone number can include multimedia (MMS). Text chat via the `create-chat-completion` API does **not** support images or other multimedia.
+</Note>

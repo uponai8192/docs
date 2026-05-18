@@ -1,0 +1,140 @@
+---
+title: "Debug SIP Calls Using PCAP"
+description: "Capture and analyze packet captures to diagnose SIP call issues like codec failures, one-way audio, and DTMF problems."
+---
+
+PCAP (Packet Capture) files record raw network traffic and are invaluable for diagnosing SIP call issues — codec negotiation failures, audio quality problems, one-way audio, and missed DTMF tones.
+
+<Note>
+  PCAP files on the UponAI call details dashboard are only available when data retention is set to **Everything** and SIP transport is **UDP/TCP**. TLS transport calls will not have a PCAP.
+</Note>
+
+## Prerequisites
+
+Install [Wireshark](https://www.wireshark.org/) (includes `tshark` CLI):
+
+```bash
+wireshark --version
+tshark --version
+```
+
+## Step 1: Open and Filter in Wireshark
+
+```bash
+wireshark call_capture.pcap
+```
+
+**Useful display filters:**
+
+| Goal | Filter |
+|------|--------|
+| All SIP | `sip` |
+| Specific call | `sip.Call-ID == "abc123@host"` |
+| SIP INVITE only | `sip.Method == "INVITE"` |
+| SIP errors | `sip.Status-Code >= 400` |
+| All RTP | `rtp` |
+| SIP + RTP | `sip or rtp` |
+| RFC 2833 DTMF | `rtp.p_type == 101` |
+| From specific IP | `ip.src == 192.168.1.10 and (sip or rtp)` |
+
+## Step 2: Reconstruct the SIP Call Flow
+
+Go to **Telephony → VoIP Calls**, select the call, then click **Flow Sequence** to view the full SIP ladder diagram (INVITE → 100 Trying → 180 Ringing → 200 OK → ACK → BYE).
+
+**Key fields in an INVITE packet:**
+
+| Field | What to look for |
+|-------|----------------|
+| `Request-URI` | Destination SIP address |
+| `From` / `To` | Caller and callee |
+| `Call-ID` | Unique call identifier |
+| `SDP → m=audio` | Negotiated RTP port and codec list |
+| `SDP → a=rtpmap` | Codec payload type mappings (PCMU=0, PCMA=8, G.722=9) |
+
+## Step 3: Common Issues
+
+| Symptom | What to check |
+|---------|--------------|
+| One-way audio | RTP flowing in only one direction — check both streams |
+| No audio | `m=audio` port is 0 (on hold), or RTP packets absent |
+| DTMF not recognized | Payload type mismatch between INVITE SDP and actual RTP |
+| Choppy/robotic audio | High jitter or packet loss in RTP streams |
+| Call drops unexpectedly | Look for BYE or CANCEL; check SIP response codes (4xx/5xx) |
+| Codec mismatch | SDP 200 OK `a=rtpmap` differs from INVITE |
+| SIP auth failure | 401/407 or 403 in SIP flow |
+
+## Common SIP Response Codes
+
+| Code | Meaning |
+|------|---------|
+| 100 | Trying |
+| 180 | Ringing |
+| 200 | OK |
+| 401 / 407 | Authentication required |
+| 403 | Forbidden (auth failure or no permission to dial) |
+| 404 | Not found (wrong number or SIP URI) |
+| 408 | Request timeout |
+| 477 | Send failed (TCP/TLS transport error) |
+| 486 | Busy |
+| 500 | Server internal error |
+| 503 | Service unavailable |
+| 603 | Decline |
+
+## Analyze RTP Streams
+
+Go to **Telephony → RTP → RTP Streams** to view each stream with payload type, packet count, packet loss, and jitter.
+
+- Packet loss **>3%** or jitter **>30ms** typically causes degraded or choppy audio.
+- Select a stream → **Analyze → Play Streams** to hear the actual audio.
+
+## DTMF Debugging
+
+**Check SDP for RFC 2833 negotiation:**
+```
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+```
+
+**Filter RFC 2833 DTMF packets:** `rtp.p_type == 101`
+
+In each matching packet, expand **Real-Time Transport Protocol → RFC 2833 RTP Event**:
+- `Event ID` — digit pressed (0–9, \*=10, \#=11)
+- `End of event` — true on the final packet
+- `Duration` — tone duration in RTP timestamp units
+
+**SIP INFO DTMF:** `sip.Method == "INFO"` — look for body like `Signal=5\nDuration=160`
+
+## Capture a PCAP
+
+**Using tcpdump:**
+```bash
+sudo tcpdump -i eth0 -w call_capture.pcap \
+  'udp port 5060 or (udp portrange 10000-20000)'
+```
+
+**Using tshark (CLI analysis):**
+```bash
+# Extract all SIP messages
+tshark -r call_capture.pcap -Y sip -T fields \
+  -e frame.time -e ip.src -e ip.dst \
+  -e sip.Method -e sip.Status-Code -e sip.Call-ID
+
+# List RTP streams with stats
+tshark -r call_capture.pcap -q -z rtp,streams
+
+# Extract RFC 2833 DTMF events
+tshark -r call_capture.pcap \
+  -Y "rtp.p_type == 101" \
+  -T fields \
+  -e frame.time -e ip.src \
+  -e rtpevent.event_id -e rtpevent.end_of_event
+```
+
+**Using sngrep (quick SIP terminal view):**
+```bash
+brew install sngrep       # macOS
+sudo apt install sngrep   # Debian/Ubuntu
+
+sngrep -I call_capture.pcap   # Read from PCAP
+sudo sngrep -d eth0 port 5060 # Live capture
+```

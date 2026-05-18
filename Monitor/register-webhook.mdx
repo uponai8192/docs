@@ -1,0 +1,82 @@
+---
+title: "Register & Handle Webhooks"
+description: "Set up an endpoint to receive and handle UponAI webhook events."
+---
+
+<Steps>
+  <Step title="Create your server endpoint">
+    Set up an HTTP/HTTPS endpoint that accepts POST requests.
+
+    ```javascript Node
+    import { UponAI } from "uponai-sdk";
+    import express from "express";
+
+    const app = express();
+    app.use(express.json());
+
+    app.post("/webhook", (req, res) => {
+      const { event, call } = req.body;
+      switch (event) {
+        case "call_started":
+          console.log("Call started", call.call_id);
+          break;
+        case "call_ended":
+          console.log("Call ended", call.call_id);
+          break;
+        case "call_analyzed":
+          console.log("Call analyzed", call.call_id);
+          break;
+        default:
+          console.log("Unknown event:", event);
+      }
+      res.status(204).send();
+    });
+    ```
+  </Step>
+  <Step title="Test your endpoint locally">
+    Test with this curl command before going live:
+
+    ```bash
+    curl --location 'localhost:8080/webhook' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "event": "call_ended",
+      "call": {
+        "call_type": "phone_call",
+        "from_number": "+12137771234",
+        "to_number": "+12137771235",
+        "direction": "inbound",
+        "call_id": "Jabr9TXYYJHfvl6Syypi88rdAHYHmcq6",
+        "agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+        "call_status": "registered",
+        "start_timestamp": 1714608475945,
+        "end_timestamp": 1714608491736,
+        "disconnection_reason": "user_hangup",
+        "transcript": "..."
+      }
+    }'
+    ```
+  </Step>
+  <Step title="Expose your local endpoint">
+    Use ngrok to make your local server reachable:
+
+    ```bash
+    # Install ngrok
+    brew install ngrok/ngrok/ngrok
+
+    # Expose your local server
+    ngrok http http://localhost:8080
+    ```
+
+    Your webhook URL will be something like `https://84c5df474.ngrok-free.dev/webhook`.
+  </Step>
+  <Step title="Register your webhook endpoint">
+    Choose one of two options:
+
+    - **Account-level webhook** — Set up in **Settings > Webhooks** tab. Fires for all agents in your account.
+    - **Agent-level webhook** — Set via the `webhook_url` field on the agent. When set, the account-level webhook will NOT fire for that agent.
+  </Step>
+  <Step title="Verify your webhook">
+    Start a web call in the dashboard to confirm the webhook fires correctly.
+  </Step>
+</Steps>
