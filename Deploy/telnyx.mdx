@@ -1,0 +1,44 @@
+---
+title: "Connect Telnyx via SIP Trunking"
+description: "Integrate your Telnyx numbers with UponAI using elastic SIP trunking."
+---
+
+<Steps>
+  <Step title="Create Elastic SIP Trunking in Telnyx">
+    In your Telnyx Mission Control Portal, create a new SIP trunk, select **FQDN** as the type, and give it a name.
+
+    **Add FQDN:**
+    - Add `sip.retellai.com` as the FQDN
+    - Select **SRV** as the DNS record type
+
+    **Setup Outbound Authentication:**
+    - Select **Credentials** as the authentication method
+    - Add a username and password — you'll need these when importing the number to UponAI
+
+    <Note>
+      Telnyx requires the header `X-Telnyx-Username: <username>` in outbound calls when using credential authentication. You can add custom SIP headers on the Make Outbound Calls page.
+    </Note>
+
+    **Setup Inbound Settings:**
+    - Number format: `+E.164`
+    - Codecs: `G722`, `G711U`, `G711A`
+    - Transport: **TCP** (recommended over UDP for reliability)
+    - Select your SIP region
+
+    **Setup Outbound Settings:**
+    - Create a new outbound voice profile
+    - Select it in the outbound setting
+  </Step>
+  <Step title="Move numbers to your SIP trunk">
+    Purchase new numbers or move existing Telnyx numbers to the elastic SIP trunk you just created.
+  </Step>
+  <Step title="Import numbers to UponAI">
+    In the UponAI dashboard, import the number by supplying:
+    - **Termination SIP URI** — Telnyx's FQDN based on your SIP region (e.g. `sip.telnyx.com`)
+    - Username, password, and any additional SIP headers from your outbound authentication setup
+
+    You can also import numbers programmatically via the Import Number API.
+
+    Once imported, the number behaves like a UponAI-purchased number — visible in your dashboard, usable for inbound and outbound calls. Delete it from the dashboard or via the Delete Number API when no longer needed.
+  </Step>
+</Steps>

@@ -1,0 +1,59 @@
+---
+title: "Consume the Analysis Data"
+description: "Access post-call analysis results via dashboard, webhook, or API."
+---
+
+<Note>
+  Custom post-call analysis fields are not populated for calls that were not connected or where no conversation took place. Always check whether the field exists before using it.
+</Note>
+
+After a call is analyzed, access results through three methods:
+
+<CardGroup cols={3}>
+  <Card title="Dashboard">
+    Visual interface for quick review of all analyzed conversations.
+  </Card>
+  <Card title="Webhook">
+    Real-time notifications when analysis completes.
+  </Card>
+  <Card title="API">
+    Programmatic access to call analysis data.
+  </Card>
+</CardGroup>
+
+## Dashboard
+
+Access results in the dashboard's **History** tab. Your defined analysis categories appear in the **Conversation Analysis** column for quick per-call insights.
+
+## Webhook
+
+The `call_analyzed` event fires when analysis is complete:
+
+```json
+{
+  "event": "call_analyzed",
+  "call": {
+    "call_id": "123",
+    "call_analysis": {
+      // analysis results
+    }
+  }
+}
+```
+
+See [Webhook Overview](/Monitor/webhook-overview) to set up webhooks.
+
+## Get Call API
+
+Retrieve analysis programmatically using the Get Call API:
+
+```json
+{
+  "call_id": "123",
+  "call_analysis": {
+    // analysis results object
+  }
+}
+```
+
+See the API Reference for full response schema.

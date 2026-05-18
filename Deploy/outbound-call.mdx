@@ -1,0 +1,138 @@
+---
+title: "Outbound Calls"
+description: "Make outbound calls with your UponAI agents using the API or dashboard."
+---
+
+## Overview
+
+This guide covers how to make outbound calls with your UponAI agents. Before proceeding, ensure you have:
+
+- Created and configured an agent
+- Purchased or imported phone numbers
+- Set up your API credentials
+
+## Step 1: Bind Agents to Phone Numbers
+
+Before making calls, assign agents to your phone numbers. This configuration determines how your number handles both inbound and outbound calls.
+
+| Setting | Purpose | Use Case |
+|---------|---------|---------|
+| Inbound Agent | Handles incoming calls to this number | Customer support, callbacks |
+| Outbound Agent | Used when making calls from this number | Sales outreach, notifications |
+
+**Flexible agent assignment:**
+- **Different agents** — Use specialized agents for inbound vs outbound
+- **Outbound only** — Leave inbound agent unset to prevent callbacks
+- **Inbound only** — Configure only an inbound agent for receive-only numbers
+
+After binding an inbound agent, your number is immediately ready to receive calls.
+
+See [A/B Testing](/Deploy/ab-testing) to split outbound traffic across multiple agents.
+
+## Step 2: Make Outbound Calls
+
+### International Calling Restrictions
+
+- **UponAI-purchased numbers** — Supports calling to 15 countries
+- **Imported numbers** — International calling depends on your telephony provider's settings
+
+### Call Parameters
+
+When making outbound calls, these parameters are supported:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `from_number` | string (E.164) | Your UponAI-managed or imported number |
+| `to_number` | string (E.164) | Destination number |
+| `override_agent_id` | string | Override the agent used for this call (optional) |
+| `override_agent_version` | integer | Version of the override agent; defaults to latest if omitted |
+| `agent_override` | object | Per-call partial overrides for agent behavior (optional) |
+| `metadata` | object | Free-form metadata stored with the call |
+| `retell_llm_dynamic_variables` | object | Key-value strings injected into prompts/tools (optional) |
+| `custom_sip_headers` | object | Outbound SIP headers forwarded to your provider (optional) |
+| `ignore_e164_validation` | boolean | Bypass E.164 validation for custom telephony only |
+
+<CodeGroup>
+```javascript Node
+const registerCallResponse = await uponai.call.createPhoneCall({
+  from_number: '+14157774444', // replace with your number
+  to_number: '+12137774445',   // replace with the number to call
+  // Optional: per-call agent selection and overrides
+  override_agent_id: 'agent_abc123',
+  override_agent_version: 0, // or omit to use latest
+  agent_override: {
+    agent: {
+      voice_speed: 1.1,
+      enable_backchannel: true,
+    },
+  },
+  retell_llm_dynamic_variables: {
+    name: 'John Doe',
+    blood_group: 'B+',
+  },
+  custom_sip_headers: {
+    'X-Custom-Header': 'Custom Value',
+  },
+});
+
+console.log(registerCallResponse);
+```
+
+```python Python
+register_call_response = uponai.call.create_phone_call(
+    from_number="+14157774444",  # replace with your number
+    to_number="+12137774445",    # replace with the number to call
+    override_agent_id="agent_abc123",
+    retell_llm_dynamic_variables={
+        "name": "John Doe",
+        "blood_group": "B+",
+    },
+)
+
+print(register_call_response)
+```
+</CodeGroup>
+
+## Step 3: Configure CPS (Calls Per Second)
+
+CPS controls how many outbound calls you can initiate per second. This prevents system overload and ensures call quality.
+
+| Provider | Default CPS | Maximum CPS | Notes |
+|---------|------------|------------|-------|
+| Twilio | 1 | 5 | Changes take up to 10 minutes |
+| Telnyx | 1 | 16 | Instant updates |
+| Custom Telephony | 1 | Concurrency ÷ 20 | Based on your concurrency limit |
+
+<Warning>
+  Exceeding CPS limits results in rejected calls. Start low and scale gradually based on actual needs.
+</Warning>
+
+**Best practice — implement retry logic with exponential backoff:**
+
+```javascript
+const maxRetries = 3;
+let retryDelay = 1000; // Start with 1 second
+
+for (let i = 0; i < maxRetries; i++) {
+  try {
+    await makeCall();
+    break;
+  } catch (error) {
+    if (error.code === 'rate_limited') {
+      await sleep(retryDelay);
+      retryDelay *= 2; // Exponential backoff
+    }
+  }
+}
+```
+
+## Step 4: Monitor Call Details
+
+<CardGroup cols={2}>
+  <Card title="API Polling">
+    Use the **Get Call API** to retrieve the full transcript, call recording, latency metrics, function call logs, and call duration/status.
+  </Card>
+  <Card title="Real-time Webhooks">
+    Set up webhooks to receive instant notifications for: call started, call ended, call analyzed, and call failed events. Ideal for production systems.
+  </Card>
+</CardGroup>

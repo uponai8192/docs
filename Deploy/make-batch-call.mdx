@@ -1,0 +1,66 @@
+---
+title: "Create Batch Calls"
+description: "Run outbound call campaigns by uploading a CSV of recipients and scheduling or sending immediately."
+---
+
+Batch calls let you efficiently manage multiple outbound calls organized into groups. Create, schedule, and monitor calls in bulk — useful for campaigns, reminders, or any situation requiring multiple recipients.
+
+## Create a Batch Call
+
+<Steps>
+  <Step title="Click Create Batch Call">
+    Navigate to the **Batch Call** tab in the UponAI dashboard and click **Create Batch Call** in the top-right corner.
+  </Step>
+  <Step title="Enter call name and phone number">
+    - Provide a unique name for the batch call
+    - Select the **From Number** from the dropdown — ensure it's bound to an agent
+  </Step>
+  <Step title="Upload CSV">
+    Prepare your recipient list in CSV format with a header row that includes a `phone number` column.
+
+    Download the CSV template from the dashboard, or upload your own file.
+
+    **Dynamic variables:** Add additional columns to inject custom data per recipient. A column named `first_name` can be referenced as `{{first_name}}` in your agent prompt.
+
+    **Optional CSV columns:**
+
+    | Column | Description |
+    |--------|-------------|
+    | `override agent id` | Override the agent for this specific call |
+    | `override agent version` | Override the agent version for this call |
+    | `metadata` | JSON string for arbitrary call data (e.g. `{"customer_id":"cust_123"}`) |
+    | `custom_sip_headers` | JSON string of custom SIP headers — keys must start with `X-` |
+    | `ignore e164 validation` | Set to `true` to bypass E.164 format check (custom telephony only) |
+
+    Any other columns are treated as dynamic variables injected into your agent's prompts and tool descriptions.
+  </Step>
+  <Step title="Configure the time window">
+    Open the configuration modal to define the batch call time windows — the hours during which calls will be placed.
+  </Step>
+  <Step title="Send or schedule">
+    - **Send Now** — Start calls immediately
+    - **Schedule** — Set a future time to start
+    - **Save as Draft** — Save and revisit later without triggering any calls
+  </Step>
+</Steps>
+
+## Monitor Batch Calls
+
+### Batch Call Status
+
+| Status | Description |
+|--------|-------------|
+| **Draft** | Editable and unsent. No calls triggered until submitted. |
+| **Planned** | Scheduled for a future time. Cannot be edited once scheduled. |
+| **Ongoing** | In progress — calls initiated as concurrency slots become available. |
+| **Sent** | All calls in the batch have been completed. |
+
+### Batch Call Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Sent | Total calls sent from the batch |
+| Picked Up | Number of calls answered by recipients |
+| Successful | Calls completed based on your predefined success criteria |
+
+Click the history icon on any batch to view individual call details.

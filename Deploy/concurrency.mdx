@@ -1,0 +1,68 @@
+---
+title: "Understand Concurrency & Limits"
+description: "Learn about concurrent call limits, concurrency burst, and other platform constraints."
+---
+
+UponAI enforces constraints to ensure smooth operation and prevent misuse. These limits can be adjusted based on your needs on a case-by-case basis.
+
+## Concurrency
+
+Concurrency refers to the number of simultaneous active voice calls your system handles at any moment. For example, 15 users on calls at the same time = 15 concurrent calls.
+
+**Pay-As-You-Go users** receive a quota of **20 concurrent calls**. To increase your limit, go to the **Billing** page to upgrade your plan.
+
+<Note>
+  You don't need to create multiple agents to manage multiple concurrent calls. Each agent can handle an unlimited number of calls as long as the total stays within your concurrency quota.
+</Note>
+
+You can check your current concurrent call count in the dashboard.
+
+## Concurrency Burst
+
+Concurrency Burst lets you temporarily exceed your standard concurrency limit during peak demand. Calls that would normally be rejected will proceed with an additional surcharge.
+
+### How It Works
+
+| Call Type | Cost |
+|-----------|------|
+| Within standard limit | No additional charge |
+| Above standard limit (burst) | +$0.10/min for the **entire** call duration |
+
+<Warning>
+  The burst surcharge applies to the entire duration of any call that started while in burst mode — not just the portion above your normal limit.
+</Warning>
+
+### Burst Limit Calculation
+
+Your burst limit is the **lower** of:
+- 3× your concurrency limit, OR
+- Your concurrency limit + 300
+
+**Examples:**
+- Limit of 50 → burst up to 150 (3 × 50)
+- Limit of 200 → burst up to 500 (200 + 300, since 200 + 300 < 3 × 200)
+
+### Enable Concurrency Burst
+
+Go to **Settings > Limits** in your dashboard to enable or disable concurrency burst.
+
+**Best for:**
+- Unpredictable traffic spikes
+- Campaign launches with higher-than-normal call volumes
+- Seasonal peaks without permanently upgrading your plan
+
+If you consistently exceed your normal limit, upgrading your base concurrency allocation is more cost-efficient.
+
+## Max Call Duration
+
+Calls end automatically after **1 hour** by default. You can increase this up to **2 hours** in your agent settings.
+
+For calls longer than 2 hours, contact support at [support@uponai.com](mailto:support@uponai.com).
+
+## Max Prompt Token Length
+
+The maximum prompt length when using the UponAI LLM framework is **32,768 tokens** by default. Prompts exceeding this limit will be rejected when creating or updating the LLM.
+
+<Note>
+  Prompts over 3,500 tokens incur additional charges. For longer context requirements, contact support at [support@uponai.com](mailto:support@uponai.com).
+</Note>

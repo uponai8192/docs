@@ -1,0 +1,101 @@
+---
+title: "Connect to Web Call"
+description: "Embed voice calls directly in your web app using the UponAI Web SDK."
+---
+
+## Set Up the SDK
+
+<Steps>
+  <Step title="Install the Web SDK">
+    ```bash
+    npm install retell-client-js-sdk
+    ```
+  </Step>
+  <Step title="Initialize the SDK">
+    ```javascript
+    import { RetellWebClient } from "retell-client-js-sdk";
+
+    const retellWebClient = new RetellWebClient();
+    ```
+  </Step>
+</Steps>
+
+## Get a Call Access Token
+
+Your client code should call your **server endpoint**, which internally calls `create-web-call` to get an access token. This must happen server-side to protect your API key from being exposed in client code.
+
+The access token is then passed to your frontend to start the call.
+
+<Warning>
+  If you do not start the call within 30 seconds of obtaining the access token, it will be invalidated and the call will be marked with an error.
+</Warning>
+
+## Start the Call
+
+```javascript
+await retellWebClient.startCall({
+  accessToken: createCallResponse.access_token,
+});
+```
+
+**Optional parameters:**
+
+```javascript
+await retellWebClient.startCall({
+  accessToken: createCallResponse.access_token,
+  sampleRate: 24000,          // Sample rate of audio capture and playback
+  captureDeviceId: "default", // Microphone device ID
+  playbackDeviceId: "0ec1...", // Speaker device ID
+  emitRawAudioSamples: false,  // Emit raw PCM audio bytes as Float32Array
+});
+```
+
+## Stop the Call
+
+```javascript
+retellWebClient.stopCall();
+```
+
+## Listen to Events
+
+The SDK emits events for real-time call updates:
+
+```javascript
+retellWebClient.on("call_started", () => {
+  console.log("call started");
+});
+
+retellWebClient.on("call_ended", () => {
+  console.log("call ended");
+  setIsCallActive(false);
+});
+
+// When agent starts talking (useful for animations)
+retellWebClient.on("agent_start_talking", () => {
+  console.log("agent_start_talking");
+});
+
+// When agent stops talking (useful for animations)
+retellWebClient.on("agent_stop_talking", () => {
+  console.log("agent_stop_talking");
+});
+
+// Raw PCM audio bytes (only when emitRawAudioSamples is true)
+retellWebClient.on("audio", (audio) => {
+  // audio is a Float32Array
+});
+
+// Real-time transcript updates (last 5 sentences)
+retellWebClient.on("update", (update) => {
+  // update.transcript contains the transcript
+});
+
+retellWebClient.on("metadata", (metadata) => {
+  // handle metadata
+});
+
+retellWebClient.on("error", (error) => {
+  console.error("An error occurred:", error);
+  retellWebClient.stopCall();
+});
+```

@@ -1,0 +1,72 @@
+---
+title: "Data Retention Policy"
+description: "Configure automatic deletion of call and chat data after a set retention period."
+---
+
+UponAI lets you configure a data retention period per agent. After the retention period expires, call and chat data for that agent is automatically and permanently deleted.
+
+By default, data is kept indefinitely (no automatic deletion).
+
+## How It Works
+
+- Data retention is configured per agent under **Security & Fallback Settings**
+- Expired data is automatically deleted on a daily basis
+- Deletion is permanent and irreversible
+
+## How to Configure
+
+<Steps>
+  <Step title="Navigate to your agent">
+    Open the agent you want to configure.
+  </Step>
+  <Step title="Open Security & Fallback Settings">
+    Go to **Security & Fallback Settings**.
+  </Step>
+  <Step title="Set the retention period">
+    Under **Data Storage Settings**, use the **Retention** dropdown to select how long data is kept before automatic deletion.
+  </Step>
+</Steps>
+
+The retention period applies regardless of which data storage mode you select (Everything, Everything except PII, or Basic Attributes Only).
+
+## What Gets Deleted
+
+When the retention period expires, the following data is permanently removed:
+- Call recordings (audio files)
+- Transcripts
+- Call and chat logs
+- Knowledge base retrieval logs
+- Dynamic variables and metadata
+
+<Warning>
+  Deletion is irreversible. Export any data you need before the retention period expires. Use webhook events to capture call data in real time, or use the Get Call / Get Chat API to retrieve data before it expires.
+</Warning>
+
+## Available Retention Periods
+
+| Option | Duration |
+|--------|----------|
+| Keep forever | No automatic deletion (default) |
+| 1 day | 24 hours after call/chat starts |
+| 3 days | |
+| 7 days | |
+| 30 days | 1 month |
+| 60 days | 2 months |
+| 90 days | 3 months |
+| 180 days | 6 months |
+| 365 days | 1 year |
+| 730 days | 2 years |
+
+## API Configuration
+
+Set the retention period via the API when creating or updating an agent:
+
+```json
+{
+  "data_storage_retention_days": 90
+}
+```
+
+- **Field:** `data_storage_retention_days`
+- **Type:** integer (1–730) or `null`
+- **Default:** `null` (keep forever)

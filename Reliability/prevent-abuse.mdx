@@ -1,0 +1,76 @@
+---
+title: "Prevent Abuse"
+description: "Protect your UponAI integration from common abuse patterns including IRSF, SMS abuse, and unauthorized API access."
+---
+
+Abuse can result in unexpected charges, degraded service, and account suspension. This page covers common abuse scenarios and how to prevent them.
+
+## Common Abuse Scenarios
+
+| Scenario | Description |
+|----------|-------------|
+| **IRSF (International Revenue Sharing Fraud)** | Attackers trigger calls to premium international numbers to generate fraudulent revenue |
+| **Excessive outbound to non-US numbers** | High-volume outbound calls to international numbers drive up your telephony costs |
+| **SMS abuse** | Unauthorized SMS sending from your numbers or agents |
+| **Inbound spam** | Bots or bad actors flood your inbound number with unwanted calls |
+| **Chat bot abuse** | Automated scripts hit your web call or chat endpoints to consume LLM credits |
+
+## Core Prevention Rules
+
+<Steps>
+  <Step title="Never expose your API key publicly">
+    Your UponAI API key has full account access. Never include it in frontend code, public repos, or client-side apps.
+
+    - Use your **public key** for any frontend or client-side integrations
+    - Keep your private API key server-side only
+    - If your key is exposed, rotate it immediately in the dashboard
+  </Step>
+  <Step title="Use reCAPTCHA on web-facing endpoints">
+    Any public-facing endpoint that can initiate a call or send an SMS should be protected with reCAPTCHA or equivalent bot detection.
+  </Step>
+  <Step title="Limit regions and features">
+    Restrict outbound calls to regions you actually operate in. Disable international calling if you don't need it — this is your primary defense against IRSF.
+  </Step>
+  <Step title="Apply rate limiting">
+    Implement rate limiting on your backend before calls reach UponAI. Limit by IP address, phone number, or user account.
+  </Step>
+  <Step title="Use KYC for high-risk flows">
+    For flows that allow users to initiate calls or SMS, require identity verification (KYC) before enabling access.
+  </Step>
+  <Step title="Detect abuse in your prompts">
+    Add instructions to your agent prompts to detect and end calls that appear abusive, spammy, or off-topic.
+  </Step>
+</Steps>
+
+## Protecting Outbound Calling
+
+Choose one of the following approaches:
+
+<Tabs>
+  <Tab title="Backend access management">
+    Route all outbound call initiation through your own backend. Your backend authenticates the user, validates the destination, and only then calls the UponAI API.
+
+    This is the most secure option — your API key never leaves your server.
+  </Tab>
+  <Tab title="Widget with reCAPTCHA">
+    If using UponAI's web widget or a client-side integration, enable reCAPTCHA to prevent automated abuse. Only verified human sessions can initiate calls.
+  </Tab>
+</Tabs>
+
+## Protecting Inbound Calls
+
+Use **inbound webhooks** to validate and block unwanted callers before they reach your agent.
+
+Your webhook receives the caller's phone number before the call connects. Return a rejection response to block the call.
+
+See [Inbound Call Webhook](/Monitor/inbound-webhook) for implementation details.
+
+## Monitoring for Abuse
+
+- Review your **Analytics Dashboard** regularly for unusual call volume spikes
+- Set up **Alerting** to notify you when concurrency or call counts exceed expected thresholds
+- Check call logs for repeated short calls, which may indicate probing or automated abuse
+
+<Note>
+  For additional fraud protection features including rate limiting by IP/phone number and geographic restrictions per phone number, see [Fraud Protection](/Reliability/fraud-protection).
+</Note>

@@ -1,0 +1,196 @@
+---
+title: "Website Widget"
+description: "Embed a chat or callback widget on your website with a single script tag."
+---
+
+The UponAI website widget is a production-ready, customizable widget for any website, powered by the UponAI API. Embed it with a single `<script>` tag — no backend proxy required.
+
+The widget supports two modes:
+
+- **Chat Widget** — Text-based conversations using a chat agent
+- **Callback Widget** — Phone-based conversations using a voice agent
+
+## Prerequisites
+
+- **For chat widget** — A chat agent ([Create Chat Agent guide](/Deploy/create-chat-completion))
+- **For callback widget** — A voice agent and a UponAI phone number
+- Your **UponAI Public Key** and **Agent ID**
+
+## Chat Widget
+
+Provides text-based conversations through a floating chat interface.
+
+### Setup
+
+Add this script tag inside your HTML `<head>`:
+
+```html
+<script
+  id="retell-widget"
+  src="https://dashboard.retellai.com/retell-widget.js"
+  type="module"
+  data-public-key="YOUR_PUBLIC_KEY"
+  data-agent-id="YOUR_CHAT_AGENT_ID"
+  data-agent-version="YOUR_AGENT_VERSION"
+  data-title="YOUR_CUSTOM_TITLE"
+  data-logo-url="YOUR_LOGO_URL"
+  data-color="#FFA07A"
+  data-bot-name="YOUR_BOT_NAME"
+  data-popup-message="YOUR_POPUP_MESSAGE"
+  data-show-ai-popup="true"
+  data-show-ai-popup-time="5"
+  data-auto-open="false"
+  data-dynamic='{"key": "value"}'
+  data-recaptcha-key="YOUR_RECAPTCHA_SITE_KEY"
+></script>
+```
+
+### Chat Widget Attributes
+
+**Required:**
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-public-key` | Your UponAI public key |
+| `data-agent-id` | Your chat agent ID |
+
+**Optional:**
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-agent-version` | Agent version (defaults to latest) |
+| `data-title` | Custom chat window title |
+| `data-logo-url` | URL of your logo image |
+| `data-color` | Hex color for widget theme (e.g. `#FFA07A`) |
+| `data-bot-name` | Bot name shown in popup messages |
+| `data-popup-message` | Popup message shown before the user opens chat |
+| `data-show-ai-popup` | Set to `"true"` to enable popup messages |
+| `data-show-ai-popup-time` | Seconds to delay before showing popup (default: `0`) |
+| `data-auto-open` | Set to `"true"` to auto-open on page load |
+| `data-dynamic` | JSON string with dynamic variables for the agent |
+| `data-recaptcha-key` | Google reCAPTCHA v3 site key for bot protection |
+
+### Full Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Widget Example</title>
+  <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+  <script
+    id="retell-widget"
+    src="https://dashboard.retellai.com/retell-widget.js"
+    data-public-key="key_xxxxxxxxxxxxxxxxxxxxx"
+    data-agent-id="agent_xxxxxxxxxxxxxxxxxxx"
+    data-agent-version="0"
+    data-title="Chat with us!"
+    data-recaptcha-key="YOUR_RECAPTCHA_SITE_KEY"
+  ></script>
+</head>
+<body></body>
+</html>
+```
+
+## Callback Widget
+
+Collects the user's phone number and initiates an outbound call from your agent instead of a chat session.
+
+### Setup
+
+```html
+<script
+  id="retell-widget"
+  src="https://dashboard.retellai.com/retell-widget.js"
+  type="module"
+  data-public-key="YOUR_PUBLIC_KEY"
+  data-agent-id="YOUR_VOICE_AGENT_ID"
+  data-widget="callback"
+  data-phone-number="YOUR_UPONAI_PHONE_NUMBER"
+  data-title="Request a Call"
+  data-countries="US,CA,GB"
+  data-tc="https://yoursite.com/terms"
+  data-color="#FFA07A"
+  data-recaptcha-key="YOUR_RECAPTCHA_SITE_KEY"
+></script>
+```
+
+### Callback Widget Attributes
+
+**Required:**
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-public-key` | Your UponAI public key |
+| `data-agent-id` | Your **voice** agent ID |
+| `data-widget` | Must be `"callback"` |
+| `data-phone-number` | Your UponAI phone number that will place the outbound call |
+
+**Optional:**
+
+| Attribute | Description |
+|-----------|-------------|
+| `data-title` | Custom widget title |
+| `data-color` | Hex color for widget theme |
+| `data-countries` | Comma-separated country codes for the country selector (e.g. `"US,CA,GB"`) |
+| `data-tc` | URL to your terms and conditions page |
+| `data-recaptcha-key` | Google reCAPTCHA v3 site key |
+
+### How It Works
+
+1. User clicks the floating phone icon (bottom right)
+2. A form appears collecting first name, last name, phone number, and privacy agreement
+3. On submit, the widget creates an outbound call via the UponAI API
+4. The user receives a call from your specified number
+5. The conversation is handled by your configured voice agent
+
+### Full Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Callback Widget Example</title>
+  <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+  <script
+    id="retell-widget"
+    src="https://dashboard.retellai.com/retell-widget.js"
+    data-public-key="key_xxxxxxxxxxxxxxxxxxxxx"
+    data-agent-id="agent_xxxxxxxxxxxxxxxxxxx"
+    data-widget="callback"
+    data-phone-number="+15551234567"
+    data-title="Request a Call"
+    data-countries="US,CA,GB"
+    data-tc="https://example.com/terms"
+    data-color="#FFA07A"
+    data-recaptcha-key="YOUR_RECAPTCHA_SITE_KEY"
+  ></script>
+</head>
+<body></body>
+</html>
+```
+
+## reCAPTCHA Protection
+
+Both widgets support Google reCAPTCHA v3 for bot protection.
+
+<Note>
+  Only reCAPTCHA **v3** is supported. v2 is not compatible.
+</Note>
+
+<Steps>
+  <Step title="Add the reCAPTCHA script">
+    Include this in your HTML `<head>`:
+    ```html
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_RECAPTCHA_SITE_KEY"></script>
+    ```
+  </Step>
+  <Step title="Add the attribute">
+    Add `data-recaptcha-key="YOUR_RECAPTCHA_SITE_KEY"` to your widget script tag.
+  </Step>
+  <Step title="Enable in dashboard">
+    Enable reCAPTCHA protection for your public key in the UponAI Public Keys settings.
+  </Step>
+</Steps>

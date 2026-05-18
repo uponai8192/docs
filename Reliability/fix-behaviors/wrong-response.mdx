@@ -1,0 +1,19 @@
+---
+title: "Debug Wrong Response"
+description: "Fix agents that are not following instructions or giving unexpected responses."
+---
+
+<Steps>
+  <Step title="Check model capability">
+    If your agent isn't following instructions correctly — especially with longer or complex prompts:
+    - Check if you're using a lightweight model (e.g. `gpt-4.1-mini`)
+    - Switch to a more capable model like `gpt-4.1`
+  </Step>
+  <Step title="Review prompt structure">
+    If the issue persists:
+    - Check if your prompt structure is too complex
+    - Follow the [Prompt Engineering Guide](/build/prompt-engineering-guide)
+    - Break complex tasks into clear, sequential steps
+    - Add explicit transition conditions between different steps
+  </Step>
+</Steps>

@@ -1,0 +1,94 @@
+---
+title: "Secure the Webhook"
+description: "Verify webhook signatures to confirm requests come from UponAI, not malicious third parties."
+---
+
+Use the `x-retell-signature` header together with your UponAI API key to verify every webhook request.
+
+<Note>
+  Only the API key with a **webhook badge** next to it can be used to verify webhooks.
+</Note>
+
+You can also allowlist UponAI's IP address: `100.20.5.228`.
+
+## Verify with SDK
+
+<Warning>
+  Use the **raw request body string** for verification — not `JSON.stringify(req.body)`. Re-serializing may change whitespace or key ordering, causing verification to fail.
+</Warning>
+
+```javascript Node
+import { UponAI } from "uponai-sdk";
+import express from "express";
+
+const app = express();
+// Raw body required for signature verification
+app.use(express.raw({ type: "application/json" }));
+
+app.post("/webhook", (req, res) => {
+  const rawBody = req.body.toString("utf-8");
+  if (
+    !UponAI.verify(
+      rawBody,
+      process.env.UPONAI_API_KEY,
+      req.headers["x-retell-signature"],
+    )
+  ) {
+    console.error("Invalid signature");
+    return res.status(401).send();
+  }
+
+  const { event, call } = JSON.parse(rawBody);
+  // process the webhook
+
+  res.status(204).send();
+});
+```
+
+## Verify Without SDK
+
+For languages without an official SDK, verify the signature manually using HMAC-SHA256.
+
+**Signature format:**
+```
+X-Retell-Signature: v={timestamp},d={hex_digest}
+```
+
+- `v` — Unix timestamp in milliseconds when the webhook was sent
+- `d` — HMAC-SHA256 hex digest of `raw_body + timestamp`
+
+**Verification steps:**
+1. Extract the `X-Retell-Signature` header
+2. Parse `v` (timestamp) and `d` (digest) using pattern `v=(\d+),d=(.*)`
+3. Confirm the timestamp is within 5 minutes of now (prevents replay attacks)
+4. Compute `HMAC-SHA256(raw_body + timestamp, api_key)`
+5. Compare computed digest with `d` — if they match, the webhook is authentic
+
+```go Go
+func verifyWebhook(rawBody string, apiKey string, signature string) bool {
+    re := regexp.MustCompile(`v=(\d+),d=(.*)`)
+    matches := re.FindStringSubmatch(signature)
+    if len(matches) != 3 {
+        return false
+    }
+
+    timestamp, err := strconv.ParseInt(matches[1], 10, 64)
+    if err != nil {
+        return false
+    }
+    digest := matches[2]
+
+    // Reject if older than 5 minutes
+    now := time.Now().UnixMilli()
+    if math.Abs(float64(now-timestamp)) > 5*60*1000 {
+        return false
+    }
+
+    // HMAC-SHA256 with constant-time comparison
+    mac := hmac.New(sha256.New, []byte(apiKey))
+    mac.Write([]byte(rawBody + matches[1]))
+    expectedMAC, _ := hex.DecodeString(digest)
+
+    return hmac.Equal(mac.Sum(nil), expectedMAC)
+}
+```

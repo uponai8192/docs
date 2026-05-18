@@ -1,0 +1,82 @@
+---
+title: "Data Storage Settings"
+description: "Control what call data is stored and configure PII scrubbing for your agents."
+---
+
+By default, UponAI stores the following potentially sensitive data related to your calls:
+
+- Call logs
+- Transcriptions
+- Call recordings
+- Caller ID (inbound) / Callee ID (outbound)
+- Knowledge base retrieved contents
+- Dynamic variables
+- Metadata
+
+## Storage Modes
+
+Navigate to your agent → **Security & Fallback Settings → Data Storage Settings** and select one of the following modes:
+
+| Mode | What is stored |
+|------|---------------|
+| **Everything** | All transcripts, recordings, and logs (default) |
+| **Everything except PII** | Content stored with PII removed based on your configuration |
+| **Basic Attributes Only** | Only metadata — no transcripts, recordings, or logs |
+
+You can also configure a [data retention period](/Accounts/privacy/data-retention) to automatically delete stored data after a set number of days.
+
+## What Happens When You Change Storage Settings
+
+- You will continue to receive **webhook events** with transcript, recording, and other data regardless of your storage mode
+- When using **Basic Attributes Only**: querying the call via the Get Call API later will not return transcripts or recordings
+- When using **Everything except PII**: the call recording link expires after **10 minutes** upon receiving the webhook
+
+## PII Scrubbing
+
+When you choose **Everything except PII**, you can configure which personally identifiable information is removed after the call completes. Scrubbing is applied across transcripts, recordings, public logs, dynamic variables, metadata, call analysis, and tool call arguments/results.
+
+### Content Categories
+
+Detected occurrences are replaced with `[category number]` placeholders (e.g., `[email 1]`, `[person name 2]`):
+
+| Category | Description |
+|----------|-------------|
+| `person_name` | |
+| `address` | |
+| `email` | |
+| `ssn` | Social Security Number |
+| `passport` | |
+| `driver_license` | |
+| `credit_card` | |
+| `bank_account` | |
+| `password` | |
+| `pin` | |
+| `medical_id` | |
+| `date_of_birth` | |
+| `customer_account_number` | |
+
+DTMF digits are replaced with `[PII INFO]` whenever any PII category is enabled, to avoid exposing touch-tone passwords or PINs.
+
+The raw originals are deleted under **Everything except PII** — only scrubbed versions remain.
+
+### Phone Number (Special Behavior)
+
+`phone_number` behaves differently from content categories. Selecting it redacts the customer's phone number from the **call record itself**, not just the transcript:
+
+- Inbound calls: `from_number` is removed
+- Outbound calls: `to_number` is removed
+- SMS chats: `user_number` is removed
+
+The field is removed entirely — there is no placeholder. If you need the customer's number visible for downstream systems, do not include `phone_number` in your categories.
+
+## What Is Always Preserved
+
+Regardless of your configuration, these fields are never altered by PII scrubbing:
+
+- **Identifiers:** `call_id`, `agent_id`
+- **Timing:** `start_timestamp`, `end_timestamp`, `duration_ms`
+- **Outcome:** `call_status`, `disconnection_reason`, `call_successful`, `user_sentiment`, `in_voicemail`
+- **Operational:** `direction`, `transfer_destination`, `call_latency`, `cost_metadata`, `call_cost`, `custom_attributes`
+- **Tool call records** — name, timing, and success (arguments and results are still scrubbed)
+
+To remove these fields as well, use **Basic Attributes Only** storage or configure a [data retention period](/Accounts/privacy/data-retention).

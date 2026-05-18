@@ -1,0 +1,191 @@
+---
+title: "Connect Avaya via SIP Trunking"
+description: "Integrate UponAI with Avaya Aura using SBCE as the SIP border element."
+---
+
+<Note>
+  Customers on enterprise or paid support plans can contact [support@uponai.com](mailto:support@uponai.com) for step-by-step guidance.
+</Note>
+
+This guide covers connecting Avaya Aura to UponAI using **Avaya Session Border Controller for Enterprise (SBCE)** as the SIP border element.
+
+**Architecture:**
+```
+UponAI ↔ Avaya SBCE (B1 external) | (A1 internal) ↔ Session Manager ↔ Communication Manager
+```
+
+The SBCE handles topology hiding, codec interworking, and security between the external UponAI SIP trunk and your internal Aura infrastructure. All configuration flows through **System Manager**.
+
+## UponAI SIP Details
+
+| Setting | Value |
+|---------|-------|
+| SIP Server URI | `sip.retellai.com` |
+| IP ranges | `18.98.16.120/30` (all regions), `143.223.88.0/21`, `161.115.160.0/19` (US) |
+| Recommended transport | TCP (also supports UDP and TLS/SRTP) |
+| Supported codecs | PCMU (G.711 µ-law), PCMA (G.711 A-law), G.722 |
+
+---
+
+## Step 1: Firewall Considerations
+
+**Allow inbound to SBCE A-side from UponAI IP ranges:**
+
+| CIDR Block | Coverage |
+|-----------|---------|
+| `18.98.16.120/30` | All regions |
+| `143.223.88.0/21` | Certain US traffic |
+| `161.115.160.0/19` | Certain US traffic |
+
+**Ports to open on SBCE A-side (from/to UponAI):**
+
+| Protocol | Port | Purpose |
+|---------|------|---------|
+| TCP / UDP | 5060 | SIP signaling |
+| TCP | 5061 | SIP over TLS |
+| UDP | 1024–65535 | RTP / SRTP media |
+
+**Ports to open on SBCE B-side (toward Session Manager):**
+
+| Protocol | Port | Purpose |
+|---------|------|---------|
+| TCP / UDP | 5060 | SIP signaling to Session Manager |
+| TCP | 5061 | SIP/TLS to Session Manager |
+| UDP | 1024–65535 | RTP media toward Communication Manager |
+
+---
+
+## Step 2: Enable SIP Trunking on Avaya
+
+**On Communication Manager (via System Manager):**
+1. Log in to System Manager (`https://<smgr-ip>/SMGR`)
+2. Go to **Elements > Communication Manager > System Parameters > Customer Options**
+3. Confirm **SIP Trunking** is set to `y`
+4. Confirm **Maximum Administered SIP Trunks** is high enough for expected concurrent calls
+
+**On Session Manager:**
+- Go to **Elements > Session Manager > System Status > Security Module Status**
+- Verify the instance shows **Registered** and SIP signaling is active
+
+---
+
+## Step 3: Configure the SBCE
+
+All SBCE configuration is done through the Avaya SBCE EMS web UI (`https://<sbce-ip>/`).
+
+**1. Create Server Interworking Profiles** (one for Avaya side, one for UponAI side):
+
+_Avaya-side profile:_
+- **Configuration Profiles > Server Interworking > Add**
+- Name: `Avaya`
+- Record Route: Both Sides | Include Endpoint IP for Context Lookup: checked | Extensions: Avaya | Has Remote SBC: checked
+
+_UponAI (service provider) side profile:_
+- Name: `Service-Provider`
+- Delayed SDP Handling: checked | Record Route: Both Sides | Extensions: Avaya
+
+**2. Add SIP Servers:**
+
+_UponAI server:_
+- **Configuration Profiles > Server Configuration > Add**
+- Server Type: Trunk Server | IP/FQDN: `sip.retellai.com` | Port: 5060 | Transport: TCP
+- Enable SIP OPTIONS heartbeat: 30 second interval
+
+_Avaya Session Manager server:_
+- Server Type: Call Server | IP: your Session Manager IP | Port: 5061 | Transport: TLS
+
+**3. Create Routing Profiles:**
+- `Route-to-UponAI` → Server: Service-Provider
+- `Route-to-SessionManager` → primary + secondary Session Manager servers
+
+**4. Configure Topology Hiding** — rewrites SIP headers to hide internal IPs:
+- Service Provider side: all fields to IP Domain, values Auto
+- Avaya side: override To, From, Request Line fields with your internal SIP domain
+
+**5. Create Signaling Interfaces:**
+- External (facing UponAI): SBCE B1 IP, TCP port 5060
+- Internal (facing Session Manager): SBCE A1 IP, TLS port 5061
+
+**6. Create Media Interfaces:**
+- External: SBCE B1 IP, default port range
+- Internal: SBCE A1 IP, default port range
+
+**7. Create Server Flows** (two flows — one per direction):
+
+| Field | Inbound (UponAI → SM) | Outbound (SM → UponAI) |
+|-------|-----------------------|------------------------|
+| Name | Trunk-Server | Call-Server |
+| Server Configuration | Service-Provider | Avaya |
+| Received Interface | Service-Provider-External | Avaya-Internal |
+| Signaling Interface | Avaya-Internal | Service-Provider-External |
+| Media Interface | Service-Provider-External | Avaya-Internal |
+| Routing Profile | Route-to-SessionManager | Route-to-UponAI |
+| Topology Hiding Profile | Service-Provider | Avaya |
+
+---
+
+## Step 4: Configure Session Manager
+
+In **System Manager > Elements > Routing**:
+
+1. **Add SIP Entity for SBCE** — Type: SIP Trunk, FQDN: SBCE A1 IP, Port: 5061, Protocol: TLS
+2. **Add Entity Link** — Session Manager ↔ SBCE-UponAI-Trunk, Protocol: TLS, Port: 5061, Policy: Trusted
+3. **Create Routing Policy** — Name: Route-via-UponAI, SIP Entity: SBCE-UponAI-Trunk
+4. **Configure Dial Patterns** — Map DIDs to the routing policy and internal SIP domain
+
+---
+
+## Step 5: Configure Communication Manager
+
+**Create SIP Signaling Group:**
+- Group Type: sip | Transport: tcp | Far-end: Session Manager node | DTMF over IP: rtp-payload
+
+**Create Trunk Group:**
+- Group Type: sip | Signaling Group: from above | Members: set to max concurrent calls
+
+**Configure Incoming Call Handling:** Map DIDs to VDNs, extensions, or hunt groups
+
+**Configure Outbound Routing (AAR/ARS):** Add route pattern pointing to UponAI trunk group
+
+---
+
+## Step 6: TLS and SRTP (Optional)
+
+For encrypted signaling and media:
+
+- Use SIP URI: `sip:sip.retellai.com;transport=tls` (port 5061)
+- Import **Amazon Root CA 1** and intermediate CA into SBCE TLS trust store
+- Set SBCE Security Rules: TLS enabled, SRTP enabled, Cipher: `AES_CM_128_HMAC_SHA1_80`
+
+---
+
+## Step 7: Import the Number into UponAI
+
+In the UponAI dashboard, go to **Phone Numbers > Import Number**:
+
+- **Phone Number:** E.164 format (e.g. `+12137771234`)
+- **Termination SIP URI:** SBCE A-side IP/FQDN with port (e.g. `<sbce-ip>:5060`)
+- **SIP Username / Password:** Only if digest authentication is enabled on SBCE
+
+Assign an agent to the imported number. You can also import via the Import Number API.
+
+---
+
+## Step 8: Test and Debug
+
+**Inbound test:** Call the DID externally → verify PSTN → CM → SM → SBCE → UponAI flow, check audio both directions
+
+**Outbound test:** Place call via UponAI dashboard or API → verify caller ID and audio quality
+
+**Common issues:**
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| 403 on inbound | SBCE rejecting UponAI IP | Add UponAI CIDRs to SBCE trusted source |
+| 503 to UponAI | DNS failure or firewall blocking | Check DNS for `sip.retellai.com`, open port 5060 |
+| No audio | RTP port range blocked | Open UDP media ports on firewall |
+| 488 codec mismatch | No shared codec in SDP | Add PCMU/PCMA to SBCE Media Rule |
+| TLS handshake failure | Missing CA cert | Import Amazon Root CA 1 into SBCE TLS store |
+| Calls drop at ~30s | SIP re-INVITE blocked | Allow mid-call SIP signaling through firewall |
+
+For unresolved issues, collect the SBCE packet capture, SM call routing test result, CM trace, and UponAI Call ID, then contact [support@uponai.com](mailto:support@uponai.com).

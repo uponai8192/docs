@@ -1,0 +1,51 @@
+---
+title: "Billing Exceptions"
+description: "Understand when per-minute billing is adjusted for dynamic opening messages or large LLM prompts."
+---
+
+While UponAI generally bills based on actual call duration, certain call characteristics result in adjusted billing to ensure fair pricing.
+
+## Rule 1: Minimum Duration for Dynamic Opening Messages
+
+**When it applies:** Calls shorter than 10 seconds that use dynamic opening messages (AI speaks first).
+
+**Billing adjustment:** Minimum charge of 10 seconds.
+
+**Example:**
+- Call duration: 6 seconds
+- Dynamic opening messages: Enabled
+- Billed duration: **10 seconds** (4 seconds additional charge)
+
+**Why:** Dynamic opening messages require processing time regardless of call length, so a minimum charge covers these costs.
+
+## Rule 2: LLM Price Scaling for Prompts Over 3,500 Tokens
+
+**When it applies:** Agents using more than 3,500 LLM tokens in their prompts.
+
+**Billing adjustment:** Duration is scaled proportionally based on token usage.
+
+**What counts toward token calculation:**
+- Global prompt
+- Functions (tool descriptions)
+- State / node prompt
+- Transcript between agent and user
+- Tool call history and results
+
+<Note>
+  Flex mode commonly triggers this rule. It compiles all node prompts, transitions, and tool descriptions into a single LLM context, which can push the token count well above 3,500.
+</Note>
+
+**Price calculation:**
+
+```
+Scaling Factor = Prompt LLM Tokens ÷ 3,500
+Billed Duration = Original Duration × Scaling Factor (rounded up)
+```
+
+**Example:**
+- Call duration: 60 seconds
+- LLM tokens used: 4,200
+- Scaling factor: 4,200 ÷ 3,500 = 1.2
+- Billed duration: **72 seconds** (12 seconds additional charge)
+
+**Why:** Larger LLM prompts incur greater costs due to token-based pricing from underlying model providers.

@@ -1,0 +1,48 @@
+---
+title: "Debug Call Transfer Failure"
+description: "Troubleshoot call transfers that aren't triggering or are failing after being triggered."
+---
+
+## Agent-Specific Troubleshooting
+
+<Tabs>
+  <Tab title="Single/Multi-Prompt Agents">
+    <Steps>
+      <Step title="Verify transfer_call function">
+        Confirm you've added the `transfer_call` function to your agent's function list. See the [Function Calling Guide](/build/function-calling-overview).
+      </Step>
+      <Step title="Review transfer conditions">
+        Update your prompt to clearly define when a transfer should occur. Ensure the `transfer_call` function description is specific and unambiguous. Test with sample scenarios to validate triggers.
+
+        See [Call Transfer Setup](/build/transfer-call).
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Conversation Flow Agents">
+    <Steps>
+      <Step title="Check transfer node configuration">
+        Verify your flow has a transfer node, it's connected to other nodes, and transition conditions are correctly set up.
+      </Step>
+      <Step title="Review transfer node settings">
+        Confirm the transfer destination is configured correctly and the transfer conditions are clear and reachable.
+
+        See [Conversation Flow Transfer Setup](/build/conversation-flow/call-transfer-node).
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## General Notes
+
+<Note>
+  Call transfer is only supported for **phone calls** — not web calls.
+</Note>
+
+## If Transfer Triggers but Fails
+
+**Telephony issues** — Transfer failures are similar to outbound call failures. Check the SIP connection log in the call logs and refer to [Debug Outbound Call](/Reliability/debug/debug-outbound-call).
+
+**Could not detect human** — If human detection is enabled, the transfer may fail if:
+- No human was present (e.g. IVR or voicemail answered)
+- The other party spoke after the detection timeout expired
+- Speech was too similar to an IVR and wasn't recognized as human

@@ -1,0 +1,78 @@
+---
+title: "Check Actual Latency"
+description: "Monitor per-call latency metrics from the dashboard or via the API."
+---
+
+Monitor the latency of individual calls in the **Call History** section of the dashboard.
+
+## Understanding Latency Metrics
+
+**End-to-end latency** measures total time from when the user stops speaking until the agent begins responding — including processing time, network delays, and model inference.
+
+| Metric | Description |
+|--------|-------------|
+| **P90** | 90% of calls have latency below this value |
+| **Median (P50)** | Half of all calls have latency below this value |
+| **Min** | Fastest response time achieved |
+
+## Retrieve Latency via API
+
+Use the Get Call API to retrieve detailed latency breakdowns after a call ends:
+
+```bash
+curl -X GET "https://api.uponai.com/v2/get-call/CALL_ID" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Latency Breakdown Fields
+
+| Field | Description |
+|-------|-------------|
+| `e2e` | End-to-end: user stops talking → agent starts talking (excludes network trip to frontend) |
+| `asr` | Transcription latency |
+| `llm` | LLM latency: start of LLM call → first speakable chunk. Includes websocket roundtrip for custom LLMs. |
+| `llm_websocket_network_rtt` | Websocket roundtrip between your server and UponAI. Custom LLM only. |
+| `tts` | Text-to-speech: trigger → first audio byte |
+| `knowledge_base` | Knowledge base retrieval latency. Only when agent uses knowledge base. |
+| `s2s` | Speech-to-speech: request → first byte. Only for S2S models. |
+
+Each component includes: `p50`, `p90`, `p95`, `p99`, `min`, `max`, `num`, `values`.
+
+## Example Response
+
+```json
+{
+  "latency": {
+    "e2e": {
+      "p50": 800,
+      "p90": 1200,
+      "p95": 1500,
+      "p99": 2500,
+      "min": 500,
+      "max": 2700,
+      "num": 10,
+      "values": [500, 620, 780, 800, 850, 900, 1100, 1200, 1500, 2700]
+    },
+    "llm": {
+      "p50": 400,
+      "p90": 650,
+      "p95": 800,
+      "p99": 1200,
+      "min": 250,
+      "max": 1300,
+      "num": 10,
+      "values": [250, 310, 380, 400, 420, 500, 600, 650, 800, 1300]
+    },
+    "tts": {
+      "p50": 150,
+      "p90": 250,
+      "p95": 300,
+      "p99": 400,
+      "min": 80,
+      "max": 420,
+      "num": 10,
+      "values": [80, 100, 130, 160, 200, 230, 250, 300, 420]
+    }
+  }
+}
+```

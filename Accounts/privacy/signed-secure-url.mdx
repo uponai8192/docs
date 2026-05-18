@@ -1,0 +1,29 @@
+---
+title: "Secure URLs"
+description: "Opt in to expiring URLs for call recordings and logs to prevent unauthorized access."
+---
+
+By default, URLs generated for call recordings and logs do not expire, making them easy to share. If security is a concern — for example, if a URL could be leaked — you can opt in to **Secure URLs**. Secure URLs automatically expire 24 hours after they are generated.
+
+## How to Opt In
+
+<Steps>
+  <Step title="Navigate to your agent">
+    Open the agent you want to configure.
+  </Step>
+  <Step title="Enable secure URLs">
+    Toggle the **Opt In Secure URL** switch.
+  </Step>
+</Steps>
+
+## What Happens When You Opt In
+
+- Every time you request URLs for call recordings and logs, a URL with a signature is generated
+- The URL expires 24 hours after it is generated
+- Accessing the resource after 24 hours is denied
+- Files created **before** secure URLs were enabled still generate non-expiring URLs
+
+## What Happens When You Opt Out
+
+- Files created **while** secure URLs were enabled continue to generate signed, 24-hour expiring URLs — even after you opt out
+- Only files created **after** opting out generate non-expiring URLs

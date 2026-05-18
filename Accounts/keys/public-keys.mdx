@@ -1,0 +1,65 @@
+---
+title: "Public Keys"
+description: "Use public keys to safely embed the UponAI Chat Widget on your website."
+---
+
+Public keys are designed for authenticating the UponAI Chat Widget when embedded on your website. Unlike API keys, public keys are safe to include in frontend code for this specific purpose.
+
+Public keys are used exclusively for:
+- Embedding the UponAI Chat Widget on your website
+
+## Allowed Domains
+
+For security, public keys are restricted to specific domains — preventing unauthorized use on other websites.
+
+<Steps>
+  <Step title="Navigate to Public Keys">
+    Go to **Public Keys** in your UponAI dashboard.
+  </Step>
+  <Step title="Select your key">
+    Click on the public key you want to configure.
+  </Step>
+  <Step title="Add allowed domains">
+    Add the domains where this public key can be used (e.g., `example.com`, `app.example.com`).
+  </Step>
+  <Step title="Save">
+    Save your changes.
+  </Step>
+</Steps>
+
+<Tip>
+  To test locally, add `localhost` to your allowed domains list.
+</Tip>
+
+## Google reCAPTCHA v3 Protection (Optional)
+
+Enable reCAPTCHA v3 to prevent abuse when using the chat widget. When enabled, the widget requires reCAPTCHA verification before initiating conversations.
+
+<Steps>
+  <Step title="Navigate to Public Keys">
+    Go to **Public Keys** in your dashboard and click the key to configure.
+  </Step>
+  <Step title="Enable abuse prevention">
+    Toggle on **Abuse Prevention (Google reCAPTCHA)**.
+  </Step>
+  <Step title="Add your reCAPTCHA Secret Key">
+    Enter your reCAPTCHA Secret Key (obtain from Google's reCAPTCHA page).
+  </Step>
+  <Step title="Set score threshold">
+    Adjust the **Score Threshold** (default: 0.5). Lower scores are more likely bots — a higher threshold may block more real users.
+  </Step>
+  <Step title="Save and implement frontend">
+    Save your changes, then implement reCAPTCHA on your frontend. See Google's reCAPTCHA documentation for implementation details.
+  </Step>
+</Steps>
+
+## Security Best Practices
+
+- Only add domains you control to the allowed domains list
+- Review your allowed domains regularly
+- Use the most restrictive domain settings possible for your use case
+- For server-to-server communication, use API keys instead
+
+## Managing Public Keys
+
+Navigate to **Public Keys** in your dashboard to create, view, and configure public keys. Copy the public key to use with the chat widget on your website.

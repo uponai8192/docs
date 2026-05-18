@@ -1,0 +1,136 @@
+---
+title: "Connect Genesys via SIP Trunking"
+description: "Integrate UponAI with Genesys Cloud using a SIP Phone Trunk."
+---
+
+<Note>
+  Customers on enterprise or paid support plans can contact [support@uponai.com](mailto:support@uponai.com) for step-by-step guidance.
+</Note>
+
+This guide walks through connecting Genesys Cloud to UponAI using a **SIP Phone Trunk**. UponAI registers with Genesys as a SIP endpoint, allowing Genesys to route inbound calls to UponAI agents and allowing UponAI to place outbound calls through Genesys numbers.
+
+## UponAI SIP Details
+
+| Setting | Value |
+|---------|-------|
+| SIP Server URI | `sip.retellai.com` |
+| IP ranges | `18.98.16.120/30` (all regions), `143.223.88.0/21`, `161.115.160.0/19` (US) |
+| Recommended transport | TCP (also supports UDP and TLS/SRTP) |
+| Supported codecs | PCMU, PCMA, G.722 |
+
+---
+
+## Step 1: Firewall Considerations
+
+**Whitelist UponAI IP ranges** (allow inbound SIP from UponAI to Genesys):
+
+| CIDR Block | Coverage |
+|-----------|---------|
+| `18.98.16.120/30` | All regions |
+| `143.223.88.0/21` | Certain US traffic |
+| `161.115.160.0/19` | Certain US traffic |
+
+**Ports to open bidirectionally:**
+
+| Protocol | Port | Purpose |
+|---------|------|---------|
+| TCP / UDP | 8060 | SIP signaling (Genesys SIP phone trunk default) |
+| TCP | 8061 | SIP over TLS |
+| UDP | 16384–32766 | RTP / SRTP media |
+
+<Note>
+  Genesys Cloud uses ports **8060/8061** for SIP phone trunks — not the standard 5060/5061. Ensure your firewall uses these Genesys-specific ports.
+</Note>
+
+---
+
+## Step 2: Create a SIP Phone Trunk in Genesys Cloud
+
+1. Go to **Admin > Telephony > Trunks > Phone Trunks**
+2. Click **Create New**
+3. Enter a name (e.g. `UponAI-SIP-Trunk`) and set **Type** to SIP
+4. Verify **Trunk State** is set to **In-Service**
+5. Under **Protocol and Listen Port**, select:
+   - UDP or TCP → port 8060 (recommended)
+   - TLS → port 8061 (required for SRTP)
+6. Under **SIP Access Control**, set **Use Source Address** to Yes and add each UponAI IP subnet:
+   - `18.98.16.120/30`
+   - `143.223.88.0/21`
+   - `161.115.160.0/19`
+7. Click **Save Phone Trunk**
+
+**Codec configuration** — configure at least one of:
+
+| Codec | Genesys Format | Notes |
+|-------|---------------|-------|
+| PCMU (G.711 µ-law) | `audio/PCMU` | Recommended — standard in North America |
+| PCMA (G.711 A-law) | `audio/PCMA` | Standard outside North America |
+| G.722 | `audio/G722` | Wideband (HD voice) |
+
+---
+
+## Step 3: Configure Phone Numbers
+
+**Assign numbers to the SIP trunk:**
+1. Go to **Admin > Telephony > Phone Numbers**
+2. Select the number to use with UponAI
+3. Edit and assign it to the `UponAI-SIP-Trunk` you created
+
+**Import the number into UponAI:**
+1. In the UponAI dashboard, go to **Phone Numbers > Import Number**
+2. Fill in:
+   - **Phone Number:** E.164 format (e.g. `+12137771234`)
+   - **Termination SIP URI:** Your Genesys Edge/SBC FQDN or IP on port 8060 (e.g. `your-edge.genesys.com:8060`)
+   - **SIP Username / Password:** Only if inbound digest auth is configured on the Genesys trunk
+3. Save and assign a UponAI agent to the number
+
+You can also import numbers via the Import Number API.
+
+---
+
+## Step 4: Configure Inbound Call Routing in Genesys
+
+For inbound calls to route through UponAI:
+
+1. In Genesys Cloud, go to **Admin > Routing > Call Routing** (or use **Architect** for complex flows)
+2. Create an **Inbound Call Flow** in Architect with a **Transfer to SIP** action:
+   - SIP URI: `sip:{call_id}@sip.retellai.com` (where `call_id` comes from the Register Phone Call API)
+3. Create a **DID Route** mapping your phone number to this call flow
+4. Publish the flow
+
+For outbound calls — use the UponAI dashboard or Create Phone Call API. UponAI sends a SIP INVITE to your Genesys termination URI, which routes the call to the PSTN with the correct caller ID.
+
+---
+
+## Step 5: TLS and SRTP (Optional)
+
+For encrypted signaling and media:
+
+- UponAI SIP URI: `sip:sip.retellai.com;transport=tls`
+- Genesys trunk: Protocol = TLS, Port = 8061
+- TLS Version: TLS v1.2
+- Recommended SRTP cipher: `AES_CM_128_HMAC_SHA1_80`
+
+If certificate validation fails (especially with an on-premises SBC/Edge), install these from the Amazon Trust Services repository:
+- **Root CA:** Amazon Root CA 1 (`AmazonRootCA1.pem`)
+- **Intermediate CA:** `C=US, O=Amazon, CN=Amazon RSA 2048 M01` (if full chain is required)
+
+---
+
+## Step 6: Test and Debug
+
+**Inbound test:** Call the Genesys number externally → verify UponAI agent handles it → check audio both directions
+
+**Outbound test:** Place call from UponAI dashboard → verify caller ID and audio quality
+
+**Common issues:**
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| 403 Forbidden | IP not whitelisted | Add UponAI CIDR blocks to SIP Access Control |
+| 503 Service Unavailable | `sip.retellai.com` unreachable | Check DNS and firewall on port 8060 |
+| One-way audio | RTP blocked or NAT issue | Open UDP 16384–32766, check SDP IPs |
+| No audio (codec) | No shared codec in SDP | Add PCMU/PCMA to Genesys trunk codec list |
+| Calls drop at ~30s | Mid-call SIP re-INVITE blocked | Allow mid-call signaling through firewall |
+
+For unresolved issues, collect the Genesys Interaction ID and UponAI Call ID and contact [support@uponai.com](mailto:support@uponai.com).

@@ -177,6 +177,145 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Deploy",
+            "pages": [
+              "Deploy/purchase-number",
+              "Deploy/ab-testing",
+              {
+                "group": "Connect to custom telephony via SIP",
+                "pages": [
+                  "Deploy/custom-telephony",
+                  "Deploy/twilio",
+                  "Deploy/telnyx",
+                  "Deploy/vonage",
+                  "Deploy/amazon-connect",
+                  "Deploy/avaya",
+                  "Deploy/five9",
+                  "Deploy/genesys"
+                ]
+              },
+              {
+                "group": "Make & receive phone calls",
+                "pages": [
+                  "Deploy/inbound-call",
+                  "Deploy/outbound-call"
+                ]
+              },
+              "Deploy/international-call",
+              "Deploy/create-chat-completion",
+              "Deploy/chat-widget",
+              "Deploy/enable-sms",
+              "Deploy/make-batch-call",
+              "Deploy/agent-versioning",
+              "Deploy/version-comparison",
+              {
+                "group": "Increase call pickup rate",
+                "pages": [
+                  "Deploy/call-pickup-rate/spam-likely",
+                  "Deploy/call-pickup-rate/business-profile",
+                  "Deploy/call-pickup-rate/verified-phone",
+                  "Deploy/call-pickup-rate/branded-call",
+                  "Deploy/call-pickup-rate/handle-rejection",
+                  "Deploy/call-pickup-rate/stop-service"
+                ]
+              },
+              "Deploy/web-call",
+              "Deploy/concurrency"
+            ]
+          },
+          {
+            "group": "Monitor",
+            "pages": [
+              "Monitor/session-history",
+              "Monitor/analytics-dashboard",
+              "Monitor/alerting",
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "Monitor/webhook-overview",
+                  "Monitor/register-webhook",
+                  "Monitor/secure-webhook",
+                  "Monitor/inbound-webhook"
+                ]
+              },
+              {
+                "group": "Post Call Analysis",
+                "pages": [
+                  "Monitor/post-call-analysis/overview",
+                  "Monitor/post-call-analysis/define-fields",
+                  "Monitor/post-call-analysis/consume-data",
+                  "Monitor/post-call-analysis/rerun-analysis"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Reliability & Debugging",
+            "pages": [
+              "Reliability/reliability-overview",
+              {
+                "group": "Latency",
+                "pages": [
+                  "Reliability/latency/check-actual-latency",
+                  "Reliability/latency/check-estimated-latency",
+                  "Reliability/latency/troubleshoot-latency"
+                ]
+              },
+              {
+                "group": "Fix Agent Behaviors",
+                "pages": [
+                  "Reliability/fix-behaviors/wrong-response",
+                  "Reliability/fix-behaviors/wrong-transcript"
+                ]
+              },
+              {
+                "group": "Debug",
+                "pages": [
+                  "Reliability/debug/debug-call-disconnect",
+                  "Reliability/debug/debug-call-transfer",
+                  "Reliability/debug/debug-outbound-call",
+                  "Reliability/debug/debug-calls-pcap"
+                ]
+              },
+              "Reliability/prevent-abuse",
+              "Reliability/fraud-protection"
+            ]
+          },
+          {
+            "group": "Accounts and Workspace",
+            "pages": [
+              "Accounts/workspace",
+              "Accounts/account",
+              "Accounts/access-control",
+              "Accounts/kyc",
+              {
+                "group": "Billing",
+                "pages": [
+                  "Accounts/billing/billing-overview",
+                  "Accounts/billing/billing-exceptions",
+                  "Accounts/billing/add-payment",
+                  "Accounts/billing/fail-payment"
+                ]
+              },
+              {
+                "group": "Keys",
+                "pages": [
+                  "Accounts/keys/api-keys-overview",
+                  "Accounts/keys/manage-api-keys",
+                  "Accounts/keys/public-keys"
+                ]
+              },
+              {
+                "group": "Privacy",
+                "pages": [
+                  "Accounts/privacy/data-storage",
+                  "Accounts/privacy/data-retention",
+                  "Accounts/privacy/signed-secure-url"
+                ]
+              }
+            ]
           }
         ]
       },

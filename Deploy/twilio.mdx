@@ -1,0 +1,72 @@
+---
+title: "Connect Twilio via SIP Trunking"
+description: "Integrate your Twilio numbers with UponAI using elastic SIP trunking."
+---
+
+## Setup Steps
+
+<Steps>
+  <Step title="Create Elastic SIP Trunking in Twilio">
+    In your Twilio Console, create a new SIP trunk and give it a name.
+
+    **Configure Termination (outbound):**
+    - Note the **Termination SIP URI** — you'll use it when importing numbers to UponAI. Use a localized URI near your region for best performance.
+    - To allow UponAI's outbound requests, either:
+      - Whitelist UponAI's SIP CIDR block: `18.98.16.120/30`
+      - OR create auth credentials (username + password) — you'll supply these when importing to UponAI
+
+    **Configure Origination (inbound):**
+    - Set the origination SIP URI to: `sip:sip.retellai.com`
+  </Step>
+  <Step title="Move numbers to your SIP trunk">
+    Purchase new numbers or move existing Twilio numbers to the elastic SIP trunk you just created.
+  </Step>
+  <Step title="Import numbers to UponAI">
+    In the UponAI dashboard, import the number by supplying:
+    - The **Termination SIP URI** from Step 1
+    - Username and password (if you chose credential auth)
+
+    You can also import numbers programmatically via the Import Number API.
+
+    Once imported, the number behaves exactly like a UponAI-purchased number — it appears in your dashboard and can make and receive calls. To remove it, delete it from the dashboard or via the Delete Number API.
+  </Step>
+</Steps>
+
+## Common Issues
+
+**Inbound works but outbound doesn't:**
+- Check the Termination SIP URI for any spaces — remove them
+- Use a localized Termination SIP URI near your region
+- Double-check your username and credentials. The **username** is different from the friendly name shown in the credential list — verify the actual username, not the display name
+
+**Calling international countries:**
+- In Twilio Console, search "geo" to find **Voice Geographic Permissions**
+- Select **Elastic SIP Trunking** and enable the countries you want to call
+
+## Phone Number Masking (Caller ID)
+
+Display a verified personal or business number as the caller ID for outbound calls.
+
+<Steps>
+  <Step title="Add a verified caller ID">
+    1. Go to **Verified Caller IDs** in Twilio Console
+    2. Click **Add a new Caller ID**
+    3. Enter the phone number, choose a verification method, and click **Verify Number**
+    4. Enter the OTP code you receive to complete verification
+  </Step>
+  <Step title="Configure SIP header rules">
+    1. In Twilio Console, navigate to **Elastic SIP Trunking → Trunks → [your trunk] → Termination**
+    2. Scroll to **Header Manipulation** and click **View all SIP header manipulation policies**
+    3. Click **Create a policy** and give it a name
+    4. Click **+ Add request rule** and configure:
+       - **SIP header field:** From number
+       - **Action:** Replace with
+       - **Value:** Your caller ID in E.164 format (e.g. `+18881230987`)
+    5. Click **Add rule**, then **Save policy**
+    6. Back on the Termination tab, select your new policy from the dropdown
+  </Step>
+</Steps>
+
+<Note>
+  You need at least one number purchased from Twilio in your SIP trunk for the caller ID to be applied. Test with an outbound call to validate.
+</Note>

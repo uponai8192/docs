@@ -1,0 +1,38 @@
+---
+title: "Compare Agent Versions"
+description: "Compare any two versions of an agent to see exactly what changed between them."
+---
+
+Compare any two versions of an agent to review changes before publishing, audit past modifications, or understand differences between versions.
+
+## How to Access Version Comparison
+
+Two ways to open the comparison modal:
+
+- **From Version History** — Click the clock icon to open version history, hover over a version, and click **Compare versions**. Compares that version against the current draft.
+- **From Publish Modal** — When publishing, click **Compare** to see what's changing between the last published version and your current draft.
+
+## Comparison Modes
+
+<CardGroup cols={2}>
+  <Card title="Standard View (JSON Diff)">
+    Traditional split diff showing full JSON configuration of both versions side by side. Includes syntax highlighting and a **Show parent fields** toggle to see the surrounding JSON context for each change.
+  </Card>
+  <Card title="Semantic Diff">
+    Human-readable summary organized by field. Shows a count of additions, removals, and modifications. Each change shows the full field path (e.g. `response_engine.prompt`), with word-level diffs for long text changes.
+  </Card>
+</CardGroup>
+
+**When to use each:**
+- **Standard View** — Need complete configuration context or exact JSON structure
+- **Semantic Diff** — Want a quick, scannable summary of what changed
+
+## What Gets Compared
+
+The modal shows differences across all agent components:
+
+| Component | What's shown |
+|-----------|-------------|
+| Agent configuration | Basic settings and metadata |
+| Response Engine | LLM changes (single/multi prompt) or flow configuration changes (conversation flow) |
+| Related entities | Linked knowledge bases, functions, and other configurations |

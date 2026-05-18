@@ -1,0 +1,64 @@
+---
+title: "Access Control"
+description: "Manage workspace permissions with role-based access control (RBAC)."
+---
+
+UponAI uses role-based access control (RBAC) to keep your workspace secure. Each member is assigned one of three system roles.
+
+## System Roles
+
+<Tabs>
+  <Tab title="Admin">
+    Full control over workspace resources and members. Complete access to all features including billing, user management, and workspace settings.
+
+    **Can:**
+    - Invite, remove, and change roles for members
+    - View and manage billing: usage, invoices, payment methods, subscriptions
+    - Create, edit, and delete agents, conversation flows, LLMs, knowledge bases, voices, and folders
+    - Configure developer settings
+    - Access all data including raw transcripts and recordings
+    - Manage telephony settings
+    - Update or delete the workspace
+
+    **Cannot:**
+    - Nothing — Admins have full permissions
+  </Tab>
+  <Tab title="Developer">
+    Full functional access to build and test agents, view raw data, and manage developer settings. Cannot manage billing or organization users.
+
+    **Can:**
+    - Build and edit agents, flows, LLMs, knowledge bases, voices
+    - Test and simulate; manage test cases and playground
+    - View raw logs, transcripts, recordings, and analytics
+    - Create exports; run calls and batch calls
+    - Manage API/public keys and webhooks; adjust concurrency/CPS
+
+    **Cannot:**
+    - Manage billing (usage, invoices, payment methods, subscriptions)
+    - Invite, remove, or change member roles
+    - Update or delete the workspace
+  </Tab>
+  <Tab title="Member">
+    Read-only access to agents, testing artifacts, scrubbed history, and analytics. Cannot make changes or view sensitive data.
+
+    **Can:**
+    - View agents and configurations (read-only)
+    - View tests, playground threads, and analytics
+    - View scrubbed history; batch calls and phone resources
+    - List workspace members
+
+    **Cannot:**
+    - Create, edit, or delete resources
+    - Start calls/chats, run simulations, or change playground settings
+    - Access API/public keys, webhooks, or raw transcripts/recordings
+    - Manage billing, settings, or team members
+  </Tab>
+</Tabs>
+
+## Managing Users
+
+**Invite a user** — Go to workspace user management and invite a member with a specific role.
+
+**Change a user's role** — Select an active user and update their role.
+
+**Remove a user** — Remove a user from your workspace at any time.

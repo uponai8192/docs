@@ -1,0 +1,31 @@
+---
+title: "API Key Overview"
+description: "Understand how API keys are used to authenticate requests to the UponAI platform."
+---
+
+API keys authenticate your requests to:
+- REST API endpoints
+- SDK integrations
+- Webhook endpoints
+
+Each workspace can have multiple API keys, all sharing the same permission level.
+
+## REST API Authentication
+
+Include your API key in the `Authorization` header of every request:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Webhook API Key
+
+For security, UponAI automatically designates one of your API keys for webhook authentication. This designated webhook key:
+
+- Signs and verifies webhook requests
+- Cannot be deleted
+- Ensures your webhook endpoints only receive legitimate requests
+
+<Warning>
+  Never share API keys in public repositories or client-side code. If a key is compromised, delete it immediately and create a new one.
+</Warning>

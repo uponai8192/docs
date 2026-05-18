@@ -1,0 +1,143 @@
+---
+title: "Alerting"
+description: "Create rules that trigger email or webhook notifications when metrics cross defined thresholds."
+---
+
+Alerting monitors your voice AI operations by sending automatic email or webhook notifications when specific metrics cross defined thresholds — no manual dashboard checking required.
+
+## Use Cases
+
+- Monitor call volume spikes or unexpected drops
+- Track API errors or function failures
+- Set budget alerts when call costs exceed thresholds
+- Detect declining call success rates or negative sentiment
+
+## Available Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Call Count | Total calls within the evaluation window |
+| Concurrency Used | Peak concurrent calls |
+| Call Success Rate | Percentage of successful calls (0–100%) |
+| Negative Sentiment Rate | Percentage of calls with negative sentiment (0–100%) |
+| Custom Function Latency | Average latency of custom function calls (ms) |
+| Custom Function Failure Count | Number of failed custom function calls |
+| Transfer Call Failure Count | Number of failed call transfers |
+| Total Call Cost | Total cost of calls (USD) |
+| API Error Count | Number of API errors (filterable by error code) |
+
+## Creating an Alert Rule
+
+Navigate to the **Alerting** tab in the dashboard. Each rule requires:
+
+| Field | Description |
+|-------|-------------|
+| Name | Descriptive name for the alert |
+| Metric | The metric to monitor |
+| Threshold type | Absolute or relative |
+| Threshold value | Value to compare against |
+| Comparator | Greater than, less than, etc. |
+| Evaluation window | Time period for metric aggregation |
+| Frequency | How often to evaluate the rule |
+| Notification channels | Email addresses and/or webhook URLs |
+
+## Threshold Types
+
+**Absolute** — Compares current metric value directly against your threshold.
+> Example: Alert when Call Count > 100 in the last hour.
+
+**Relative** — Compares percentage change from the previous period. Useful for detecting sudden spikes or drops.
+> Example: Alert when Call Count increases by more than 50% compared to the previous hour.
+
+Formula: `((currentValue - previousValue) / previousValue) * 100`
+
+<Note>
+  If the previous period had zero calls but the current period has calls, this is treated as an infinite increase and will trigger alerts with `>` or `>=` comparators.
+</Note>
+
+## Evaluation Windows and Frequencies
+
+| Window | Supported Frequencies |
+|--------|-----------------------|
+| 1 minute | 1 minute |
+| 5 minutes | 1 minute, 5 minutes |
+| 30 minutes | 5 minutes, 30 minutes |
+| 1 hour | 5 minutes, 30 minutes, 1 hour |
+| 12 hours | 30 minutes, 1 hour, 12 hours |
+| 24 hours | 1 hour, 12 hours, 24 hours |
+| 3 days | 12 hours, 24 hours |
+| 7 days | 24 hours |
+
+## Filters
+
+- **Agent Filter** — Filter by specific agents and optionally by agent versions
+- **Disconnection Reason Filter** — Filter by disconnection reason (e.g. `user_hangup`, `agent_hangup`)
+- **Error Code Filter** — For API Error Count, filter by specific HTTP status codes (e.g. `429`, `402`)
+
+## Notification Channels
+
+### Email
+
+All configured recipients receive an email containing: alert rule name, metric type, current value, threshold breached, and timestamp.
+
+### Webhook
+
+Configure webhook URLs to receive programmatic notifications — integrates with Slack, PagerDuty, or custom workflows.
+
+**Webhook payload:**
+
+```json
+{
+  "event": "alert_triggered",
+  "alert": {
+    "alert_incident_id": "abc123def456...",
+    "alert_rule_id": "alert_rule_xyz789...",
+    "name": "High Call Volume Alert",
+    "metric_type": "call_count",
+    "threshold_type": "absolute",
+    "threshold_value": 100,
+    "comparator": ">",
+    "frequency": "1h",
+    "window": "1h",
+    "current_value": 150,
+    "triggered_timestamp": 1714608475945
+  }
+}
+```
+
+**Verify webhook signatures** — all requests include an `X-Retell-Signature` header with an HMAC-SHA256 signature:
+
+```javascript Node
+import UponAI from 'uponai-sdk';
+
+const isValid = UponAI.verify(
+  JSON.stringify(payload),
+  apiKey,
+  signature // from X-Retell-Signature header
+);
+```
+
+<Warning>
+  Always verify webhook signatures in production to ensure requests originate from UponAI.
+</Warning>
+
+## Alert Incidents
+
+When an alert rule's condition is met, an incident is created tracking:
+- When the alert was triggered
+- The metric value that triggered it
+- When the alert resolved (if applicable)
+
+**Incident lifecycle:**
+1. **Triggered** — Metric breaches threshold; incident created, notifications sent
+2. **Active** — Incident remains active while condition persists
+3. **Resolved** — Metric no longer breaches threshold; incident marked resolved
+
+<Note>
+  Only one incident can be active per alert rule at a time. Notifications are sent only when a new incident is created, not on every evaluation.
+</Note>
+
+## Limits
+
+- Maximum **10 alert rules** per organization
+- Webhook timeout: **10 seconds**
