@@ -1,0 +1,52 @@
+---
+title: "Troubleshooting Guide"
+description: "Diagnose and fix common issues with Custom LLM WebSocket integrations."
+---
+
+## Problem: Cannot Hear Audio After Entering Your WebSocket URL
+
+### Step 1: Test connection with Postman
+
+<Steps>
+  <Step title="Open Postman">
+    Create a new WebSocket request.
+  </Step>
+  <Step title="Connect">
+    Enter your WebSocket URL and click **Connect**.
+  </Step>
+  <Step title="Send a test message">
+    Navigate to the **Message** tab, enter "Hello", and click **Send**. You should receive the message back in your server.
+  </Step>
+</Steps>
+
+### Step 2: Verify endpoint protocol
+
+| Endpoint type | URL prefix |
+|--------------|------------|
+| HTTPS | `wss://` |
+| HTTP | `ws://` |
+
+### Step 3: Check for trailing slash
+
+Some server setups don't allow a trailing slash in the URL.
+
+- ✅ Correct: `https://example.com/websocket`
+- ❌ Incorrect: `https://example.com/websocket/`
+
+### Step 4: Check for server response
+
+- Add logging in your WebSocket code to verify the connection is established
+- Add logging in your message handler to confirm messages are received from UponAI
+
+---
+
+## Problem: Call Always Disconnects After a Few Seconds
+
+- Add logging to check if you're sending `end_call: true` unintentionally anywhere in your code
+- Verify your server setup supports persistent WebSocket connections — **Vercel edge functions and serverless functions cannot act as WebSocket servers**
+
+---
+
+## Problem: Call Disconnects After 5–10 Minutes
+
+Check your server vendor for automatic timeout settings. For example, Replit non-reserved instances time out at 5 minutes.

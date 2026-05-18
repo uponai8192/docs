@@ -1,0 +1,104 @@
+---
+title: "AI QA Metrics"
+description: "Definitions for every metric and term used in AI QA results."
+---
+
+This page explains every metric and term in AI QA so you can interpret your call analysis results. When a metric fails, see [Address Metric Issues](/ai-qa/address-metric-issues) for step-by-step guidance on how to fix it.
+
+## Performance Metrics
+
+### Latency
+
+| Metric | Description |
+|--------|-------------|
+| **Average Latency** | End-to-end delay between user speaking and agent beginning spoken response. Measured in seconds — lower is better. |
+| **Latency P50** | 50th percentile (median) latency. Half of all responses are faster, half are slower. |
+
+### Sentiment Analysis
+
+| Metric | Description |
+|--------|-------------|
+| **User Sentiment** | Emotional state of the caller inferred from speech content, tone, and pitch — positive, negative, or neutral |
+| **User Positive Sentiment Rate** | Percentage of user interactions with positive sentiment |
+| **User Negative Sentiment Rate** | Percentage of user interactions with negative sentiment |
+| **Negative Sentiment Rate** | Overall rate of negative sentiment in the conversation |
+| **Agent Sentiment** | Emotional tone expressed by the AI during speech |
+| **Agent Positive Sentiment Rate** | Percentage of agent responses with positive sentiment |
+| **Agent Natural Tonality Rate** | How natural and human-like the agent's tone sounds |
+
+### Transcription Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **WER (Word Error Rate)** | Percentage of words incorrectly transcribed. Calculated as: `(Substitutions + Insertions + Deletions) / Total Words × 100%`. Lower = better. |
+| **Mistranscribed Entities** | Count of specific entities (names, dates, numbers) incorrectly transcribed. Only critical factual errors that change meaning are counted. |
+
+### Call Quality Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Interruptions** | Count of times the user interrupted the agent. High counts may indicate the agent speaks too long or doesn't respond appropriately. |
+| **Avg. Interruptions** | Average interruptions per call across the cohort |
+| **Agent Naturalness** | How human-like the agent sounded — pronunciation, intonation, pacing, turn-taking, absence of robotic patterns. Higher = more natural. |
+| **Natural Tonality Rate** | Percentage of agent speech that sounds natural in tone and delivery |
+
+## AI Accuracy Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **LLM Hallucination Rate** | Rate at which the LLM generated incorrect or fabricated information not supported by context or knowledge base |
+| **Agent Hallucination** | How often the agent hallucinated. High values mean the agent may be providing incorrect information to users. |
+| **KB Recall** | How effectively the agent retrieved and used relevant knowledge base information. Higher = better. |
+
+## Tool and Function Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Tool Call Accuracy** | Rate at which the agent correctly invoked tools. Higher = agent uses right tools at right times. |
+| **Tool Call Inaccuracy** | Rate at which the agent invoked incorrect tools (inverse of Tool Call Accuracy) |
+| **Custom Tool Success Rate** | Percentage of custom tool calls that completed successfully |
+| **Avg Custom Tool Latency** | Average time for custom tools to execute and return results |
+
+## Conversation Flow Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Transition Accuracy** | Accuracy of transitions between conversation nodes. Higher = agent follows intended flow. |
+| **Node Transition Inaccuracy** | Rate of incorrect node transitions in conversation flows |
+
+## Call Resolution Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Call Resolution Rate** | Percentage of calls successfully resolved per your defined criteria |
+| **Average Score** | Overall quality score calculated from resolution criteria and weighted scoring |
+| **Calls Analyzed** | Total calls analyzed in the cohort |
+
+## Transfer Metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Transfer Success Rate** | Percentage of calls successfully transferred |
+| **Transfer Wait Time** | Average time users wait before transfer completes |
+
+## Statistical Terms
+
+| Term | Description |
+|------|-------------|
+| **P50** | 50th percentile (median) — half above, half below |
+| **Cohort** | A filtered set of calls sharing common characteristics, analyzed with the same resolution criteria |
+| **Sampling Percentage** | Percentage of matching calls included for analysis |
+| **Weekly Max** | Maximum calls analyzed per week regardless of sampling percentage |
+
+## Resolution Criteria Terms
+
+| Term | Description |
+|------|-------------|
+| **AI Evaluated Condition** | Qualitative criteria evaluated by AI from transcripts (e.g., "Call resolved") |
+| **Performance Metric** | Quantitative threshold a call must meet (e.g., latency < 2s) |
+| **Weighted Scoring** | Assigns different weights to criteria to prioritize certain conditions over others |
+| **Calibration** | Manual override of automatic metric evaluations for a specific call |
+
+<Note>
+  Some metrics show "N/A" when there isn't sufficient data or when the metric doesn't apply to a call type (e.g., transfer metrics on non-transfer calls).
+</Note>

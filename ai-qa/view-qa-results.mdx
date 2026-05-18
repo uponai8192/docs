@@ -1,0 +1,75 @@
+---
+title: "View QA Results"
+description: "Understand and navigate the QA Results dashboard — from high-level trends to individual call diagnostics."
+---
+
+The QA Results dashboard provides two main views: **Call QA Overview** for high-level trends and **Detailed Calls** for individual call analysis.
+
+## Call QA Overview Tab
+
+High-level view of your cohort's performance with interactive charts and summary KPIs.
+
+### Summary Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Calls Analyzed | Total calls analyzed in the cohort |
+| Average Score | Overall quality score based on resolution criteria |
+| Call Resolution Rate | Percentage of calls successfully resolved |
+| Transfer Success Rate | Percentage of calls successfully transferred |
+| Transfer Wait Time | Average wait time before a transfer completes |
+| Average Latency | Mean response time across all calls |
+| LLM Hallucination Rate | Percentage of calls with AI-generated inaccuracies |
+| KB Recall | Knowledge base retrieval effectiveness |
+| Negative Sentiment Rate | Percentage of interactions with negative sentiment |
+| WER | Word Error Rate — transcription accuracy |
+| Avg. Interruptions | Average interruptions per call |
+| Tool Call Accuracy | Rate of correct tool/function invocations |
+| Transition Accuracy | Accuracy of conversation flow transitions |
+| Agent Natural Tonality Rate | Percentage of natural-sounding agent speech |
+| Agent Positive Sentiment Rate | Percentage of positive agent responses |
+| Avg Custom Tool Latency | Average time for custom tools to execute |
+| Custom Tool Success Rate | Percentage of custom tool calls completed successfully |
+
+### Top Questions from Users
+
+A table showing the most frequently asked questions grouped by similarity, along with resolution rates. AI QA intelligently groups similar questions — for example, "What are your office hours?" and "What time do you open?" are grouped together.
+
+## Detailed Calls Tab
+
+Table of all analyzed calls with sortable columns and per-call metrics.
+
+### Calls Table Columns
+
+Call ID · Eval · Call Start Time · Call Length · LLM Hallucination Rate · KB Recall · Transition Accuracy · User Positive Sentiment Rate · Latency P50 · Interruption Count · WER · Tool Call Accuracy · Natural Tonality Rate
+
+**Sort:** Click any column header.  
+**Filter:** Click the **Filter** button to apply date ranges, score thresholds, etc.  
+**Per-call actions:** Use the **⋯** menu to rerun QA or delete a call from the cohort.
+
+## Call-Level QA Sheet
+
+Click any row to open the Call QA Sheet for detailed diagnostics.
+
+### QA Result Overview
+
+- **Overall Score** — Pass/Fail status with numerical score
+- **Passed Metrics** — shown with green checkmarks
+- **Failed Metrics** — shown with orange warning triangles
+
+### Calibrate Call QA
+
+Manually override automatic metric evaluations:
+- Mark a passed metric as failed
+- Mark a failed metric as passed
+- Add custom notes to document your reasoning
+
+### Transcript and Errors
+
+- Full call transcript
+- Specific transcription mistakes with corrections
+- Visual error highlights showing where mistakes occurred
+
+<Note>
+  Low scores or high failure rates may indicate systemic issues with your agent configuration, prompts, or knowledge base. Review multiple failed calls to identify patterns before making changes.
+</Note>

@@ -1,0 +1,177 @@
+---
+title: "Setup WebSocket Server"
+description: "Set up an LLM WebSocket server and integrate it with UponAI using a step-by-step guide with Node.js and Python examples."
+---
+
+Integrating AI with domain-specific knowledge involves setting up an LLM WebSocket. UponAI's API manages acoustic interactions while your LLM (or any other response system) adds domain expertise. This setup allows our system to communicate directly with your server via WebSocket.
+
+This guide walks through setting up a WebSocket server and integrating it with our API using a dummy response system. Code snippets are provided for Node.js (Express.js) and Python (FastAPI).
+
+<Note>
+  The example repos are currently a bit outdated. This guide is the authoritative reference.
+</Note>
+
+<Warning>
+  Filter incoming requests by allowlisting only this UponAI IP address: `100.20.5.228`
+</Warning>
+
+## Understanding WebSockets
+
+Unlike the request-response model of HTTPS, WebSockets maintain an open connection between client and server — enabling two-way message exchange without reconnecting for faster data streaming.
+
+## Communication Protocol
+
+The protocol requires:
+- Your server to send the **first message** — send an empty response to let the user speak first
+- UponAI sends live transcripts to your server and expects responses when needed
+- You stream what you want the agent to say and UponAI speaks it out
+
+## Step 1: Add a Basic WebSocket Endpoint
+
+<CodeGroup>
+
+```typescript Node.js
+import { RawData, WebSocket } from "ws";
+import { Request } from "express";
+
+var express = require('express');
+var app = express();
+var expressWs = require('express-ws')(app);
+const port = 3000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.ws("/llm-websocket/:call_id",
+  async (ws: WebSocket, req: Request) => {
+    const callId = req.params.call_id;
+
+    ws.on("error", (err) => {
+      console.error("Error received in LLM websocket client: ", err);
+    });
+    ws.on("message", async (data: RawData, isBinary: boolean) => {
+      console.log(data);
+    });
+  },
+);
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+});
+```
+
+</CodeGroup>
+
+Use Postman to send a WebSocket call to your localhost — click **Connect**, then enter "Hello" in the Message tab and click **Send**. You should receive the message in your server.
+
+## Step 2: Create a Dummy Response System
+
+Before connecting a real LLM, build a dummy response system that greets with "How may I help you?" and replies to all questions with "I am sorry, can you say that again?"
+
+<CodeGroup>
+
+```typescript Node.js
+import { WebSocket } from "ws";
+
+interface Utterance {
+  role: "agent" | "user";
+  content: string;
+}
+
+export interface RetellRequest {
+  response_id?: number;
+  transcript: Utterance[];
+  interaction_type: "update_only" | "response_required" | "reminder_required";
+}
+
+export interface RetellResponse {
+  response_id?: number;
+  content: string;
+  content_complete: boolean;
+  end_call: boolean;
+}
+
+export class LLMDummyMock {
+  BeginMessage(ws: WebSocket) {
+    const res: RetellResponse = {
+      response_id: 0,
+      content: "How may I help you?",
+      content_complete: true,
+      end_call: false,
+    };
+    ws.send(JSON.stringify(res));
+  }
+
+  async DraftResponse(request: RetellRequest, ws: WebSocket) {
+    if (request.interaction_type === "update_only") {
+      return;
+    }
+    try {
+      const res: RetellResponse = {
+        response_id: request.response_id,
+        content: "I am sorry, can you say that again?",
+        content_complete: true,
+        end_call: false,
+      };
+      ws.send(JSON.stringify(res));
+    } catch (err) {
+      console.error("Error in gpt stream: ", err);
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+Update your WebSocket endpoint to call `llmClient.DraftResponse()` after receiving each message:
+
+<CodeGroup>
+
+```typescript Node.js
+app.ws("/llm-websocket/:call_id",
+  async (ws: WebSocket, req: Request) => {
+    const callId = req.params.call_id;
+    const llmClient = new LlmDummyMock();
+
+    ws.on("error", (err: Error) => {
+      console.error("Error received in LLM websocket client: ", err);
+    });
+
+    llmClient.BeginMessage(ws);
+
+    ws.on("message", async (data: RawData, isBinary: boolean) => {
+      if (isBinary) {
+        console.error("Got binary message instead of text in websocket.");
+        ws.close(1002, "Cannot find corresponding Retell LLM.");
+      }
+      try {
+        const request: RetellRequest = JSON.parse(data.toString());
+        llmClient.DraftResponse(request, ws);
+      } catch (err) {
+        console.error("Error in parsing LLM websocket message: ", err);
+        ws.close(1002, "Cannot parse incoming message.");
+      }
+    });
+  },
+);
+```
+
+</CodeGroup>
+
+## Step 3: Test Your Basic Agent
+
+<Steps>
+  <Step title="Get your WebSocket URL">
+    - **Production:** `wss://your_domain_name/llm-websocket/`
+    - **Local testing:** Use [ngrok](https://ngrok.com/) to generate a forwarding URL: `wss://xxxxx.ngrok-free.app/llm-websocket/`
+  </Step>
+  <Step title="Add URL to dashboard">
+    Enter your WebSocket URL in the UponAI dashboard agent settings.
+  </Step>
+  <Step title="Test">
+    Click **Make a web call**. The agent should greet with "How may I help you?" and reply to all questions with "I am sorry, can you say that again?"
+  </Step>
+</Steps>
+
+If you cannot hear the agent, see the [Troubleshooting Guide](/custom-llm/troubleshooting).

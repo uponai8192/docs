@@ -1,0 +1,126 @@
+---
+title: "Integrate Function Calling"
+description: "Add function calling (tool use) to your custom LLM integration to trigger actions like ending calls or booking appointments."
+---
+
+Function calling lets your voice agent take actions — call an API to book an appointment, transfer or end the call, fetch external knowledge — besides just talking. Supported LLMs can output a JSON object containing arguments to call one or many functions. This is also known as **tool use**.
+
+We recommend reading [OpenAI's function calling documentation](https://platform.openai.com/docs/guides/function-calling) to understand the concept. This guide uses OpenAI function calling as an example, but the same idea applies to other models like Claude.
+
+## Case Study: End the Call Intelligently
+
+The following steps build on the LLM client class from the [Integrate LLM](/custom-llm/integrate-llm) guide.
+
+<Steps>
+  <Step title="Define the function">
+    Note: for OpenAI, the model will either give a tool call or a text response — not both. The `message` parameter lets the LLM say something before ending the call.
+
+    ```typescript Node.js
+    export interface FunctionCall {
+      id: string;
+      funcName: string;
+      arguments: Record<string, any>;
+      result?: string;
+    }
+
+    private PrepareFunctions(): ChatCompletionsFunctionToolDefinition[] {
+      let functions: ChatCompletionsFunctionToolDefinition[] = [{
+        type: "function",
+        function: {
+          name: "end_call",
+          description: "End the call only when user explicitly requests it.",
+          parameters: {
+            type: "object",
+            properties: {
+              message: {
+                type: "string",
+                description: "The message you will say before ending the call.",
+              },
+            },
+            required: ["message"],
+          },
+        },
+      }];
+      return functions;
+    }
+    ```
+  </Step>
+  <Step title="Add function calling to the chat request">
+    ```typescript Node.js
+    const option: GetChatCompletionsOptions = {
+      temperature: 0,
+      maxTokens: 200,
+      frequencyPenalty: 1,
+      tools: this.PrepareFunctions(),
+    };
+
+    let events = await this.client.streamChatCompletions(
+      process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
+      requestMessages,
+      option,
+    );
+    ```
+  </Step>
+  <Step title="Extract function call arguments from the streaming response">
+    ```typescript Node.js
+    let funcCall: FunctionCall;
+    let funcArguments = "";
+
+    for await (const event of events) {
+      if (event.choices.length >= 1) {
+        let delta = event.choices[0].delta;
+        if (!delta) continue;
+
+        if (delta.toolCalls.length >= 1) {
+          const toolCall = delta.toolCalls[0];
+          if (toolCall.id) {
+            if (funcCall) {
+              break; // Another function received, old function complete
+            } else {
+              funcCall = {
+                id: toolCall.id,
+                funcName: toolCall.function.name || "",
+                arguments: {},
+              };
+            }
+          } else {
+            funcArguments += toolCall.function?.arguments || "";
+          }
+        } else if (delta.content) {
+          const res: RetellResponse = {
+            response_id: request.response_id,
+            content: delta.content,
+            content_complete: false,
+            end_call: false,
+          };
+          ws.send(JSON.stringify(res));
+        }
+      }
+    }
+    ```
+  </Step>
+  <Step title="End the call when the LLM triggers the function">
+    ```typescript Node.js
+    if (funcCall != null) {
+      if (funcCall.funcName === "end_call") {
+        funcCall.arguments = JSON.parse(funcArguments);
+        const res: RetellResponse = {
+          response_id: request.response_id,
+          content: funcCall.arguments.message,
+          content_complete: true,
+          end_call: true,
+        };
+        ws.send(JSON.stringify(res));
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Case Study: Make an Appointment
+
+End call is the simplest function calling use case. In most cases, you'll want your agent to say something while calling the function and say something after it returns.
+
+<Note>
+  This is not production-ready as-is. In production, you need to handle duplicate function calls, user interruptions, and more complex state management. A good practice is to maintain internal states to track what function to run and how it influences LLM responses.
+</Note>

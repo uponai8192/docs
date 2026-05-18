@@ -1,0 +1,60 @@
+---
+title: "Define Resolution Criteria"
+description: "Set up AI-evaluated conditions and performance metrics that determine whether a call is considered successful."
+---
+
+Resolution criteria define what makes a call successful. AI QA evaluates every analyzed call against these criteria.
+
+<Steps>
+  <Step title="Add AI Evaluated Conditions">
+    Custom qualitative criteria evaluated by AI based on call transcripts and context.
+
+    **Name** — A short identifier (e.g., "Call resolved", "Customer satisfied", "Issue escalated properly").
+
+    **Prompt Description** — The prompt the AI uses to evaluate whether the condition was met.
+
+    Example: `"AI agent was able to resolve user's query"`
+
+    **Best practices:**
+    - Be specific about what success looks like
+    - Include relevant context about the call type or use case
+    - Use clear, unambiguous language
+
+    Click **+ Add** to add multiple conditions. Each is evaluated independently.
+  </Step>
+  <Step title="Add Performance Metrics">
+    Quantitative thresholds calls must meet to be considered successful.
+
+    | Metric | Description |
+    |--------|-------------|
+    | **Latency** | End-to-end delay between user speaking and agent beginning response |
+    | **User Sentiment** | Emotional state of the caller inferred from speech, tone, and pitch |
+    | **Agent Sentiment** | Emotional tone expressed by the AI during speech |
+    | **Interruptions** | Count of times user interrupted the agent |
+    | **Transcription** | WER and number of mistranscribed entities |
+    | **Agent Hallucination** | Rate at which the agent hallucinated |
+    | **Tool Call Inaccuracy** | Rate at which the agent invoked incorrect tools |
+    | **Node Transition Inaccuracy** | Rate of incorrect node transitions |
+    | **Agent Naturalness** | How human-like the agent sounded (pronunciation, pacing, turn-taking) |
+
+    Click **+ Add** to add multiple metrics.
+
+    <Note>
+      A call is considered successful only if it meets **all** defined criteria across both AI Evaluated Conditions and Performance Metrics.
+    </Note>
+  </Step>
+  <Step title="Configure Weighted Scoring (optional)">
+    Enable **Weighted Scoring** to assign different weights to your criteria — giving more importance to certain conditions or metrics.
+
+    **When enabled:** Assign weights to each condition and metric, then set a **Success Criteria** threshold.
+
+    **When disabled:** All criteria are treated equally — a call must meet all conditions.
+
+    Use weighted scoring when some criteria are more important than others. For example, weight "Call resolved" higher than "Customer satisfaction" if resolution is your primary goal.
+  </Step>
+  <Step title="Save and Run QA">
+    Click **Save and Run QA** to finalize and start analysis.
+
+    If you encounter a validation error, review all conditions and metrics to ensure required fields are filled and thresholds are set.
+  </Step>
+</Steps>
