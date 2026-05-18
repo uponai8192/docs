@@ -1,0 +1,163 @@
+---
+title: "Address Metric Issues"
+description: "Actionable guidance for fixing each type of AI QA metric failure to improve agent performance."
+---
+
+When AI QA flags metrics that didn't meet expectations, use this page to find actionable fixes. For metric definitions, see [AI QA Metrics](/ai-qa/ai-qa-metrics).
+
+## AI Accuracy
+
+### High Agent Hallucination Rate
+
+The agent is generating incorrect or fabricated information not supported by the conversation context or knowledge base.
+
+Check the call QA sheet to see the hallucination type, then apply the right fix:
+
+| Hallucination Type | Fix |
+|-------------------|-----|
+| **Fabrication** (inventing facts) | Add the correct information to your knowledge base or system prompt |
+| **Contradiction** (conflicts with provided info) | Simplify or clarify conflicting instructions in your system prompt |
+| **Confusion** (misunderstanding user intent) | Break complex instructions into simpler steps, or use conversation flow nodes with focused prompts |
+
+### Low KB Recall
+
+Relevant knowledge base chunks are not being retrieved when they should be.
+
+- Reduce the KB retrieval threshold and increase the number of chunks to reduce false negatives
+- Adjust these in your agent's **Knowledge Base** configuration — make small changes and monitor impact in later QA runs
+
+---
+
+## Response Engine Issues
+
+### High Node Transition Inaccuracy
+
+The agent is moving to the wrong conversation state. This applies only to **conversation flow agents**.
+
+- Clarify the transition conditions in your conversation flow node prompts
+- Add examples demonstrating correct transition behavior for edge cases
+- Keep transition prompts unambiguous — avoid overlapping conditions between nodes
+
+### High Tool Call Inaccuracy
+
+The agent calls wrong tools, misses required tool calls, or passes incorrect arguments. This applies only to **single-prompt and multi-prompt agents**.
+
+- In your agent prompt, explicitly state when to call which tools (and when not to)
+- In tool definitions, use clear names and descriptions, and add parameter examples
+
+<Note>
+  Tool Call Inaccuracy measures decision-making (wrong tool chosen). For tool execution failures (endpoint errors), see Custom Tool Failures below.
+</Note>
+
+---
+
+## Speech Quality
+
+### Poor Agent Naturalness
+
+The agent sounds unnatural — mispronunciation, robotic pacing, or audio artifacts.
+
+- **Change voice** — custom-cloned voices have more naturalness issues; switching to a platform voice often improves stability
+- **Adjust voice temperature** — affects vocal expressiveness
+- **Switch voice provider** — different providers have different strengths
+
+### Poor Agent Sentiment
+
+The agent's responses carry negative or inappropriate emotional tone.
+
+- Add explicit tone guidelines to your system prompt (e.g., "respond warmly and helpfully")
+- For conversation flow agents, check whether node prompts produce overly terse responses
+- Reword dismissive phrases (e.g., "I can't help with that" → "Let me find another way to help")
+
+---
+
+## Transcription Quality
+
+### High Word Error Rate (WER)
+
+Speech-to-text transcription has a high error rate, causing the agent to misunderstand users.
+
+- **Switch STT provider** — choose a higher-accuracy provider for your use case
+- **Check language settings** — ensure the language setting matches the actual spoken language
+- **Add custom vocabulary** — add frequently used names, technical terms, or domain-specific words as boosted keywords
+- **Use Mistranscribed Entities feedback** — review flagged terms in AI QA and add them as boosted keywords
+- **Reduce background noise** — enable background noise removal if the call environment is noisy
+
+---
+
+## User Experience
+
+### High User Negative Sentiment
+
+Multiple user utterances show negative sentiment.
+
+- Adjust your agent's system prompt to encourage more empathetic, friendly responses
+- Add instructions for handling frustrated users (e.g., acknowledge concerns before offering solutions)
+
+### High Interruption Count
+
+Frequent interruptions indicate latency or responsiveness issues.
+
+| Scenario | Fix |
+|----------|-----|
+| **High latency** (e2e P50 > 2.5s) | Fix latency first — choose faster models and lower-latency voice providers |
+| **Normal latency** | Decrease agent responsiveness or increase interruption sensitivity |
+
+---
+
+## Tool Execution
+
+### Custom Tool Failures
+
+Custom tool calls fail during a call.
+
+- Check your tool endpoint logs for the specific error
+- Ensure endpoints handle edge cases and return appropriate error responses
+- Verify tool response formats match the expected schema
+- Add timeout handling and retry logic where appropriate
+
+### Transfer Call Issues
+
+Transfer calls fail.
+
+- Check the error log for the specific cause
+- **Telephony issues** — change relevant settings or contact your telephony provider
+- **No one picking up** — review staffing during peak times; verify transfer destination numbers
+- **Human detection not working** — if using Warm Transfer, try switching to **Agentic Warm Transfer**, which uses a transfer agent to converse with the transfer target before bridging
+
+---
+
+## Performance
+
+### High Latency
+
+End-to-end latency is too high (e.g., P50 exceeds 2.5 seconds).
+
+- Use the latency breakdown in the call dashboard to find the bottleneck
+- **LLM inference bottleneck** — switch to a faster model
+- **TTS bottleneck** — choose a lower-latency voice provider
+- **Tool calls bottleneck** — optimize tool endpoints or reduce response size
+
+---
+
+## Custom Evaluation
+
+### Failed Custom Evaluation Criteria
+
+One or more AI Evaluated Conditions failed.
+
+- Use the failure reason in the call QA sheet to identify the gap, then update your system prompt or knowledge base
+- If the failure was intentional behavior, use **calibration** to override the evaluation for that call
+
+**Calibration best practices:**
+- Use calibration to correct edge cases where automatic evaluation doesn't match your judgment
+- If you're calibrating many calls the same way, update your resolution criteria instead — more efficient and applies to all future evaluations
+- Add notes when calibrating to document reasoning for your team
+
+---
+
+## Interpreting Results
+
+- Compare metrics across similar cohorts or time periods
+- Look for trends rather than focusing on individual data points
+- Use multiple metrics together for a complete picture of call quality

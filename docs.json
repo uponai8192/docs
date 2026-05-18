@@ -8,6 +8,9 @@
     "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude"]
+  },
   "navigation": {
     "tabs": [
       {
@@ -315,6 +318,46 @@
                   "Accounts/privacy/signed-secure-url"
                 ]
               }
+            ]
+          },
+          {
+            "group": "Other Topics",
+            "pages": [
+              {
+                "group": "Custom LLM",
+                "pages": [
+                  "custom-llm/overview",
+                  "custom-llm/setup-websocket-server",
+                  "custom-llm/integrate-llm",
+                  "custom-llm/integrate-function-calling",
+                  "custom-llm/troubleshooting",
+                  "custom-llm/llm-best-practices"
+                ]
+              },
+              "audio-basics"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "Integrations/hubspot"
+            ]
+          },
+          {
+            "group": "AI Quality Assurance",
+            "pages": [
+              "ai-qa/overview",
+              {
+                "group": "Create QA",
+                "pages": [
+                  "ai-qa/get-started",
+                  "ai-qa/create-cohort",
+                  "ai-qa/define-resolution-criteria"
+                ]
+              },
+              "ai-qa/view-qa-results",
+              "ai-qa/ai-qa-metrics",
+              "ai-qa/address-metric-issues"
             ]
           }
         ]

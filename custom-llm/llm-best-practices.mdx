@@ -1,0 +1,28 @@
+---
+title: "Custom LLM Best Practices"
+description: "Tips for optimizing latency, accuracy, and naturalness in Custom LLM integrations."
+---
+
+## Prompt Engineering
+
+- Keep prompts concise — longer prompts can harm performance
+- For large knowledge bases, use RAG to filter only relevant information to each query
+- Filler words and slight variation make agents sound more human-like
+- When using function calling, lower temperature improves accuracy
+- To constrain agent behavior, combine internal states (similar to an IVR tree) with different prompts and functions per state
+
+<Note>
+  For conversational AI, latency is critical. Chaining multiple LLM calls will hurt the experience.
+</Note>
+
+## LLM Selection
+
+Check each provider's **latency** and **throughput** benchmarks. UponAI starts streaming at the first sentence, so:
+
+> **time to first token + throughput of first sentence = what matters most**
+
+## Response Style
+
+- Keep responses short and concise
+- Filler words and controlled variation make agents more human-like
+- Aim for responses that fit naturally into a live phone call context

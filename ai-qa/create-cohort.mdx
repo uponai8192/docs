@@ -1,0 +1,41 @@
+---
+title: "Define QA Cohort"
+description: "Configure cohort name, call filters, and sampling settings for AI QA analysis."
+---
+
+<Steps>
+  <Step title="Set a cohort name">
+    Give your cohort a unique, descriptive name that indicates its purpose or criteria.
+
+    **Best practice:** Use names like "High-Value Customers Q4" or "Support Calls - Week 1" to make cohorts easy to identify.
+  </Step>
+  <Step title="Filter calls by agent and criteria">
+    Define which calls are included using the following filters:
+
+    **Agents** — Select one or more agents whose calls you want to analyze. Useful for comparing agent performance or focusing on a specific agent.
+
+    **Date Range**
+    - **Start Date:** Required. Sets the beginning of the date range.
+    - **End Date:** Optional. If omitted, the cohort continuously adds new matching calls as they occur (dynamic cohort).
+
+    **Call Duration** — Include or exclude calls based on length.
+    - Filter out very short calls (e.g., under 30 seconds) that may not be meaningful
+    - Focus on longer calls that require deeper analysis
+    - Identify calls that are too short or too long
+
+    **Filter by Post Call Analysis** — Add custom filters based on post-call analysis results.
+  </Step>
+  <Step title="Set sampling percentage">
+    Control how many calls from your filtered set are actually analyzed — to manage volume and cost.
+
+    **Percentage** — What percentage of matching calls to include.
+    - Example: 50% means half of matching calls are analyzed
+
+    **Weekly Max** — Maximum calls analyzed per week, regardless of the percentage.
+    - Example: 100 ensures no more than 100 calls per week
+    - The Weekly Max acts as a cap. If the percentage yields fewer calls, the percentage takes precedence. If it yields more, the cap applies.
+  </Step>
+  <Step title="Click Next">
+    After configuring filters and sampling, click **Next** to proceed to defining resolution criteria.
+  </Step>
+</Steps>

@@ -1,0 +1,43 @@
+---
+title: "Custom LLM Overview"
+description: "Integrate your own LLM with UponAI using a WebSocket server for full control over agent responses."
+---
+
+<Note>
+  UponAI's built-in agent frameworks (single prompt, conversation flow) provide more capabilities and built-in toolsets. Use Custom LLM integration only when required by specific compliance or use case needs.
+</Note>
+
+This section walks you through integrating your own LLM. It involves setting up a backend server that handles text exchanges with the UponAI server to provide responses to users. Step-by-step instructions and open-source example repositories are provided to follow along.
+
+## Interaction Overview Diagram
+
+The upper part of the diagram shows the interaction between your backend response-generating server and the UponAI server.
+
+The interaction flow:
+
+1. A phone or web call is made with the AI agent. Our server establishes the audio WebSocket.
+2. Our server connects to the `llm_websocket_url` you provided in the agent.
+3. Your LLM server must send the first message when the WebSocket connection is ready. If you want the agent to speak first, set the content; otherwise set content to an empty string.
+4. User says, "My name is Mike."
+5. Our model detects a high chance of turn-taking, or the user pauses. We request a response from your LLM.
+6. Your server checks `interaction_type` in our JSON. If it is `response_required`, send the response. After receiving your response, our model checks if the AI should speak.
+7. User continues and says "My name is Mike Trump."
+8. Same as step 5.
+9. Our server receives the response from your LLM and decides to speak.
+10. We send the AI voice in the audio WebSocket. Meanwhile, we send you JSON with `interaction_type` as `update_only`. You don't need to respond, but you can get the transcript from the JSON body.
+
+## Example Custom LLM Demo Repositories
+
+Fork the complete code used in the following guides to integrate your custom LLM solutions. These repos show how to build an LLM solution with OpenAI / Azure OpenAI, how to start an LLM WebSocket server, and how to use Twilio to make phone calls with UponAI agents programmatically.
+
+**Backend Server:**
+- [Node Demo Repository](https://github.com/retellai/retell-custom-llm-node-demo)
+- [Python Demo Repository](https://github.com/retellai/retell-custom-llm-python-demo)
+
+If you encounter issues, open an issue in the respective GitHub repo.
+
+## YouTube Guide
+
+<Note>
+  This video may be outdated. Watch the YouTube guide to set up your backend server.
+</Note>

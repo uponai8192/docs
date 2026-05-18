@@ -1,0 +1,158 @@
+---
+title: "Integrate LLM"
+description: "Connect your custom LLM to UponAI's WebSocket server with Node.js and Python examples."
+---
+
+In the [previous guide](/custom-llm/setup-websocket-server), you set up a WebSocket server with a dummy response system. This guide connects it to a real LLM of your choice.
+
+<Note>
+  The example repos are currently a bit outdated. This guide is the authoritative reference.
+</Note>
+
+## Selecting an LLM
+
+UponAI starts streaming at the first sentence, so your response system's **time to first sentence** (time to first token + time to generate a sentence) is factored into overall latency. Low-latency LLM inference is critical for a smooth experience. See [Custom LLM Best Practices](/custom-llm/llm-best-practices) for tips.
+
+## Connect to Your LLM
+
+Replace the dummy class from the previous guide with a real LLM client. The example below uses Azure OpenAI, but you can adapt it for any provider.
+
+Community demo repos with more examples:
+- **Node.js:** Azure OpenAI, OpenAI, OpenRouter
+- **Python:** OpenAI
+
+<CodeGroup>
+
+```typescript Node.js (Azure OpenAI)
+import {
+  OpenAIClient,
+  AzureKeyCredential,
+  ChatRequestMessage,
+  GetChatCompletionsOptions,
+} from "@azure/openai";
+import { WebSocket } from "ws";
+
+interface Utterance {
+  role: "agent" | "user";
+  content: string;
+}
+
+export interface RetellRequest {
+  response_id?: number;
+  transcript: Utterance[];
+  interaction_type: "update_only" | "response_required" | "reminder_required";
+}
+
+export interface RetellResponse {
+  response_id?: number;
+  content: string;
+  content_complete: boolean;
+  end_call: boolean;
+}
+
+const beginSentence =
+  "Hey there, I'm your personal AI assistant, how can I help you?";
+const agentPrompt = "Your system prompt here.";
+
+export class DemoLlmClient {
+  private client: OpenAIClient;
+
+  constructor() {
+    this.client = new OpenAIClient(
+      process.env.AZURE_OPENAI_ENDPOINT,
+      new AzureKeyCredential(process.env.AZURE_OPENAI_KEY),
+    );
+  }
+
+  BeginMessage(ws: WebSocket) {
+    const res: RetellResponse = {
+      response_id: 0,
+      content: beginSentence,
+      content_complete: true,
+      end_call: false,
+    };
+    ws.send(JSON.stringify(res));
+  }
+
+  private ConversationToChatRequestMessages(conversation: Utterance[]) {
+    let result: ChatRequestMessage[] = [];
+    for (let turn of conversation) {
+      result.push({
+        role: turn.role === "agent" ? "assistant" : "user",
+        content: turn.content,
+      });
+    }
+    return result;
+  }
+
+  private PreparePrompt(request: RetellRequest) {
+    let transcript = this.ConversationToChatRequestMessages(request.transcript);
+    let requestMessages: ChatRequestMessage[] = [
+      {
+        role: "system",
+        content: agentPrompt,
+      },
+    ];
+    for (const message of transcript) {
+      requestMessages.push(message);
+    }
+    if (request.interaction_type === "reminder_required") {
+      requestMessages.push({
+        role: "user",
+        content: "(Now the user has not responded in a while, you would say:)",
+      });
+    }
+    return requestMessages;
+  }
+
+  async DraftResponse(request: RetellRequest, ws: WebSocket) {
+    if (request.interaction_type === "update_only") {
+      return;
+    }
+    const requestMessages = this.PreparePrompt(request);
+    const option: GetChatCompletionsOptions = {
+      temperature: 0.3,
+      maxTokens: 200,
+      frequencyPenalty: 1,
+    };
+
+    try {
+      let events = await this.client.streamChatCompletions(
+        process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
+        requestMessages,
+        option,
+      );
+
+      for await (const event of events) {
+        if (event.choices.length >= 1) {
+          let delta = event.choices[0].delta;
+          if (!delta || !delta.content) continue;
+          const res: RetellResponse = {
+            response_id: request.response_id,
+            content: delta.content,
+            content_complete: false,
+            end_call: false,
+          };
+          ws.send(JSON.stringify(res));
+        }
+      }
+    } catch (err) {
+      console.error("Error in gpt stream: ", err);
+    } finally {
+      const res: RetellResponse = {
+        response_id: request.response_id,
+        content: "",
+        content_complete: true,
+        end_call: false,
+      };
+      ws.send(JSON.stringify(res));
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+## Try It in Dashboard
+
+Follow the same steps from the [Setup WebSocket Server](/custom-llm/setup-websocket-server) guide to test your LLM-connected agent in the dashboard.

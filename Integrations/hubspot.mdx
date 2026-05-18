@@ -1,0 +1,123 @@
+---
+title: "HubSpot Integration"
+description: "Automate outbound phone calls from HubSpot workflows using UponAI voice agents."
+---
+
+The UponAI HubSpot integration enables the **Make a Phone Call** action in HubSpot workflows. This creates an outbound call using your AI agents and pauses the workflow until the call finishes.
+
+Once a call completes, HubSpot is automatically updated with:
+- **Activity Timeline** — post-call analysis and call summary
+- **Call Log** — recording and detailed transcript
+- **Company Record** — call logs appear on the associated company timeline
+
+## Installing the Application
+
+<Steps>
+  <Step title="Initiate installation">
+    Click **Connect app** when prompted during installation in the HubSpot Marketplace.
+  </Step>
+  <Step title="Complete the integration form">
+    You will be redirected to an external integration form.
+  </Step>
+  <Step title="Get your API key">
+    In your UponAI dashboard, navigate to **Settings → API Keys**. Copy the **Secret Key (Webhook)** and paste it into the **UponAI API Key** field on the form.
+  </Step>
+  <Step title="Configure webhook URL">
+    Copy the **Webhook URL** from the form and paste it into **Settings → Webhooks** in your UponAI dashboard.
+  </Step>
+  <Step title="Save and return">
+    Click **Save**, close the page, and return to HubSpot.
+  </Step>
+</Steps>
+
+## Using the Application
+
+HubSpot workflows can trigger outbound calls automatically based on events. Common use cases:
+
+| Use Case | Trigger |
+|----------|---------|
+| New lead qualification | Lead submits a form |
+| New contact created | Contact added to CRM |
+| Deal stage changes | Deal moves to a specific stage |
+| Re-engagement | Contact inactive for a set period |
+| Appointment reminders | Based on a date property |
+| Post-purchase follow-up | After a purchase event |
+
+<Note>
+  You must have a UponAI account and an agent with a connected phone number.
+</Note>
+
+### Step 1: Create the HubSpot Workflow
+
+<Steps>
+  <Step title="Create a new workflow">
+    Navigate to **Automation → Workflows** and create a new workflow. Choose your trigger:
+    - **Form submission** — trigger when a lead fills out a form
+    - **Record created** — trigger when a new contact is added
+    - **Property value change** — trigger when a deal stage or lead status changes
+    - **Date-based** — trigger on a specific date property
+  </Step>
+  <Step title="Add phone number condition">
+    Add a condition for **Phone number is known** to ensure the workflow only triggers for contacts with valid phone numbers.
+
+    You can add more conditions to qualify contacts further — by lead status, lifecycle stage, contact owner, or custom properties.
+  </Step>
+  <Step title="Add UponAI action">
+    Click the **(+)** button → select **UponAI → Make a Phone Call** under "Integrated apps".
+  </Step>
+  <Step title="Configure the call">
+    - **From:** Select the UponAI agent / phone number
+    - **To:** Select the contact's phone number token
+    - **Dynamic Variables (Optional):** Pass data like the contact's name in JSON format. Ensure all values are in quotes.
+  </Step>
+  <Step title="Add outcome branches">
+    After the call completes, branch your workflow based on the **Call Success** output:
+
+    **If successful:**
+    - Send a follow-up email
+    - Create a task for sales review
+    - Update the contact's lifecycle stage
+    - Add to a nurture sequence
+
+    **If unsuccessful (no answer, voicemail, etc.):**
+    - Schedule a retry call
+    - Send an SMS or email as an alternative touchpoint
+    - Add to a "needs follow-up" list
+
+    You can also branch on **User Sentiment** or **Call Outcome** for more granular logic.
+  </Step>
+  <Step title="Publish the workflow">
+    Click **Review and publish** to activate.
+  </Step>
+</Steps>
+
+### Step 2: View Call Results in HubSpot
+
+<Steps>
+  <Step title="Open the contact record">
+    Navigate to **CRM → Contacts** and open the contact that was enrolled.
+  </Step>
+  <Step title="View call analysis">
+    Check the **Activity** tab. Ensure your activity filters include "UponAI."
+
+    Each call shows:
+    - **Default Call Results** — summary, duration, voicemail detection, user sentiment, call outcome
+    - **Custom Analysis** — additional fields configured via Post-Call Analysis in UponAI
+  </Step>
+  <Step title="View call log and recording">
+    Check the **Calls** tab for the full call log and recording.
+  </Step>
+</Steps>
+
+## Uninstalling the Application
+
+<Steps>
+  <Step title="Navigate to Connected Apps">
+    Go to **Connected Apps** and select UponAI.
+  </Step>
+  <Step title="Uninstall">
+    Navigate to the **General Settings** tab and click **Uninstall**.
+  </Step>
+</Steps>
+
+Your data will be deleted from UponAI records and the app will be removed from HubSpot.

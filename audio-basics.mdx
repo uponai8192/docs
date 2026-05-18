@@ -1,0 +1,99 @@
+---
+title: "Audio Basics"
+description: "Understand how audio is digitally represented, encoded, and used in UponAI phone and web calls."
+---
+
+## How Audio Is Represented Digitally
+
+Sound waves are captured by a microphone, which converts acoustic energy into electrical analog signals. These are fed into an ADC (Analog-to-Digital Converter) where two critical processes occur: **sampling** and **quantization**.
+
+### Sampling
+
+<Steps>
+  <Step title="Definition">
+    Sampling measures the amplitude of an analog signal at regular intervals. The interval rate is expressed in Hertz (Hz). For example, 44.1 kHz means the signal is sampled 44,100 times per second.
+  </Step>
+  <Step title="Purpose">
+    Sampling creates a series of discrete data points that approximate the continuous analog waveform.
+  </Step>
+  <Step title="Implication">
+    The **Nyquist Theorem** states that the sample rate must be at least twice the highest frequency component in the audio signal. Human hearing ranges up to 20 kHz — hence the standard CD sample rate of 44.1 kHz.
+  </Step>
+</Steps>
+
+### Quantization
+
+<Steps>
+  <Step title="Definition">
+    Quantization converts each sampled amplitude value into a digital value by assigning a numerical quantization level to each sample.
+  </Step>
+  <Step title="Purpose">
+    The range of amplitude values is divided into discrete steps, each assigned a digital value. Bit depth determines the number of possible levels — a 16-bit system can represent 65,536 (2^16) different levels.
+  </Step>
+  <Step title="Implication">
+    Quantization introduces a small amount of error (quantization noise) because amplitudes are rounded to the nearest level. Higher bit depths reduce this error and produce higher fidelity audio.
+  </Step>
+</Steps>
+
+## Terminology
+
+| Term | Definition |
+|------|-----------|
+| **Sample Rate** | Number of audio samples per second, measured in Hz |
+| **Channel Count** | Number of separate audio channels (mono = 1, stereo = 2) |
+| **Bit Depth** | Number of bits used to represent each audio sample |
+
+## Audio Encoding
+
+Audio encoding converts audio data into a format suitable for storage, transmission, and playback — often with compression.
+
+| Format | Description |
+|--------|-------------|
+| **PCM** | Pulse Code Modulation — most straightforward digital audio encoding. Standard for computers, CDs, and digital telephony. |
+| **MP3** | Compressed format with perceptual audio coding |
+| **AAC** | Advanced Audio Coding — higher quality than MP3 at similar bitrates |
+| **Opus** | Modern codec optimized for low-latency voice |
+| **μ-law** | Companded PCM used in telephony (G.711) |
+
+<Note>
+  Audio encoding is not the same as audio format. An audio format (e.g., WAV) includes the encoding plus metadata, file headers, and container structure.
+</Note>
+
+## PCM Audio Representation
+
+When audio is played, it's typically decoded into PCM. There are two common representations:
+
+| Type | Description |
+|------|-------------|
+| **Float32Array** | 32-bit floating-point format. Used when capturing mic streams and setting up playback in web environments. |
+| **Uint8Array** | 8-bit unsigned integer array. Lower-level representation used in audio processing. For 16-bit mono PCM, each sample is 2 bytes. |
+
+Convert between the two formats:
+
+```typescript
+export function convertUnsigned8ToFloat32(array: Uint8Array): Float32Array {
+  const targetArray = new Float32Array(array.byteLength / 2);
+  const sourceDataView = new DataView(array.buffer);
+  for (let i = 0; i < targetArray.length; i++) {
+    targetArray[i] = sourceDataView.getInt16(i * 2, true) / Math.pow(2, 16 - 1);
+  }
+  return targetArray;
+}
+
+export function convertFloat32ToUnsigned8(array: Float32Array): Uint8Array {
+  const buffer = new ArrayBuffer(array.length * 2);
+  const view = new DataView(buffer);
+  for (let i = 0; i < array.length; i++) {
+    const value = array[i] * 32768;
+    view.setInt16(i * 2, value, true); // little-endian
+  }
+  return new Uint8Array(buffer);
+}
+```
+
+## Audio in UponAI
+
+| Call Type | Audio Handling |
+|-----------|---------------|
+| **Phone Calls** | Different telephony providers use different audio codecs. UponAI's telephony integrations handle encoding and decoding internally — no action needed. |
+| **Web Calls** | The frontend web JS SDK abstracts all audio complexity. User audio is captured in PCM format and sent to the backend automatically. |
