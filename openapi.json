@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "UponAI Call API",
-    "version": "2025-02-08",
-    "description": "Programmatic control plane for configuring UponAI agents, large language model configurations, conversation flows, knowledge bases, outbound calls, and voice resources. All endpoints require a bearer token obtained from the UponAI dashboard."
+    "title": "UponAI Platform API",
+    "version": "2026-04-20",
+    "description": "Programmatic control plane for configuring UponAI agents, LLM configurations, conversation flows, knowledge bases, calls, chats, voices, and test tooling. All endpoints require a bearer token obtained from your profile settings."
   },
   "servers": [
     {
@@ -18,16 +18,24 @@
   ],
   "tags": [
     {
-      "name": "Authentication",
-      "description": "Shared authentication requirements and request builder helpers."
+      "name": "Calls",
+      "description": "Initiate and manage UponAI powered voice and web calls."
+    },
+    {
+      "name": "Agents",
+      "description": "Configure agents that power calls and web sessions."
     },
     {
       "name": "LLM Models",
       "description": "Manage reusable large language model configurations for agents."
     },
     {
-      "name": "Agents",
-      "description": "Configure agents that power calls and web sessions."
+      "name": "Chat Agents",
+      "description": "Configure agents for browser and messaging chat sessions."
+    },
+    {
+      "name": "Chats",
+      "description": "Start and manage live chat sessions."
     },
     {
       "name": "Conversation Flows",
@@ -39,38 +47,304 @@
     },
     {
       "name": "Voices",
-      "description": "Discover the speech synthesis voices available to a workspace."
+      "description": "Discover, search, add, and clone speech synthesis voices."
+    },
+    {
+      "name": "Test Case Definitions",
+      "description": "Define simulation test cases for response engines."
+    },
+    {
+      "name": "Test Runs",
+      "description": "Retrieve results for individual and batch test runs."
     },
     {
       "name": "Account",
       "description": "Account level utilities and limits."
     },
     {
-      "name": "Calls",
-      "description": "Initiate and manage UponAI powered voice and web calls."
+      "name": "Phone Numbers",
+      "description": "List and assign phone numbers to agents."
     }
   ],
   "paths": {
+    "/api/v1/calls/initiate": {
+      "post": {
+        "tags": ["Calls"],
+        "summary": "Create phone call",
+        "description": "Initiate a PSTN phone call via UponAI infrastructure. The workspace is inferred from the unique agentId. You may still send workspaceId for backward compatibility. Native-transfer workspaces expose the full per-call override surface, including agentOverride, overrideAgentVersion, customSipHeaders, and ignoreE164Validation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePhoneCallRequest"
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "agentId": "agent_01hzexample",
+                    "fromNumber": "334",
+                    "toNumber": "+14155550199",
+                    "trunkName": "Main Sales Trunk",
+                    "customerName": "Jamie Doe",
+                    "ignoreE164Validation": true,
+                    "overrideAgentVersion": 3,
+                    "customSipHeaders": {
+                      "X-Campaign": "spring-renewal",
+                      "X-Case-Id": "case_123"
+                    },
+                    "metadata": {
+                      "customerId": "cust_123",
+                      "campaign": "renewal"
+                    },
+                    "uponai_dynamic_variables": {
+                      "customer_name": "Jamie",
+                      "plan_tier": "enterprise"
+                    },
+                    "agentOverride": {
+                      "agent": {
+                        "voiceId": "elevenlabs-morgan",
+                        "maxCallDurationMs": 900000
+                      },
+                      "llm": {
+                        "model": "gpt-4.1",
+                        "beginMessage": "Hello Jamie, this is the virtual team from UponAI."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Call initiation response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePhoneCallResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calls/web": {
+      "post": {
+        "tags": ["Calls"],
+        "summary": "Create web call",
+        "description": "Start a browser based call session powered by an UponAI agent. The workspace is inferred from the unique agentId. You may still send workspaceId for backward compatibility.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Web call created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallRecord"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls": {
+      "get": {
+        "tags": ["Calls"],
+        "summary": "List calls",
+        "description": "List calls with optional workspace, agent, status, and date filters.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQueryOptional" },
+          { "$ref": "#/components/parameters/AgentIdQuery" },
+          { "$ref": "#/components/parameters/StatusQuery" },
+          { "$ref": "#/components/parameters/FromDateQuery" },
+          { "$ref": "#/components/parameters/ToDateQuery" },
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/LimitQueryDefault20" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated call list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls/history": {
+      "get": {
+        "tags": ["Calls"],
+        "summary": "Fetch call history",
+        "description": "Return paginated call history for a single workspace, including agent and workspace metadata plus optional search and date filters.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/AgentIdQuery" },
+          {
+            "name": "agentVersion",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "description": "Filter call history to a specific persisted agent version captured at call time."
+          },
+          { "$ref": "#/components/parameters/StatusQuery" },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Search by call SID, phone number, platform call ID, customer name, or agent name."
+          },
+          { "$ref": "#/components/parameters/FromDateQuery" },
+          { "$ref": "#/components/parameters/ToDateQuery" },
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/LimitQueryDefault20" },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" },
+            "description": "When true, include archived calls in the response."
+          },
+          {
+            "name": "includeChildCalls",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" },
+            "description": "When true, include child calls linked to transfer or split-call workflows."
+          },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated call history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallHistoryList"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "success": true,
+                      "calls": [
+                        {
+                          "callSid": "call_123abc",
+                          "callStatus": "ended",
+                          "agentId": "agent_456def",
+                          "agentVersion": 2,
+                          "agentName": "Concierge",
+                          "workspaceId": 42,
+                          "workspaceName": "Demo Workspace",
+                          "fromNumber": "+14155550100",
+                          "toNumber": "+14155550199",
+                          "direction": "outbound",
+                          "customerName": "Jane Doe",
+                          "duration": 214,
+                          "startedAt": "2026-03-12T14:22:00.000Z",
+                          "recordingUrl": "https://cdn.example.com/recordings/call_123abc.mp3",
+                          "sentiment": "positive",
+                          "summary": "Customer confirmed an appointment for Friday.",
+                          "costs": {
+                            "voice": 0.09,
+                            "llm": 0.03,
+                            "gross": 0.12,
+                            "total": 0.15
+                          }
+                        }
+                      ],
+                      "pagination": {
+                        "page": 1,
+                        "limit": 20,
+                        "total": 184,
+                        "pages": 10
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/calls/{callId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/CallIdPath" }
+      ],
+      "get": {
+        "tags": ["Calls"],
+        "summary": "Get call",
+        "description": "Retrieve details for a specific call.",
+        "responses": {
+          "200": {
+            "description": "Call details.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CallDetail" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/calls/{callId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/CallIdPath" }
+      ],
+      "patch": {
+        "tags": ["Calls"],
+        "summary": "Update call",
+        "description": "Update stored metadata or opt out of sensitive data storage. The API infers workspace from stored call data when available; workspaceId remains an optional backward-compatible fallback.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCallRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated call record.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CallRecord" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/llms": {
       "get": {
-        "tags": [
-          "LLM Models"
-        ],
+        "tags": ["LLM Models"],
         "summary": "List LLMs",
         "description": "Enumerate the UponAI LLM configurations available to a workspace. Results are returned newest first.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/LimitQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/LimitQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyVersionQuery" }
         ],
         "responses": {
           "200": {
@@ -79,23 +353,13 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LlmSummary"
-                  }
+                  "items": { "$ref": "#/components/schemas/LlmSummary" }
                 },
                 "examples": {
                   "default": {
                     "value": [
-                      {
-                        "llm_id": "llm_1ab234cde567fgh",
-                        "display_name": "Concierge v2",
-                        "version": 3
-                      },
-                      {
-                        "llm_id": "llm_9xy654zba321cde",
-                        "display_name": "Outbound Collections",
-                        "version": 5
-                      }
+                      { "llm_id": "llm_1ab234cde567fgh", "display_name": "Concierge v2", "version": 3 },
+                      { "llm_id": "llm_9xy654zba321cde", "display_name": "Outbound Collections", "version": 5 }
                     ]
                   }
                 }
@@ -105,32 +369,37 @@
         }
       },
       "post": {
-        "tags": [
-          "LLM Models"
-        ],
+        "tags": ["LLM Models"],
         "summary": "Create LLM",
         "description": "Provision a new UponAI large language model configuration.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateLlmRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/CreateLlmRequest" },
               "examples": {
                 "default": {
                   "value": {
                     "workspaceId": 42,
-                    "display_name": "Concierge v2",
+                    "display_name": "Concierge with cold transfer",
                     "model": "gpt-4o-mini",
-                    "general_prompt": "You are the voice of UponAI...",
+                    "general_prompt": "You are the voice of UponAI. Help callers and transfer them when needed.",
                     "begin_message": "Hi there! Thanks for calling.",
                     "responsiveness": "fast",
                     "general_tools": [
                       {
-                        "name": "lookup_customer",
-                        "description": "Retrieve CRM records by phone number.",
-                        "type": "function"
+                        "type": "transfer_call",
+                        "name": "transfer_to_support",
+                        "description": "Transfer the caller to support when they ask for a human.",
+                        "transfer_destination": {
+                          "type": "predefined",
+                          "number": "+18885551212"
+                        },
+                        "transfer_option": {
+                          "type": "cold_transfer",
+                          "cold_transfer_mode": "sip_invite",
+                          "show_transferee_as_caller": false
+                        }
                       }
                     ]
                   }
@@ -144,9 +413,7 @@
             "description": "Newly created LLM configuration.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Llm"
-                },
+                "schema": { "$ref": "#/components/schemas/Llm" },
                 "examples": {
                   "default": {
                     "value": {
@@ -168,55 +435,39 @@
     },
     "/api/llms/{llmId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/LlmIdPath"
-        }
+        { "$ref": "#/components/parameters/LlmIdPath" }
       ],
       "get": {
-        "tags": [
-          "LLM Models"
-        ],
+        "tags": ["LLM Models"],
         "summary": "Get LLM",
         "description": "Retrieve the latest or a specific version of an LLM configuration.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "responses": {
           "200": {
             "description": "LLM configuration details.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Llm"
-                }
+                "schema": { "$ref": "#/components/schemas/Llm" }
               }
             }
           }
         }
       },
       "patch": {
-        "tags": [
-          "LLM Models"
-        ],
+        "tags": ["LLM Models"],
         "summary": "Update LLM",
         "description": "Apply partial updates to an existing LLM configuration.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateLlmRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateLlmRequest" }
             }
           }
         },
@@ -225,52 +476,34 @@
             "description": "Updated LLM configuration.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Llm"
-                }
+                "schema": { "$ref": "#/components/schemas/Llm" }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": [
-          "LLM Models"
-        ],
+        "tags": ["LLM Models"],
         "summary": "Delete LLM",
         "description": "Permanently delete an LLM configuration and its versions.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "LLM deleted."
-          }
+          "204": { "description": "LLM deleted." }
         }
       }
     },
     "/api/agents": {
       "get": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "List agents",
         "description": "List agents created inside a workspace.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/LimitQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/LimitQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyVersionQuery" }
         ],
         "responses": {
           "200": {
@@ -279,9 +512,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AgentSummary"
-                  }
+                  "items": { "$ref": "#/components/schemas/AgentSummary" }
                 }
               }
             }
@@ -289,18 +520,14 @@
         }
       },
       "post": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "Create agent",
         "description": "Create a new UponAI agent for use in calls and web sessions.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAgentRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateAgentRequest" }
             }
           }
         },
@@ -309,9 +536,7 @@
             "description": "Newly created agent.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Agent"
-                }
+                "schema": { "$ref": "#/components/schemas/Agent" }
               }
             }
           }
@@ -320,55 +545,39 @@
     },
     "/api/agents/{agentId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/AgentIdPath"
-        }
+        { "$ref": "#/components/parameters/AgentIdPath" }
       ],
       "get": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "Get agent",
         "description": "Retrieve the active configuration or a historical version of an agent.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "responses": {
           "200": {
             "description": "Agent configuration.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Agent"
-                }
+                "schema": { "$ref": "#/components/schemas/Agent" }
               }
             }
           }
         }
       },
       "patch": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "Update agent",
         "description": "Apply partial updates to an existing agent configuration.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAgentRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateAgentRequest" }
             }
           }
         },
@@ -377,48 +586,34 @@
             "description": "Updated agent.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Agent"
-                }
+                "schema": { "$ref": "#/components/schemas/Agent" }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "Delete agent",
         "description": "Permanently remove an agent and all saved versions.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "Agent deleted."
-          }
+          "204": { "description": "Agent deleted." }
         }
       }
     },
     "/api/agents/{agentId}/versions": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/AgentIdPath"
-        }
+        { "$ref": "#/components/parameters/AgentIdPath" }
       ],
       "get": {
-        "tags": [
-          "Agents"
-        ],
+        "tags": ["Agents"],
         "summary": "List agent versions",
         "description": "Review the revision history for an agent.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
           "200": {
@@ -427,9 +622,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AgentVersion"
-                  }
+                  "items": { "$ref": "#/components/schemas/AgentVersion" }
                 }
               }
             }
@@ -437,26 +630,470 @@
         }
       }
     },
+    "/api/chat-agents": {
+      "get": {
+        "tags": ["Chat Agents"],
+        "summary": "List chat agents",
+        "description": "List chat agents created inside a workspace.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/LimitQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyVersionQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat agent summary list.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatAgentList" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "data": [
+                        {
+                          "agent_id": "chat_agent_01hzk4q6dr3n0d4qzpw9z6gth6",
+                          "agent_name": "Website Concierge",
+                          "version": 3,
+                          "response_engine": {
+                            "type": "uponai-llm",
+                            "llm_id": "llm_1ab234cde567fgh"
+                          },
+                          "auto_close_message": "Thanks for chatting with UponAI.",
+                          "is_public": true
+                        }
+                      ],
+                      "pagination_key": "chat_agent_01hzk4q6dr3n0d4qzpw9z6gth6",
+                      "pagination_key_version": 3
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Chat Agents"],
+        "summary": "Create chat agent",
+        "description": "Create a new UponAI chat agent for browser and messaging use cases.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateChatAgentRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "agent_name": "Website Concierge",
+                    "response_engine": {
+                      "type": "uponai-llm",
+                      "llm_id": "llm_1ab234cde567fgh"
+                    },
+                    "auto_close_message": "Thanks for chatting with UponAI.",
+                    "end_chat_after_silence_ms": 600000,
+                    "webhook_url": "https://example.com/hooks/chat-events",
+                    "webhook_events": ["chat_started", "chat_ended", "chat_analyzed"],
+                    "timezone": "America/New_York",
+                    "is_public": true,
+                    "data_storage_setting": "everything_except_pii",
+                    "data_storage_retention_days": 30,
+                    "post_chat_analysis_model": "gpt-4.1-mini",
+                    "post_chat_analysis_data": [
+                      {
+                        "type": "chat_summary",
+                        "name": "summary",
+                        "description": "Short summary of the completed chat."
+                      }
+                    ],
+                    "uponai_dynamic_variables": {
+                      "customer_tier": "enterprise"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Newly created chat agent.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatAgent" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat-agents/{agentId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/AgentIdPath" }
+      ],
+      "get": {
+        "tags": ["Chat Agents"],
+        "summary": "Get chat agent",
+        "description": "Retrieve the active configuration or a historical version of a chat agent.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat agent configuration.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatAgent" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Chat Agents"],
+        "summary": "Update chat agent",
+        "description": "Apply partial updates to an existing chat agent configuration.",
+        "parameters": [
+          { "$ref": "#/components/parameters/VersionQuery" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateChatAgentRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "agent_name": "Website Concierge Draft",
+                    "auto_close_message": "I can follow up again whenever you need.",
+                    "is_public": false,
+                    "handbook_config": {
+                      "enabled": true,
+                      "include_sections": ["escalation", "billing"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated chat agent.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatAgent" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Chat Agents"],
+        "summary": "Delete chat agent",
+        "description": "Permanently remove a chat agent and all saved versions.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "204": { "description": "Chat agent deleted." }
+        }
+      }
+    },
+    "/api/chat-agents/{agentId}/versions": {
+      "parameters": [
+        { "$ref": "#/components/parameters/AgentIdPath" }
+      ],
+      "get": {
+        "tags": ["Chat Agents"],
+        "summary": "List chat agent versions",
+        "description": "Review the revision history for a chat agent.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat agent version history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AgentVersion" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat-agents/{agentId}/publish": {
+      "parameters": [
+        { "$ref": "#/components/parameters/AgentIdPath" }
+      ],
+      "post": {
+        "tags": ["Chat Agents"],
+        "summary": "Publish chat agent draft",
+        "description": "Publish the latest draft configuration for a chat agent and return the newly published version.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workspaceId"],
+                "properties": {
+                  "workspaceId": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Published chat agent.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatAgent" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats": {
+      "get": {
+        "tags": ["Chats"],
+        "summary": "List chats",
+        "description": "List chats for a workspace, newest first by default.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["ascending", "descending"]
+            },
+            "description": "Sort direction for chat listings."
+          },
+          { "$ref": "#/components/parameters/LimitQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat session list.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatList" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Chats"],
+        "summary": "Create chat",
+        "description": "Start a new live chat session backed by a chat agent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateChatRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "agent_id": "chat_agent_01hzk4q6dr3n0d4qzpw9z6gth6",
+                    "metadata": { "source": "website", "page": "/pricing" },
+                    "uponai_dynamic_variables": { "customer_tier": "enterprise" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chat created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Chat" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/outbound-sms": {
+      "post": {
+        "tags": ["Chats"],
+        "summary": "Create outbound SMS chat",
+        "description": "Start an outbound SMS chat session for a workspace.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOutboundSmsChatRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "agent_id": "chat_agent_01hzk4q6dr3n0d4qzpw9z6gth6",
+                    "from_number": "+14155550100",
+                    "to_number": "+14155550199",
+                    "metadata": { "campaign": "reactivation" },
+                    "uponai_dynamic_variables": { "customer_first_name": "Jamie" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Outbound SMS chat created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Chat" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/ChatIdPath" }
+      ],
+      "get": {
+        "tags": ["Chats"],
+        "summary": "Get chat",
+        "description": "Retrieve details for a specific chat session.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat details.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Chat" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Chats"],
+        "summary": "Update chat",
+        "description": "Update metadata, custom attributes, or dynamic-variable overrides for an existing chat.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateChatRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "metadata": { "followUpOwner": "support" },
+                    "custom_attributes": { "customerId": "cust_123" },
+                    "override_dynamic_variables": { "discount_code": "SPRING15" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated chat session.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Chat" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}/completions": {
+      "parameters": [
+        { "$ref": "#/components/parameters/ChatIdPath" }
+      ],
+      "post": {
+        "tags": ["Chats"],
+        "summary": "Create chat completion",
+        "description": "Send a user message into an existing chat and receive the assistant response messages.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatCompletionRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "workspaceId": 42,
+                    "content": "Can you send me pricing for the enterprise plan?"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chat completion messages.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatCompletionResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chats/{chatId}/end": {
+      "parameters": [
+        { "$ref": "#/components/parameters/ChatIdPath" }
+      ],
+      "post": {
+        "tags": ["Chats"],
+        "summary": "End chat",
+        "description": "Mark a chat as completed and close the session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workspaceId"],
+                "properties": {
+                  "workspaceId": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Chat ended." }
+        }
+      }
+    },
     "/api/conversation-flows": {
       "get": {
-        "tags": [
-          "Conversation Flows"
-        ],
+        "tags": ["Conversation Flows"],
         "summary": "List conversation flows",
         "description": "Enumerate conversation flows for the workspace.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/LimitQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PaginationKeyVersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/LimitQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyQuery" },
+          { "$ref": "#/components/parameters/PaginationKeyVersionQuery" }
         ],
         "responses": {
           "200": {
@@ -465,9 +1102,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ConversationFlowSummary"
-                  }
+                  "items": { "$ref": "#/components/schemas/ConversationFlowSummary" }
                 }
               }
             }
@@ -475,18 +1110,14 @@
         }
       },
       "post": {
-        "tags": [
-          "Conversation Flows"
-        ],
+        "tags": ["Conversation Flows"],
         "summary": "Create conversation flow",
         "description": "Compose a reusable flow graph for agents to attach to.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateConversationFlowRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateConversationFlowRequest" }
             }
           }
         },
@@ -495,9 +1126,7 @@
             "description": "Newly created conversation flow.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConversationFlow"
-                }
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" }
               }
             }
           }
@@ -506,55 +1135,39 @@
     },
     "/api/conversation-flows/{conversationFlowId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/ConversationFlowIdPath"
-        }
+        { "$ref": "#/components/parameters/ConversationFlowIdPath" }
       ],
       "get": {
-        "tags": [
-          "Conversation Flows"
-        ],
+        "tags": ["Conversation Flows"],
         "summary": "Get conversation flow",
         "description": "Retrieve the latest or a specific version of a conversation flow.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "responses": {
           "200": {
             "description": "Conversation flow details.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConversationFlow"
-                }
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" }
               }
             }
           }
         }
       },
       "patch": {
-        "tags": [
-          "Conversation Flows"
-        ],
+        "tags": ["Conversation Flows"],
         "summary": "Update conversation flow",
         "description": "Apply partial updates to a conversation flow.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/VersionQuery"
-          }
+          { "$ref": "#/components/parameters/VersionQuery" }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateConversationFlowRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateConversationFlowRequest" }
             }
           }
         },
@@ -563,43 +1176,31 @@
             "description": "Updated conversation flow.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConversationFlow"
-                }
+                "schema": { "$ref": "#/components/schemas/ConversationFlow" }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Conversation Flows"
-        ],
+        "tags": ["Conversation Flows"],
         "summary": "Delete conversation flow",
         "description": "Remove a conversation flow and its versions.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "Conversation flow deleted."
-          }
+          "204": { "description": "Conversation flow deleted." }
         }
       }
     },
     "/api/knowledge-bases": {
       "get": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "List knowledge bases",
         "description": "Enumerate knowledge bases available to the workspace.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
           "200": {
@@ -608,8 +1209,13 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/KnowledgeBaseSummary"
+                  "items": { "$ref": "#/components/schemas/KnowledgeBaseSummary" }
+                },
+                "examples": {
+                  "default": {
+                    "value": [
+                      { "knowledgeBaseId": "knowledge_base_17c5db1600cea2b4", "name": "Customer Support FAQ", "status": "processing" }
+                    ]
                   }
                 }
               }
@@ -618,18 +1224,14 @@
         }
       },
       "post": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "Create knowledge base",
-        "description": "Create a knowledge base and ingest documents, URLs, or free-form text for grounded responses.",
+        "description": "Create a knowledge base and ingest documents, URLs, or free-form text for grounded responses. URL auto-refresh and chunking controls are supported.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateKnowledgeBaseRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/CreateKnowledgeBaseRequest" }
             }
           }
         },
@@ -638,9 +1240,7 @@
             "description": "Newly created knowledge base.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KnowledgeBase"
-                }
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" }
               }
             }
           }
@@ -649,71 +1249,51 @@
     },
     "/api/knowledge-bases/{knowledgeBaseId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
-        }
+        { "$ref": "#/components/parameters/KnowledgeBaseIdPath" }
       ],
       "get": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "Get knowledge base",
         "description": "Retrieve knowledge base metadata and ingestion status.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
           "200": {
             "description": "Knowledge base details.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KnowledgeBase"
-                }
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" }
               }
             }
           }
         }
       },
       "delete": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "Delete knowledge base",
         "description": "Permanently remove a knowledge base and its sources.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "Knowledge base deleted."
-          }
+          "204": { "description": "Knowledge base deleted." }
         }
       }
     },
     "/api/knowledge-bases/{knowledgeBaseId}/sources": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
-        }
+        { "$ref": "#/components/parameters/KnowledgeBaseIdPath" }
       ],
       "post": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "Add knowledge base sources",
         "description": "Append new source material to an existing knowledge base.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddKnowledgeBaseSourcesRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/AddKnowledgeBaseSourcesRequest" }
             }
           }
         },
@@ -722,9 +1302,7 @@
             "description": "Knowledge base with updated source list.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KnowledgeBase"
-                }
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" }
               }
             }
           }
@@ -733,42 +1311,39 @@
     },
     "/api/knowledge-bases/{knowledgeBaseId}/sources/{sourceId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/KnowledgeBaseIdPath"
-        },
-        {
-          "$ref": "#/components/parameters/SourceIdPath"
-        }
+        { "$ref": "#/components/parameters/KnowledgeBaseIdPath" },
+        { "$ref": "#/components/parameters/SourceIdPath" }
       ],
       "delete": {
-        "tags": [
-          "Knowledge Bases"
-        ],
+        "tags": ["Knowledge Bases"],
         "summary": "Delete knowledge base source",
         "description": "Remove a specific source entry from a knowledge base.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
-          "204": {
-            "description": "Source removed."
+          "200": {
+            "description": "Knowledge base with updated source list.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/KnowledgeBase" }
+              }
+            }
           }
         }
       }
     },
     "/api/voices": {
       "get": {
-        "tags": [
-          "Voices"
-        ],
+        "tags": ["Voices"],
         "summary": "List voices",
         "description": "Explore the UponAI voice catalog available to a workspace.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
         ],
         "responses": {
           "200": {
@@ -777,10 +1352,131 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Voice"
+                  "items": { "$ref": "#/components/schemas/Voice" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/search": {
+      "post": {
+        "tags": ["Voices"],
+        "summary": "Search community voices",
+        "description": "Search provider voice catalogs for community voices.",
+        "parameters": [
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workspaceId", "voiceProvider"],
+                "properties": {
+                  "workspaceId": { "type": "integer" },
+                  "voiceProvider": { "type": "string", "example": "elevenlabs" },
+                  "searchQuery": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Matching community voices.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunityVoicesResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/community": {
+      "post": {
+        "tags": ["Voices"],
+        "summary": "Add community voice",
+        "description": "Add a provider community voice into the workspace library.",
+        "parameters": [
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workspaceId", "voiceProvider", "providerVoiceId"],
+                "properties": {
+                  "workspaceId": { "type": "integer" },
+                  "voiceProvider": { "type": "string" },
+                  "providerVoiceId": { "type": "string" },
+                  "voiceName": { "type": "string" },
+                  "publicUserId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Community voice added.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Voice" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voices/clone": {
+      "post": {
+        "tags": ["Voices"],
+        "summary": "Clone voice",
+        "description": "Clone a custom voice from uploaded source audio files.",
+        "parameters": [
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["workspaceId", "voiceProvider", "voiceName", "files"],
+                "properties": {
+                  "workspaceId": { "type": "integer" },
+                  "voiceProvider": { "type": "string" },
+                  "voiceName": { "type": "string" },
+                  "files": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "binary" }
                   }
                 }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cloned voice metadata.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Voice" }
               }
             }
           }
@@ -789,29 +1485,25 @@
     },
     "/api/voices/{voiceId}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/VoiceIdPath"
-        }
+        { "$ref": "#/components/parameters/VoiceIdPath" }
       ],
       "get": {
-        "tags": [
-          "Voices"
-        ],
+        "tags": ["Voices"],
         "summary": "Get voice",
         "description": "Retrieve metadata for a specific voice.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
         ],
         "responses": {
           "200": {
             "description": "Voice metadata.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Voice"
-                }
+                "schema": { "$ref": "#/components/schemas/Voice" }
               }
             }
           }
@@ -820,29 +1512,233 @@
     },
     "/api/voices/{voiceId}/sample": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/VoiceIdPath"
-        }
+        { "$ref": "#/components/parameters/VoiceIdPath" }
       ],
       "get": {
-        "tags": [
-          "Voices"
-        ],
+        "tags": ["Voices"],
         "summary": "Stream voice sample",
         "description": "Stream an MPEG sample to preview the voice.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
         ],
         "responses": {
           "200": {
             "description": "Voice sample stream.",
             "content": {
               "audio/mpeg": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/test-case-definitions": {
+      "get": {
+        "tags": ["Test Case Definitions"],
+        "summary": "List test case definitions",
+        "description": "List test case definitions for a target response engine.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["llm", "conversation-flow"]
+            },
+            "description": "Response engine type used by the test case definition."
+          },
+          {
+            "name": "llmId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "LLM identifier filter."
+          },
+          {
+            "name": "conversationFlowId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Conversation flow identifier filter."
+          },
+          { "$ref": "#/components/parameters/VersionQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test case definitions.",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TestCaseDefinition" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Test Case Definitions"],
+        "summary": "Create test case definition",
+        "description": "Create a simulation test case definition for a response engine.",
+        "parameters": [
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TestCaseDefinition" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created test case definition.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TestCaseDefinition" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/test-case-definitions/{testCaseDefinitionId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/TestCaseDefinitionIdPath" }
+      ],
+      "get": {
+        "tags": ["Test Case Definitions"],
+        "summary": "Get test case definition",
+        "description": "Retrieve a single test case definition.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test case definition.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TestCaseDefinition" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Test Case Definitions"],
+        "summary": "Update test case definition",
+        "description": "Update an existing test case definition.",
+        "parameters": [
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TestCaseDefinition" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated test case definition.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TestCaseDefinition" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Test Case Definitions"],
+        "summary": "Delete test case definition",
+        "description": "Delete an existing test case definition.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "204": { "description": "Test case definition deleted." }
+        }
+      }
+    },
+    "/api/test-runs/{testCaseJobId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/TestCaseJobIdPath" }
+      ],
+      "get": {
+        "tags": ["Test Runs"],
+        "summary": "Get test run",
+        "description": "Retrieve a single test run result by job ID.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test run payload.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TestRun" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/test-runs/batches/{testCaseBatchJobId}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/TestCaseBatchJobIdPath" }
+      ],
+      "get": {
+        "tags": ["Test Runs"],
+        "summary": "List test runs by batch",
+        "description": "List all test runs associated with a batch job.",
+        "parameters": [
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" },
+          { "$ref": "#/components/parameters/XActorType" },
+          { "$ref": "#/components/parameters/XProviderId" },
+          { "$ref": "#/components/parameters/XTenantId" },
+          { "$ref": "#/components/parameters/XImpersonationReason" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch test runs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TestRun" }
                 }
               }
             }
@@ -852,23 +1748,27 @@
     },
     "/api/concurrency": {
       "get": {
-        "tags": [
-          "Account"
-        ],
+        "tags": ["Account"],
         "summary": "Get concurrency",
         "description": "Retrieve concurrency limits and current usage for the account.",
         "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQuery"
-          }
+          { "$ref": "#/components/parameters/WorkspaceIdQuery" }
         ],
         "responses": {
           "200": {
             "description": "Concurrency snapshot.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Concurrency"
+                "schema": { "$ref": "#/components/schemas/Concurrency" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "maxConcurrent": 10,
+                      "currentUsage": 3,
+                      "purchasedConcurrency": 5,
+                      "concurrencyPurchaseLimit": 20
+                    }
+                  }
                 }
               }
             }
@@ -876,105 +1776,31 @@
         }
       }
     },
-    "/api/calls/web": {
-      "post": {
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Create web call",
-        "description": "Start a browser based call session powered by an UponAI agent.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWebCallRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Web call created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebCall"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/calls/initiate": {
-      "post": {
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Create phone call",
-        "description": "Initiate a PSTN phone call via UponAI infrastructure.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePhoneCallRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Call initiation response.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreatePhoneCallResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/calls": {
+    "/api/workspaces": {
       "get": {
-        "tags": [
-          "Calls"
-        ],
-        "summary": "List calls",
-        "description": "List calls with optional workspace, agent, status, and date filters.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/WorkspaceIdQueryOptional"
-          },
-          {
-            "$ref": "#/components/parameters/AgentIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/StatusQuery"
-          },
-          {
-            "$ref": "#/components/parameters/FromDateQuery"
-          },
-          {
-            "$ref": "#/components/parameters/ToDateQuery"
-          },
-          {
-            "$ref": "#/components/parameters/PageQuery"
-          },
-          {
-            "$ref": "#/components/parameters/LimitQueryDefault20"
-          }
-        ],
+        "tags": ["Account"],
+        "summary": "List workspaces",
+        "description": "List the workspaces accessible to the bearer token. Use this endpoint to discover the workspaceId required by workspace-scoped endpoints.",
         "responses": {
           "200": {
-            "description": "Paginated call list.",
+            "description": "Workspaces visible to the authenticated token.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CallList"
+                "schema": { "$ref": "#/components/schemas/WorkspaceList" },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "workspaces": [
+                        {
+                          "id": 42,
+                          "name": "Demo Workspace",
+                          "accountSid": "29e90072-fb58-4c6c-870a-43005115131e",
+                          "accountPath": "demo-workspace",
+                          "nativeTransferEnabled": false
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -982,62 +1808,99 @@
         }
       }
     },
-    "/api/v1/calls/{callId}": {
+    "/api/numbers/{accountSid}": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/CallIdPath"
-        }
+        { "$ref": "#/components/parameters/AccountSidPath" }
       ],
       "get": {
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Get call",
-        "description": "Retrieve details for a specific call.",
+        "tags": ["Phone Numbers"],
+        "summary": "List phone numbers",
+        "description": "List phone numbers for an account the authenticated user can access.",
         "responses": {
           "200": {
-            "description": "Call details.",
+            "description": "Phone numbers for the requested account.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallDetail"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PhoneNumber" }
                 }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller cannot access the requested account.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
               }
             }
           }
         }
       }
     },
-    "/api/calls/{callId}": {
+    "/api/numbers/{number}/agent": {
       "parameters": [
-        {
-          "$ref": "#/components/parameters/CallIdPath"
-        }
+        { "$ref": "#/components/parameters/NumberPath" }
       ],
-      "patch": {
-        "tags": [
-          "Calls"
-        ],
-        "summary": "Update call",
-        "description": "Update stored metadata or opt out of sensitive data storage.",
+      "put": {
+        "tags": ["Phone Numbers"],
+        "summary": "Update phone number assignment",
+        "description": "Assign, update, or remove outbound and inbound phone number bindings. Supports weighted agent arrays for inbound and outbound assignment, optional agent versions, and inbound A/B testing.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCallRequest"
+              "schema": { "$ref": "#/components/schemas/UpdatePhoneNumberRequest" },
+              "examples": {
+                "default": {
+                  "value": {
+                    "accountSid": "29e90072-fb58-4c6c-870a-43005115131e",
+                    "workspaceId": 1,
+                    "outboundAgentId": "agent_d3c2df14e163c7ca8ac5b1bf38",
+                    "outboundAgentVersion": 0,
+                    "inboundAgents": [
+                      { "agent_id": "agent_d3c2df14e163c7ca8ac5b1bf38", "agent_version": 0, "weight": 0.5 },
+                      { "agent_id": "agent_1f864a29b7c2ab407103c88335", "agent_version": 0, "weight": 0.5 }
+                    ],
+                    "inboundWebhookUrl": "https://app.uponai.com/inbound-dynamic-vars/1/uponaiworkspace-913",
+                    "isTimeRoutingEnabled": false
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated call record.",
+            "description": "Updated phone number assignment.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CallRecord"
-                }
+                "schema": { "$ref": "#/components/schemas/PhoneNumberUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid assignment payload.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller cannot access the requested account or workspace.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "The phone number or workspace was not found.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
               }
             }
           }
@@ -1049,7 +1912,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Generate tokens from your profile settings at app.uponai.com."
       }
     },
     "parameters": {
@@ -1057,520 +1921,591 @@
         "name": "workspaceId",
         "in": "query",
         "required": true,
-        "schema": {
-          "type": "integer"
-        },
-        "description": "Workspace identifier."
+        "schema": { "type": "integer" },
+        "description": "Workspace identifier. Call GET /api/workspaces to list workspaces accessible to your token."
       },
       "WorkspaceIdQueryOptional": {
         "name": "workspaceId",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer"
-        },
+        "schema": { "type": "integer" },
         "description": "Optional workspace identifier filter."
       },
       "LimitQuery": {
         "name": "limit",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000,
-          "default": 1000
-        },
+        "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 1000 },
         "description": "Maximum number of records to return."
       },
       "LimitQueryDefault20": {
         "name": "limit",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 100,
-          "default": 20
-        },
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 },
         "description": "Page size for list endpoints."
       },
       "PageQuery": {
         "name": "page",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        }
+        "schema": { "type": "integer", "minimum": 1, "default": 1 }
       },
       "PaginationKeyQuery": {
         "name": "paginationKey",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Identifier to continue pagination."
       },
       "PaginationKeyVersionQuery": {
         "name": "paginationKeyVersion",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer"
-        },
+        "schema": { "type": "integer" },
         "description": "Version paired with the pagination key."
       },
       "VersionQuery": {
         "name": "version",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "integer",
-          "minimum": 1
-        },
+        "schema": { "type": "integer", "minimum": 1 },
         "description": "Specific version to retrieve or update."
       },
       "AgentIdPath": {
         "name": "agentId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Agent identifier."
       },
       "AgentIdQuery": {
         "name": "agentId",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Filter call listings to a specific agent."
       },
       "CallIdPath": {
         "name": "callId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Call identifier or SID."
+      },
+      "ChatIdPath": {
+        "name": "chatId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Chat identifier."
       },
       "ConversationFlowIdPath": {
         "name": "conversationFlowId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Conversation flow identifier."
       },
       "KnowledgeBaseIdPath": {
         "name": "knowledgeBaseId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Knowledge base identifier."
       },
       "SourceIdPath": {
         "name": "sourceId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Knowledge base source identifier."
       },
       "VoiceIdPath": {
         "name": "voiceId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Voice identifier."
       },
       "LlmIdPath": {
         "name": "llmId",
         "in": "path",
         "required": true,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "LLM identifier."
+      },
+      "AccountSidPath": {
+        "name": "accountSid",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Account SID that owns the phone numbers."
+      },
+      "NumberPath": {
+        "name": "number",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Phone number or extension identifier to update."
+      },
+      "TestCaseDefinitionIdPath": {
+        "name": "testCaseDefinitionId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Test case definition identifier."
+      },
+      "TestCaseJobIdPath": {
+        "name": "testCaseJobId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Test run job identifier."
+      },
+      "TestCaseBatchJobIdPath": {
+        "name": "testCaseBatchJobId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Test run batch identifier."
       },
       "StatusQuery": {
         "name": "status",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "string"
-        },
+        "schema": { "type": "string" },
         "description": "Filter calls by status."
       },
       "FromDateQuery": {
         "name": "fromDate",
         "in": "query",
         "required": false,
-        "schema": {
-          "type": "string",
-          "format": "date-time"
-        },
+        "schema": { "type": "string", "format": "date-time" },
         "description": "Inclusive start date for call listing filter."
       },
       "ToDateQuery": {
         "name": "toDate",
         "in": "query",
         "required": false,
+        "schema": { "type": "string", "format": "date-time" },
+        "description": "Inclusive end date for call listing filter."
+      },
+      "XActorType": {
+        "name": "X-Actor-Type",
+        "in": "header",
+        "required": false,
         "schema": {
           "type": "string",
-          "format": "date-time"
+          "enum": ["platform_admin", "provider_admin", "tenant_admin", "end_user"]
         },
-        "description": "Inclusive end date for call listing filter."
+        "description": "Optional actor type for privileged white-label context selection."
+      },
+      "XProviderId": {
+        "name": "X-Provider-Id",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "integer" },
+        "description": "Optional provider scope identifier for privileged multi-tenant access."
+      },
+      "XTenantId": {
+        "name": "X-Tenant-Id",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "integer" },
+        "description": "Optional tenant/workspace context override."
+      },
+      "XImpersonationReason": {
+        "name": "X-Impersonation-Reason",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "string" },
+        "description": "Required for privileged tenant-scoped requests when actor type is platform or provider admin."
       }
     },
     "schemas": {
       "LlmSummary": {
         "type": "object",
+        "required": ["llm_id", "display_name", "version"],
         "properties": {
-          "llm_id": {
-            "type": "string"
-          },
-          "display_name": {
-            "type": "string"
-          },
-          "version": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "llm_id",
-          "display_name",
-          "version"
-        ]
+          "llm_id": { "type": "string" },
+          "display_name": { "type": "string" },
+          "version": { "type": "integer" }
+        }
       },
       "Llm": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/LlmSummary"
-          },
+          { "$ref": "#/components/schemas/LlmSummary" },
           {
             "type": "object",
             "properties": {
-              "model": {
-                "type": "string"
-              },
-              "general_prompt": {
-                "type": "string",
-                "nullable": true
-              },
-              "begin_message": {
-                "type": "string",
-                "nullable": true
-              },
-              "responsiveness": {
-                "type": "string",
-                "nullable": true
-              },
+              "model": { "type": "string" },
+              "general_prompt": { "type": "string", "nullable": true },
+              "begin_message": { "type": "string", "nullable": true },
+              "responsiveness": { "type": "string", "nullable": true },
               "general_tools": {
                 "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Tool"
-                }
+                "items": { "$ref": "#/components/schemas/Tool" }
               },
-              "updated_at": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true
-              }
+              "updated_at": { "type": "string", "format": "date-time", "nullable": true }
             }
           }
         ]
       },
       "Tool": {
         "type": "object",
+        "required": ["name", "type"],
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "type"
-        ]
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "type": { "type": "string" }
+        }
       },
       "CreateLlmRequest": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "display_name"
-        ],
+        "required": ["workspaceId", "display_name"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "display_name": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "general_prompt": {
-            "type": "string"
-          },
-          "begin_message": {
-            "type": "string",
-            "nullable": true
-          },
-          "responsiveness": {
-            "type": "string"
-          },
+          "workspaceId": { "type": "integer" },
+          "display_name": { "type": "string" },
+          "model": { "type": "string" },
+          "general_prompt": { "type": "string" },
+          "begin_message": { "type": "string", "nullable": true },
+          "responsiveness": { "type": "string" },
           "general_tools": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Tool"
-            }
+            "items": { "$ref": "#/components/schemas/Tool" }
           }
         }
       },
       "UpdateLlmRequest": {
         "type": "object",
-        "required": [
-          "workspaceId"
-        ],
+        "required": ["workspaceId"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
+          "workspaceId": { "type": "integer" },
+          "general_prompt": { "type": "string", "nullable": true },
+          "begin_message": { "type": "string", "nullable": true },
+          "responsiveness": { "type": "string" },
+          "model": { "type": "string" },
+          "s2s_model": { "type": "string", "description": "Speech-to-speech model. Set either model or s2s_model, not both." },
+          "start_speaker": { "type": "string", "enum": ["user", "agent"] },
+          "begin_after_user_silence_ms": { "type": "integer" },
+          "model_temperature": { "type": "number" },
+          "model_high_priority": { "type": "boolean" },
+          "tool_call_strict_mode": { "type": "boolean" },
+          "knowledge_base_ids": { "type": "array", "items": { "type": "string" } },
+          "general_tools": { "type": "array", "items": { "$ref": "#/components/schemas/Tool" } },
+          "states": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/LlmState" }
           },
-          "general_prompt": {
-            "type": "string",
-            "nullable": true
+          "starting_state": { "type": "string" },
+          "default_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
           },
-          "begin_message": {
-            "type": "string",
-            "nullable": true
-          },
-          "responsiveness": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
+          "mcps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/McpConfig" }
           }
+        }
+      },
+      "LlmState": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "state_prompt": { "type": "string" },
+          "edges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "destination_state_name": { "type": "string" },
+                "description": { "type": "string" }
+              }
+            }
+          },
+          "tools": { "type": "array", "items": { "$ref": "#/components/schemas/Tool" } }
+        }
+      },
+      "McpConfig": {
+        "type": "object",
+        "required": ["name", "url"],
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+          "query_params": { "type": "object", "additionalProperties": { "type": "string" } },
+          "timeout_ms": { "type": "integer" }
         }
       },
       "AgentSummary": {
         "type": "object",
+        "required": ["agent_id", "version"],
         "properties": {
-          "agent_id": {
-            "type": "string"
-          },
-          "agent_name": {
-            "type": "string"
-          },
-          "version": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "agent_id",
-          "version"
-        ]
+          "agent_id": { "type": "string" },
+          "agent_name": { "type": "string" },
+          "version": { "type": "integer" }
+        }
       },
       "Agent": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/AgentSummary"
-          },
+          { "$ref": "#/components/schemas/AgentSummary" },
           {
             "type": "object",
             "properties": {
-              "voice_id": {
-                "type": "string"
-              },
-              "response_engine": {
-                "$ref": "#/components/schemas/ResponseEngine"
-              },
-              "response_threshold": {
-                "type": "number",
-                "nullable": true
-              },
-              "interruption_sensitivity": {
-                "type": "string",
-                "nullable": true
-              },
-              "ambient_sound": {
-                "type": "string",
-                "nullable": true
-              },
-              "responsiveness": {
-                "type": "string",
-                "nullable": true
-              },
-              "max_call_duration_ms": {
-                "type": "integer",
-                "nullable": true
-              },
-              "created_at": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true
-              },
-              "updated_at": {
-                "type": "string",
-                "format": "date-time",
-                "nullable": true
-              }
+              "voice_id": { "type": "string" },
+              "response_engine": { "$ref": "#/components/schemas/ResponseEngine" },
+              "response_threshold": { "type": "number", "nullable": true },
+              "interruption_sensitivity": { "type": "string", "nullable": true },
+              "ambient_sound": { "type": "string", "nullable": true },
+              "responsiveness": { "type": "string", "nullable": true },
+              "max_call_duration_ms": { "type": "integer", "nullable": true },
+              "created_at": { "type": "string", "format": "date-time", "nullable": true },
+              "updated_at": { "type": "string", "format": "date-time", "nullable": true }
             }
           }
         ]
       },
       "ResponseEngine": {
         "type": "object",
+        "required": ["type"],
         "properties": {
-          "type": {
-            "type": "string"
-          },
-          "llm_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ]
+          "type": { "type": "string" },
+          "llm_id": { "type": "string" }
+        }
       },
       "CreateAgentRequest": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "agent_name",
-          "voice_id",
-          "response_engine"
-        ],
+        "required": ["workspaceId", "agent_name", "voice_id", "response_engine"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "agent_name": {
-            "type": "string"
-          },
-          "voice_id": {
-            "type": "string"
-          },
-          "response_engine": {
-            "$ref": "#/components/schemas/ResponseEngine"
-          },
-          "response_threshold": {
-            "type": "number"
-          },
-          "interruption_sensitivity": {
-            "type": "string"
-          },
-          "ambient_sound": {
-            "type": "string"
-          }
+          "workspaceId": { "type": "integer" },
+          "agent_name": { "type": "string" },
+          "voice_id": { "type": "string" },
+          "response_engine": { "$ref": "#/components/schemas/ResponseEngine" },
+          "response_threshold": { "type": "number" },
+          "interruption_sensitivity": { "type": "string" },
+          "ambient_sound": { "type": "string" }
         }
       },
       "UpdateAgentRequest": {
         "type": "object",
-        "required": [
-          "workspaceId"
-        ],
+        "required": ["workspaceId"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "response_engine": {
-            "$ref": "#/components/schemas/ResponseEngine"
-          },
-          "interruption_sensitivity": {
-            "type": "string"
-          },
-          "max_call_duration_ms": {
-            "type": "integer"
-          },
-          "responsiveness": {
-            "type": "string"
-          }
+          "workspaceId": { "type": "integer" },
+          "response_engine": { "$ref": "#/components/schemas/ResponseEngine" },
+          "interruption_sensitivity": { "type": "string" },
+          "max_call_duration_ms": { "type": "integer" },
+          "responsiveness": { "type": "string" }
         }
       },
       "AgentVersion": {
         "type": "object",
+        "required": ["agent_id", "version"],
         "properties": {
-          "agent_id": {
-            "type": "string"
-          },
-          "version": {
-            "type": "integer"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "agent_id",
-          "version"
-        ]
+          "agent_id": { "type": "string" },
+          "version": { "type": "integer" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
       },
-      "ConversationFlowSummary": {
+      "ChatAgentSummary": {
         "type": "object",
         "properties": {
-          "conversation_flow_id": {
-            "type": "string"
-          },
-          "version": {
-            "type": "integer"
-          },
-          "start_speaker": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "conversation_flow_id",
-          "version"
-        ]
+          "agent_id": { "type": "string" },
+          "agent_name": { "type": "string" },
+          "version": { "type": "integer" },
+          "response_engine": { "$ref": "#/components/schemas/ResponseEngine" },
+          "auto_close_message": { "type": "string", "nullable": true },
+          "is_public": { "type": "boolean" }
+        }
       },
-      "ConversationFlow": {
+      "ChatAgent": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/ConversationFlowSummary"
-          },
+          { "$ref": "#/components/schemas/ChatAgentSummary" },
           {
             "type": "object",
             "properties": {
-              "workspaceId": {
-                "type": "integer",
-                "nullable": true
-              },
-              "global_prompt": {
-                "type": "string",
-                "nullable": true
-              },
-              "start_speaker": {
-                "type": "string",
-                "nullable": true
-              },
-              "model_choice": {
-                "$ref": "#/components/schemas/ModelChoice"
-              },
+              "end_chat_after_silence_ms": { "type": "integer", "nullable": true },
+              "webhook_url": { "type": "string", "format": "uri", "nullable": true },
+              "webhook_events": { "type": "array", "items": { "type": "string" } },
+              "timezone": { "type": "string", "nullable": true },
+              "data_storage_setting": { "type": "string", "nullable": true },
+              "data_storage_retention_days": { "type": "integer", "nullable": true },
+              "post_chat_analysis_model": { "type": "string", "nullable": true },
+              "post_chat_analysis_data": { "type": "array", "items": { "type": "object" } },
+              "uponai_dynamic_variables": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        ]
+      },
+      "ChatAgentList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ChatAgentSummary" }
+          },
+          "pagination_key": { "type": "string", "nullable": true },
+          "pagination_key_version": { "type": "integer", "nullable": true }
+        }
+      },
+      "CreateChatAgentRequest": {
+        "type": "object",
+        "required": ["workspaceId", "agent_name", "response_engine"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agent_name": { "type": "string" },
+          "response_engine": { "$ref": "#/components/schemas/ResponseEngine" },
+          "auto_close_message": { "type": "string" },
+          "end_chat_after_silence_ms": { "type": "integer" },
+          "webhook_url": { "type": "string", "format": "uri" },
+          "webhook_events": { "type": "array", "items": { "type": "string" } },
+          "timezone": { "type": "string" },
+          "is_public": { "type": "boolean" },
+          "data_storage_setting": { "type": "string" },
+          "data_storage_retention_days": { "type": "integer" },
+          "post_chat_analysis_model": { "type": "string" },
+          "post_chat_analysis_data": { "type": "array", "items": { "type": "object" } },
+          "uponai_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      },
+      "UpdateChatAgentRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agent_name": { "type": "string" },
+          "auto_close_message": { "type": "string" },
+          "is_public": { "type": "boolean" },
+          "handbook_config": {
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "include_sections": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string", "enum": ["assistant", "user"] },
+          "content": { "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "tool_calls": { "type": "array", "items": { "type": "object" } }
+        },
+        "required": ["role", "content"]
+      },
+      "Chat": {
+        "type": "object",
+        "properties": {
+          "chatId": { "type": "string" },
+          "agentId": { "type": "string" },
+          "version": { "type": "integer" },
+          "status": { "type": "string" },
+          "type": { "type": "string", "example": "web_chat" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "customAttributes": { "type": "object", "additionalProperties": { "type": "string" } },
+          "startedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "endedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "transcript": { "type": "string", "nullable": true },
+          "messages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Message" }
+          },
+          "chatCost": { "type": "object", "nullable": true },
+          "chatAnalysis": { "type": "object", "nullable": true },
+          "collectedDynamicVariables": { "type": "object" },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } },
+          "overrideDynamicVariables": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "ChatList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Chat" }
+          },
+          "pagination_key": { "type": "string", "nullable": true }
+        }
+      },
+      "CreateChatRequest": {
+        "type": "object",
+        "required": ["workspaceId", "agent_id"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agent_id": { "type": "string" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "CreateOutboundSmsChatRequest": {
+        "type": "object",
+        "required": ["workspaceId", "agent_id", "from_number", "to_number"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "agent_id": { "type": "string" },
+          "from_number": { "type": "string" },
+          "to_number": { "type": "string" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "UpdateChatRequest": {
+        "type": "object",
+        "required": ["workspaceId"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "custom_attributes": { "type": "object", "additionalProperties": { "type": "string" } },
+          "override_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "required": ["workspaceId", "content"],
+        "properties": {
+          "workspaceId": { "type": "integer" },
+          "content": { "type": "string" }
+        }
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Message" }
+          }
+        }
+      },
+      "ConversationFlowSummary": {
+        "type": "object",
+        "required": ["conversation_flow_id", "version"],
+        "properties": {
+          "conversation_flow_id": { "type": "string" },
+          "version": { "type": "integer" },
+          "start_speaker": { "type": "string", "nullable": true }
+        }
+      },
+      "ConversationFlow": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ConversationFlowSummary" },
+          {
+            "type": "object",
+            "properties": {
+              "workspaceId": { "type": "integer", "nullable": true },
+              "global_prompt": { "type": "string", "nullable": true },
+              "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
               "nodes": {
                 "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ConversationNode"
-                }
+                "items": { "$ref": "#/components/schemas/ConversationNode" }
               }
             }
           }
@@ -1578,476 +2513,356 @@
       },
       "ModelChoice": {
         "type": "object",
+        "required": ["type"],
         "properties": {
-          "type": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ]
+          "type": { "type": "string" },
+          "model": { "type": "string" }
+        }
       },
       "ConversationNode": {
         "type": "object",
+        "required": ["id", "type"],
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "instruction": {
-            "$ref": "#/components/schemas/Instruction"
-          },
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "instruction": { "$ref": "#/components/schemas/Instruction" },
           "edges": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConversationEdge"
-            }
+            "items": { "$ref": "#/components/schemas/ConversationEdge" }
           }
-        },
-        "required": [
-          "id",
-          "type"
-        ]
+        }
       },
       "Instruction": {
         "type": "object",
+        "required": ["type"],
         "properties": {
-          "type": {
-            "type": "string"
-          },
-          "text": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ]
+          "type": { "type": "string" },
+          "text": { "type": "string" }
+        }
       },
       "ConversationEdge": {
         "type": "object",
+        "required": ["id", "transition_condition", "destination_node_id"],
         "properties": {
-          "id": {
-            "type": "string"
-          },
+          "id": { "type": "string" },
           "transition_condition": {
             "type": "object",
+            "required": ["type"],
             "properties": {
-              "type": {
-                "type": "string"
-              },
-              "prompt": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "type"
-            ]
+              "type": { "type": "string" },
+              "prompt": { "type": "string" }
+            }
           },
-          "destination_node_id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "transition_condition",
-          "destination_node_id"
-        ]
+          "destination_node_id": { "type": "string" }
+        }
       },
       "CreateConversationFlowRequest": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "start_speaker",
-          "nodes"
-        ],
+        "required": ["workspaceId", "start_speaker", "nodes"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "global_prompt": {
-            "type": "string"
-          },
-          "start_speaker": {
-            "type": "string"
-          },
-          "model_choice": {
-            "$ref": "#/components/schemas/ModelChoice"
-          },
+          "workspaceId": { "type": "integer" },
+          "global_prompt": { "type": "string" },
+          "start_speaker": { "type": "string" },
+          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
           "nodes": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConversationNode"
-            }
+            "items": { "$ref": "#/components/schemas/ConversationNode" }
           }
         }
       },
       "UpdateConversationFlowRequest": {
         "type": "object",
-        "required": [
-          "workspaceId"
-        ],
+        "required": ["workspaceId"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "global_prompt": {
-            "type": "string"
-          },
-          "model_choice": {
-            "$ref": "#/components/schemas/ModelChoice"
-          },
+          "workspaceId": { "type": "integer" },
+          "global_prompt": { "type": "string" },
+          "model_choice": { "$ref": "#/components/schemas/ModelChoice" },
           "nodes": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConversationNode"
-            }
+            "items": { "$ref": "#/components/schemas/ConversationNode" }
           }
         }
       },
       "KnowledgeBaseSummary": {
         "type": "object",
+        "required": ["knowledgeBaseId", "name", "status"],
         "properties": {
-          "knowledgeBaseId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "knowledgeBaseId",
-          "name",
-          "status"
-        ]
+          "knowledgeBaseId": { "type": "string" },
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["processing", "ready", "failed"] }
+        }
       },
       "KnowledgeBase": {
         "allOf": [
-          {
-            "$ref": "#/components/schemas/KnowledgeBaseSummary"
-          },
+          { "$ref": "#/components/schemas/KnowledgeBaseSummary" },
           {
             "type": "object",
             "properties": {
-              "description": {
-                "type": "string",
-                "nullable": true
-              },
+              "description": { "type": "string", "nullable": true },
               "sources": {
                 "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/KnowledgeBaseSource"
-                }
+                "items": { "$ref": "#/components/schemas/KnowledgeBaseSource" }
               },
-              "workspaceId": {
-                "type": "integer",
-                "nullable": true
-              }
+              "workspaceId": { "type": "integer", "nullable": true }
             }
           }
         ]
       },
       "KnowledgeBaseSource": {
         "type": "object",
+        "required": ["source_id", "source_type"],
         "properties": {
-          "source_id": {
-            "type": "string"
-          },
-          "source_type": {
-            "type": "string"
-          },
-          "filename": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "source_id",
-          "source_type"
-        ]
+          "source_id": { "type": "string" },
+          "source_type": { "type": "string" },
+          "filename": { "type": "string", "nullable": true }
+        }
       },
       "CreateKnowledgeBaseRequest": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "name"
-        ],
+        "required": ["workspaceId", "name"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
+          "workspaceId": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "enableAutoRefresh": { "type": "boolean" },
+          "maxChunkSize": { "type": "integer" },
+          "minChunkSize": { "type": "integer" },
           "sources": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/KnowledgeBaseSourceInput"
-            }
+            "items": { "$ref": "#/components/schemas/KnowledgeBaseSourceInput" }
           }
         }
       },
       "KnowledgeBaseSourceInput": {
         "type": "object",
+        "required": ["type"],
         "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "text",
-              "url",
-              "document"
-            ]
-          },
-          "text": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri"
-          },
-          "filename": {
-            "type": "string"
-          },
-          "contentType": {
-            "type": "string"
-          },
-          "base64": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type"
-        ]
+          "type": { "type": "string", "enum": ["text", "url", "document"] },
+          "text": { "type": "string" },
+          "title": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "filename": { "type": "string" },
+          "contentType": { "type": "string" },
+          "base64": { "type": "string" }
+        }
       },
       "AddKnowledgeBaseSourcesRequest": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "sources"
-        ],
+        "required": ["workspaceId", "sources"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
+          "workspaceId": { "type": "integer" },
           "sources": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/KnowledgeBaseSourceInput"
-            }
+            "items": { "$ref": "#/components/schemas/KnowledgeBaseSourceInput" }
           }
         }
       },
       "Voice": {
         "type": "object",
+        "required": ["voiceId", "name"],
         "properties": {
-          "voiceId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string"
-          },
-          "language": {
-            "type": "string"
-          },
-          "accent": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "previewUrl": {
-            "type": "string",
-            "format": "uri"
-          },
-          "tags": {
+          "voiceId": { "type": "string" },
+          "name": { "type": "string" },
+          "gender": { "type": "string" },
+          "language": { "type": "string" },
+          "accent": { "type": "string" },
+          "description": { "type": "string" },
+          "provider": { "type": "string" },
+          "previewUrl": { "type": "string", "format": "uri" },
+          "playbackOverrideUrl": { "type": "string", "format": "uri", "nullable": true },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string", "format": "date-time", "nullable": true },
+          "updatedAt": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "CommunityVoice": {
+        "type": "object",
+        "properties": {
+          "providerVoiceId": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "publicUserId": { "type": "string" },
+          "voiceProvider": { "type": "string" }
+        }
+      },
+      "CommunityVoicesResponse": {
+        "type": "object",
+        "properties": {
+          "voices": {
             "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "items": { "$ref": "#/components/schemas/CommunityVoice" }
           }
-        },
-        "required": [
-          "voiceId",
-          "name"
-        ]
+        }
+      },
+      "TestCaseDefinition": {
+        "type": "object",
+        "properties": {
+          "test_case_definition_id": { "type": "string" },
+          "workspaceId": { "type": "integer" },
+          "type": { "type": "string", "enum": ["llm", "conversation-flow"] },
+          "llm_id": { "type": "string", "nullable": true },
+          "conversation_flow_id": { "type": "string", "nullable": true },
+          "version": { "type": "integer", "nullable": true },
+          "name": { "type": "string" },
+          "description": { "type": "string", "nullable": true }
+        }
+      },
+      "TestRun": {
+        "type": "object",
+        "properties": {
+          "test_case_job_id": { "type": "string" },
+          "status": { "type": "string" },
+          "test_case_definition_id": { "type": "string" },
+          "test_case_definition_snapshot": { "type": "string" },
+          "transcript_snapshot": { "type": "object" },
+          "result_explanation": { "type": "string", "nullable": true },
+          "creation_timestamp": { "type": "integer" },
+          "user_modified_timestamp": { "type": "integer", "nullable": true }
+        }
       },
       "Concurrency": {
         "type": "object",
+        "required": ["maxConcurrent", "currentUsage"],
         "properties": {
-          "maxConcurrent": {
-            "type": "integer"
-          },
-          "currentUsage": {
-            "type": "integer"
-          },
-          "purchasedConcurrency": {
-            "type": "integer"
-          },
-          "concurrencyPurchaseLimit": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "maxConcurrent",
-          "currentUsage"
-        ]
+          "maxConcurrent": { "type": "integer" },
+          "currentUsage": { "type": "integer" },
+          "purchasedConcurrency": { "type": "integer" },
+          "concurrencyPurchaseLimit": { "type": "integer" }
+        }
       },
-      "CreateWebCallRequest": {
+      "Workspace": {
         "type": "object",
-        "required": [
-          "workspaceId",
-          "agentId"
-        ],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "accountSid": { "type": "string" },
+          "accountPath": { "type": "string" },
+          "nativeTransferEnabled": { "type": "boolean" }
+        }
+      },
+      "WorkspaceList": {
+        "type": "object",
+        "properties": {
+          "workspaces": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Workspace" }
+          }
+        }
+      },
+      "AgentRef": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string" },
+          "agent_version": { "type": "integer" },
+          "weight": { "type": "number" }
+        }
+      },
+      "PhoneNumber": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "number": { "type": "string" },
+          "base_number": { "type": "string" },
+          "account_sid": { "type": "string" },
+          "workspace_id": { "type": "integer" },
+          "agent_id": { "type": "string", "nullable": true },
+          "default_agent_id": { "type": "string", "nullable": true },
+          "inbound_agent_id": { "type": "string", "nullable": true },
+          "inbound_agents": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AgentRef" }
           },
-          "agentId": {
-            "type": "string"
+          "outbound_agents": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AgentRef" }
           },
-          "agentVersion": {
-            "type": "integer"
+          "inbound_agent_version": { "type": "integer", "nullable": true },
+          "outbound_agent_version": { "type": "integer", "nullable": true },
+          "application_sid": { "type": "string", "nullable": true },
+          "phone_number_sid": { "type": "string", "nullable": true },
+          "inbound_webhook_url": { "type": "string", "format": "uri", "nullable": true },
+          "is_time_routing_enabled": { "type": "boolean" },
+          "platform_import_error": { "type": "boolean" },
+          "platform_import_error_message": { "type": "string", "nullable": true }
+        }
+      },
+      "UpdatePhoneNumberRequest": {
+        "type": "object",
+        "required": ["accountSid", "workspaceId"],
+        "properties": {
+          "accountSid": { "type": "string" },
+          "workspaceId": { "type": "integer" },
+          "outboundAgentId": { "type": "string", "nullable": true },
+          "outboundAgentVersion": { "type": "integer" },
+          "inboundAgents": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AgentRef" }
           },
-          "metadata": {
+          "inboundWebhookUrl": { "type": "string", "format": "uri", "nullable": true },
+          "isTimeRoutingEnabled": { "type": "boolean" }
+        }
+      },
+      "PhoneNumberUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "numbers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PhoneNumber" }
+          },
+          "assignment": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "uponai_dynamic_variables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
+            "properties": {
+              "account_sid": { "type": "string" },
+              "workspace_id": { "type": "integer" },
+              "agent_id": { "type": "string", "nullable": true },
+              "inbound_agent_id": { "type": "string", "nullable": true },
+              "outbound_agents": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/AgentRef" }
+              },
+              "inbound_agents": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/AgentRef" }
+              },
+              "is_time_routing_enabled": { "type": "boolean" },
+              "platform_import_error": { "type": "boolean" },
+              "platform_import_error_message": { "type": "string", "nullable": true }
             }
           }
         }
       },
-      "WebCall": {
+      "CreateWebCallRequest": {
         "type": "object",
+        "required": ["agentId"],
         "properties": {
-          "callId": {
-            "type": "string"
-          },
-          "callType": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "agentId": {
-            "type": "string"
-          },
-          "agentVersion": {
-            "type": "integer"
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "optOutSensitiveDataStorage": {
-            "type": "boolean"
-          },
-          "accessToken": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "webCallUrl": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true
-          },
-          "uponai_dynamic_variables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "callId",
-          "status"
-        ]
+          "workspaceId": { "type": "integer" },
+          "agentId": { "type": "string", "description": "Unique agent identifier. The owning workspace is inferred from this value." },
+          "agentVersion": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
       },
       "CreatePhoneCallRequest": {
         "type": "object",
-        "required": [
-          "agentId",
-          "workspaceId",
-          "fromNumber",
-          "toNumber"
-        ],
+        "required": ["agentId", "fromNumber", "toNumber"],
         "properties": {
-          "agentId": {
-            "type": "string"
-          },
-          "workspaceId": {
-            "type": "integer"
-          },
-          "fromNumber": {
-            "type": "string"
-          },
-          "toNumber": {
-            "type": "string"
-          },
-          "customerName": {
-            "type": "string"
-          },
-          "carrierName": {
-            "type": "string"
-          },
-          "trunkName": {
-            "type": "string"
-          },
-          "overrideCid": {
-            "type": "string"
-          },
-          "customFromNumber": {
-            "type": "string"
-          },
-          "customStatusHookUrl": {
-            "type": "string",
-            "format": "uri"
-          },
-          "metadata": {
+          "agentId": { "type": "string" },
+          "fromNumber": { "type": "string" },
+          "toNumber": { "type": "string" },
+          "trunkName": { "type": "string" },
+          "customerName": { "type": "string" },
+          "ignoreE164Validation": { "type": "boolean" },
+          "overrideAgentVersion": { "type": "integer" },
+          "customSipHeaders": { "type": "object", "additionalProperties": { "type": "string" } },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } },
+          "agentOverride": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "uponai_dynamic_variables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
+            "properties": {
+              "agent": { "type": "object" },
+              "llm": { "type": "object" }
             }
           }
         }
@@ -2055,128 +2870,129 @@
       "CreatePhoneCallResponse": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "call_sid": {
-            "type": "string"
-          },
-          "call": {
-            "$ref": "#/components/schemas/CallDetail"
-          }
+          "success": { "type": "boolean" },
+          "call_sid": { "type": "string" },
+          "call": { "$ref": "#/components/schemas/CallDetail" }
+        }
+      },
+      "CallRecord": {
+        "type": "object",
+        "properties": {
+          "callId": { "type": "string" },
+          "callType": { "type": "string" },
+          "status": { "type": "string" },
+          "agentId": { "type": "string" },
+          "agentVersion": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "optOutSensitiveDataStorage": { "type": "boolean" },
+          "accessToken": { "type": "string", "nullable": true },
+          "expiresAt": { "type": "string", "format": "date-time", "nullable": true },
+          "webCallUrl": { "type": "string", "format": "uri", "nullable": true },
+          "uponai_dynamic_variables": { "type": "object", "additionalProperties": { "type": "string" } }
         }
       },
       "CallDetail": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "call": {
-            "$ref": "#/components/schemas/CallRecord"
-          }
-        },
-        "additionalProperties": true
-      },
-      "CallRecord": {
-        "type": "object",
-        "properties": {
-          "callId": {
-            "type": "string"
-          },
-          "callType": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "agentId": {
-            "type": "string"
-          },
-          "agentVersion": {
-            "type": "integer"
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "optOutSensitiveDataStorage": {
-            "type": "boolean"
-          },
-          "accessToken": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "webCallUrl": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true
-          },
-          "uponai_dynamic_variables": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
+          "success": { "type": "boolean" },
+          "call": { "$ref": "#/components/schemas/CallRecord" }
         }
       },
       "CallList": {
         "type": "object",
+        "required": ["success", "calls"],
         "properties": {
-          "success": {
-            "type": "boolean"
-          },
+          "success": { "type": "boolean" },
           "calls": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CallRecord"
-            }
+            "items": { "$ref": "#/components/schemas/CallRecord" }
           },
           "pagination": {
             "type": "object",
             "properties": {
-              "page": {
-                "type": "integer"
-              },
-              "limit": {
-                "type": "integer"
-              },
-              "total": {
-                "type": "integer"
-              }
+              "page": { "type": "integer" },
+              "limit": { "type": "integer" },
+              "total": { "type": "integer" }
             }
           }
-        },
-        "required": [
-          "success",
-          "calls"
-        ]
+        }
+      },
+      "CallHistoryItem": {
+        "type": "object",
+        "properties": {
+          "callSid": { "type": "string" },
+          "callStatus": { "type": "string" },
+          "agentId": { "type": "string" },
+          "agentVersion": { "type": "integer" },
+          "agentName": { "type": "string" },
+          "workspaceId": { "type": "integer" },
+          "workspaceName": { "type": "string" },
+          "fromNumber": { "type": "string", "nullable": true },
+          "toNumber": { "type": "string", "nullable": true },
+          "direction": { "type": "string", "enum": ["inbound", "outbound"] },
+          "customerName": { "type": "string", "nullable": true },
+          "duration": { "type": "integer", "nullable": true },
+          "startedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "recordingUrl": { "type": "string", "format": "uri", "nullable": true },
+          "sentiment": { "type": "string", "nullable": true },
+          "summary": { "type": "string", "nullable": true },
+          "voiceModel": { "type": "string", "nullable": true },
+          "llmModel": { "type": "string", "nullable": true },
+          "telecommunicationsProvider": { "type": "string", "nullable": true },
+          "carrierSid": { "type": "string", "nullable": true },
+          "carrierName": { "type": "string", "nullable": true },
+          "archived": { "type": "boolean" },
+          "costs": { "$ref": "#/components/schemas/CallCosts" }
+        }
+      },
+      "CallCosts": {
+        "type": "object",
+        "properties": {
+          "voice": { "type": "number" },
+          "llm": { "type": "number" },
+          "voiceMarkup": { "type": "number" },
+          "llmMarkup": { "type": "number" },
+          "gross": { "type": "number" },
+          "markup": { "type": "number" },
+          "total": { "type": "number" },
+          "markupRate": { "type": "number" }
+        }
+      },
+      "CallHistoryList": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "calls": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CallHistoryItem" }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "limit": { "type": "integer" },
+              "total": { "type": "integer" },
+              "pages": { "type": "integer" }
+            }
+          },
+          "filters": { "type": "object" }
+        }
       },
       "UpdateCallRequest": {
         "type": "object",
-        "required": [
-          "workspaceId"
-        ],
+        "required": ["workspaceId"],
         "properties": {
-          "workspaceId": {
-            "type": "integer"
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "optOutSensitiveDataStorage": {
-            "type": "boolean"
-          }
+          "workspaceId": { "type": "integer" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "string" } },
+          "optOutSensitiveDataStorage": { "type": "boolean" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
         }
       }
     }
