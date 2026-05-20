@@ -13,7 +13,22 @@ Transfer Call enables your agent to hand off a conversation to a human agent or 
 
 <Steps>
   <Step title="Add the tool">
-    In your agent's Functions section, select **Transfer Call** from the dropdown.
+    In your agent's Functions section, click **+ Add** and select **Transfer Call** from the dropdown.
+
+    <Frame>
+      <img src="/images/screenshots/image4.png" alt="Agent Functions panel showing the Add button and empty functions state" />
+    </Frame>
+
+    <Frame>
+      <img src="/images/screenshots/image6.png" alt="Functions Add menu with Transfer Call highlighted" />
+    </Frame>
+  </Step>
+  <Step title="Choose a transfer type">
+    Select how the AI should handle the handoff:
+
+    <Frame>
+      <img src="/images/screenshots/image8.png" alt="Transfer Call dialog showing Cold Transfer, Warm Transfer, and Agentic Warm Transfer options" />
+    </Frame>
   </Step>
   <Step title="Configure the transfer destination">
     Provide the number or SIP URI to transfer to:
@@ -24,6 +39,10 @@ Transfer Call enables your agent to hand off a conversation to a human agent or 
     | SIP URI | `sip:username@domain.com` |
 
     You can also include optional extensions, or use dynamic variables to set the destination at runtime.
+
+    <Frame>
+      <img src="/images/screenshots/image7.png" alt="Extension destination type configuration with shared extension list enabled" />
+    </Frame>
   </Step>
   <Step title="Update your prompt">
     Tell the agent when to trigger a transfer. Example:
@@ -66,3 +85,7 @@ Transfer Call enables your agent to hand off a conversation to a human agent or 
 
 - **Caller ID**: Show the agent's number or the original caller's number (depends on telephony provider support)
 - **Custom SIP headers**: Add headers prefixed with `X-` or labeled `User-To-User` for routing and metadata
+
+<Frame>
+  <img src="/images/screenshots/image5.png" alt="Caller Identity and Headers settings showing displayed caller ID and SIP header options" />
+</Frame>
