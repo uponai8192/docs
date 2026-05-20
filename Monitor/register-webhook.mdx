@@ -75,6 +75,12 @@ description: "Set up an endpoint to receive and handle UponAI webhook events."
 
     - **Account-level webhook** — Set up in **Settings > Webhooks** tab. Fires for all agents in your account.
     - **Agent-level webhook** — Set via the `webhook_url` field on the agent. When set, the account-level webhook will NOT fire for that agent.
+
+    Configure your webhook URL and select which events to receive. Enable **Webhook Authentication** to require credentials for added security.
+
+    <Frame>
+      <img src="/images/screenshots/image24.png" alt="Webhook Settings panel showing webhook URL, event checkboxes (Call Started, Call Ended, Call Analyzed, Transfer events), and Webhook Authentication toggle" />
+    </Frame>
   </Step>
   <Step title="Verify your webhook">
     Start a web call in the dashboard to confirm the webhook fires correctly.

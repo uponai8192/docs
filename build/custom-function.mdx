@@ -17,12 +17,17 @@ Custom functions let your agent call any external API via HTTP request — enabl
   </Step>
   <Step title="Name the function">
     Use underscores to separate words. Example: `check_order_status`, `create_lead`.
+
+    <Frame>
+      <img src="/images/screenshots/image12.png" alt="Custom Function form showing Name and Description fields" />
+    </Frame>
   </Step>
-  <Step title="Select HTTP method">
-    Choose from: `GET`, `POST`, `PATCH`, `PUT`, or `DELETE`.
-  </Step>
-  <Step title="Set the endpoint URL">
-    Enter the full URL of your API endpoint.
+  <Step title="Select HTTP method and set the endpoint URL">
+    Choose from: `GET`, `POST`, `PATCH`, `PUT`, or `DELETE`. Enter the full URL of your API endpoint.
+
+    <Frame>
+      <img src="/images/screenshots/image13.png" alt="Custom Function API endpoint configuration showing POST method, URL, timeout, and headers" />
+    </Frame>
   </Step>
   <Step title="Configure headers and query parameters">
     Add any required authentication headers, API keys, or query params.
@@ -34,10 +39,14 @@ Custom functions let your agent call any external API via HTTP request — enabl
   </Step>
   <Step title="Handle the response">
     Map API response values to dynamic variables for use later in the conversation. Response data is capped at **15,000 characters**.
-  </Step>
-  <Step title="Configure speech">
-    - **Speak when called**: Agent says something while waiting for the response
-    - **Speak after completion**: Agent discusses the result with the caller
+
+    Configure speech behavior during and after execution:
+    - **Speak During Execution**: Agent says something while waiting (e.g. "Let me check that for you.")
+    - **Speak After Execution**: Agent discusses the result with the caller
+
+    <Frame>
+      <img src="/images/screenshots/image14.png" alt="Response Variables mapping and Speak During/After Execution settings" />
+    </Frame>
   </Step>
 </Steps>
 

@@ -3,7 +3,13 @@ title: "Custom Telephony"
 description: "Connect your own telephony provider to UponAI using SIP trunking or dial-to-SIP methods."
 ---
 
-Connect UponAI agents with your own telephony provider and phone numbers. This works independently of the agent type you're using.
+Connect UponAI agents with your own telephony provider and phone numbers. Navigate to **VoIP Administration** in the top nav to manage carriers and phone numbers.
+
+<Frame>
+  <img src="/images/screenshots/image17.png" alt="VoIP Administration menu showing Phone Numbers, SMS Numbers, Carriers, Predefined Carriers, and UponAI VoIP Accounts" />
+</Frame>
+
+This works independently of the agent type you're using.
 
 ## Integration Methods
 
@@ -56,6 +62,20 @@ Elastic SIP Trunking connects UponAI's VoIP infrastructure with the PSTN so your
 </CardGroup>
 
 Other providers that support SIP trunks are also compatible — use the guides above as reference.
+
+---
+
+To add a carrier, go to **VoIP Administration → Carriers** and click **Add Carrier**. Set the carrier name, trunk type, and select a predefined carrier template or configure a custom carrier.
+
+<Frame>
+  <img src="/images/screenshots/image19.png" alt="Add VoIP Carrier dialog showing carrier name, trunk type, and predefined carrier selection" />
+</Frame>
+
+Configure authentication credentials, DTMF type, SIP proxy, and gateway IP addresses. Whitelist the UponAI SIP signaling IP shown in the dialog.
+
+<Frame>
+  <img src="/images/screenshots/image20.png" alt="VoIP Carrier configuration showing whitelist IP, auth credentials, DTMF type, gateways, and Add Carrier button" />
+</Frame>
 
 ---
 
